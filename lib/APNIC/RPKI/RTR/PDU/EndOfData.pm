@@ -1,0 +1,162 @@
+package APNIC::RPKI::RTR::PDU::EndOfData;
+
+use warnings;
+use strict;
+
+use JSON::XS qw(encode_json decode_json);
+
+use APNIC::RPKI::RTR::Utils qw(recv_all);
+
+use base qw(APNIC::RPKI::RTR::PDU);
+
+sub new
+{
+    my $class = shift;
+    my %args = @_;
+
+    my $self = {
+        version          => $args{'version'},
+        session_id       => $args{'session_id'},
+        serial_number    => $args{'serial_number'},
+        refresh_interval => $args{'refresh_interval'},
+        retry_interval   => $args{'retry_interval'},
+        expire_interval  => $args{'expire_interval'},
+    };
+    bless $self, $class;
+    return $self;
+}
+
+sub type
+{
+    return 7;
+}
+
+sub type_str
+{
+    return 'End of Data';
+}
+
+sub version
+{
+    my ($self) = @_;
+
+    return $self->{'version'};
+}
+
+sub session_id
+{
+    my ($self) = @_;
+    
+    return $self->{'session_id'};
+}
+
+sub serial_number
+{
+    my ($self) = @_;
+    
+    return $self->{'serial_number'};
+}
+
+sub refresh_interval
+{
+    my ($self) = @_;
+    
+    return $self->{'refresh_interval'};
+}
+
+sub retry_interval
+{
+    my ($self) = @_;
+    
+    return $self->{'retry_interval'};
+}
+
+sub expire_interval
+{
+    my ($self) = @_;
+    
+    return $self->{'expire_interval'};
+}
+
+sub serialise_binary
+{
+    my ($self) = @_;
+
+    return pack("CCnNNNNN",
+                $self->version(),
+                $self->type(),
+                $self->session_id(),
+                24,
+                $self->serial_number(),
+                $self->refresh_interval(),
+                $self->retry_interval(),
+                $self->expire_interval());
+}
+
+sub deserialise_binary
+{
+    my ($class, $version, $session_id, $length, $socket) = @_;
+
+    if ($length != 24) {
+        die "Expected length of 24 for End of Data PDU, ".
+            "but got '$length'.";
+    }
+
+    my $buf = recv_all($socket, 16);
+    my ($serial_number, $refresh_interval,
+	$retry_interval, $expire_interval) =
+	unpack("NNNN", $buf);
+
+    return
+        APNIC::RPKI::RTR::PDU::EndOfData->new(
+            version          => $version,
+            session_id       => $session_id,
+            serial_number    => $serial_number,
+            refresh_interval => $refresh_interval,
+            retry_interval   => $retry_interval,
+            expire_interval  => $expire_interval,
+        );
+}
+
+sub serialise_json
+{
+    my ($self) = @_;
+
+    return encode_json({%{$self}, type => $self->type()});
+}
+
+sub deserialise_json
+{
+    my ($class, $data) = @_;
+
+    my $self = decode_json($data);
+    bless $self, $class;
+    return $self;
+}
+
+sub is_reversal_of
+{
+    return 0;
+}
+
+sub equals
+{
+    my ($self, $other) = @_;
+
+    return (($self->type() == $other->type())
+                and ($self->version() == $other->version())
+                and ($self->session_id() == $other->session_id())
+                and ($self->serial_number() == $other->serial_number())
+                and ($self->refresh_interval() == $other->refresh_interval())
+                and ($self->retry_interval() == $other->retry_interval())
+                and ($self->expire_interval() == $other->expire_interval()));
+}
+
+sub supported_in_version
+{
+    my ($self, $version) = @_;
+
+    return (($version == 1) or ($version == 2));
+}
+
+1;

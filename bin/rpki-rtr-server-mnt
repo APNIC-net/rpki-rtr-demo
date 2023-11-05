@@ -1,0 +1,227 @@
+#!/usr/bin/perl
+
+use warnings;
+use strict;
+
+use APNIC::RPKI::RTR::Changeset;
+use APNIC::RPKI::RTR::PDU::IPv4Prefix;
+use APNIC::RPKI::RTR::PDU::IPv6Prefix;
+use APNIC::RPKI::RTR::Server::Maintainer;
+
+use File::Slurp qw(read_file write_file);
+
+sub usage
+{
+    print <<EOF;
+rpki-rtr-server-mnt {data-directory} start-changeset
+
+  Start a new changeset.
+
+rpki-rtr-server-mnt {data-directory} add-vrp ...
+
+  Add a VRP to the changeset, using human-readable notation.
+
+rpki-rtr-server-mnt {data-directory} add-aspa ...
+
+  Add an ASPA to the changeset, using human-readable notation.
+
+rpki-rtr-server-mnt {data-directory} remove-vrp ...
+
+  Remove a VRP from the changeset, using human-readable notation.
+
+rpki-rtr-server-mnt {data-directory} remove-aspa ...
+
+  Remove an ASPA from the changeset, using human-readable notation.
+
+rpki-rtr-server-mnt {data-directory} commit-changeset
+
+  Commit the changeset, to make it available to the server.
+EOF
+}
+
+sub error
+{
+    my ($error) = @_;
+
+    print STDERR "$error\n";
+
+    usage();
+
+    exit(10);
+}
+
+sub main
+{
+    my ($dir, $op_name, @args) = @_;
+
+    if (not $dir) {
+        error("Data directory must be provided.");
+    }
+    if (not -d $dir) {
+        my $res = mkdir $dir;
+        if (not $res) {
+            error("Unable to make directory: $!");
+        }
+    }
+    my $changeset_path = "$dir/current-changeset";
+
+    if (not $op_name) {
+        error("Operation name not provided.");
+    } elsif ($op_name eq 'start-changeset') {
+        my $changeset = APNIC::RPKI::RTR::Changeset->new();
+        write_file($changeset_path,
+                   $changeset->serialise_json());
+    } elsif ($op_name eq 'add-vrp') {
+        my $data = eval { read_file($changeset_path); };
+        if (my $error = $@){
+            error("No changeset has been started.");
+        }
+        my $changeset =
+            APNIC::RPKI::RTR::Changeset->deserialise_json(
+                $data
+            );
+
+        my $vrp = shift @args;
+        my ($addr, $len, $max_len, $asn) =
+            ($vrp =~ /^(.+?)\/(\d+)-(\d+) => (?:AS)?(\d+)$/);
+        if (not $addr) {
+            ($addr, $len, $asn) =
+                ($vrp =~ /^(.+?)\/(\d+) => (?:AS)?(\d+)$/);
+            $max_len = $len;
+            if (not $addr) {
+                error("Unable to parse VRP");
+            }
+        }
+        my $module =
+            ($addr =~ /:/)
+                ? "APNIC::RPKI::RTR::PDU::IPv6Prefix"
+                : "APNIC::RPKI::RTR::PDU::IPv4Prefix";
+        my $pdu =
+            $module->new(
+                version       => 1,
+                flags         => 1,
+                address       => $addr,
+                prefix_length => $len,
+                max_length    => $max_len,
+                asn           => $asn,
+            );
+        $changeset->add_pdu($pdu);
+        write_file($changeset_path,
+                   $changeset->serialise_json());
+    } elsif ($op_name eq 'remove-vrp') {
+        my $data = eval { read_file($changeset_path); };
+        if (my $error = $@){
+            error("No changeset has been started.");
+        }
+        my $changeset =
+            APNIC::RPKI::RTR::Changeset->deserialise_json(
+                $data
+            );
+
+        my $vrp = shift @args;
+        my ($addr, $len, $max_len, $asn) =
+            ($vrp =~ /^(.+?)\/(\d+)-(\d+) => (?:AS)?(\d+)$/);
+        if (not $addr) {
+            ($addr, $len, $asn) =
+                ($vrp =~ /^(.+?)\/(\d+) => (?:AS)?(\d+)$/);
+            $max_len = $len;
+            if (not $addr) {
+                error("Unable to parse VRP");
+            }
+        }
+        my $module =
+            ($addr =~ /:/)
+                ? "APNIC::RPKI::RTR::PDU::IPv6Prefix"
+                : "APNIC::RPKI::RTR::PDU::IPv4Prefix";
+        my $pdu =
+            $module->new(
+                version       => 1,
+                flags         => 0,
+                address       => $addr,
+                prefix_length => $len,
+                max_length    => $max_len,
+                asn           => $asn,
+            );
+        $changeset->add_pdu($pdu);
+        write_file($changeset_path,
+                   $changeset->serialise_json());
+    } elsif ($op_name eq 'add-aspa') {
+        my $data = eval { read_file($changeset_path); };
+        if (my $error = $@){
+            error("No changeset has been started.");
+        }
+        my $changeset =
+            APNIC::RPKI::RTR::Changeset->deserialise_json(
+                $data
+            );
+
+        my $aspa = shift @args;
+        my ($customer_asn, $provider_asn_str) =
+            ($aspa =~ /^(?:AS)?(\d+)\s*=>\s*(.+)$/);
+        my @provider_asns =
+            map { s/AS//i; $_ }
+                split /\s*,\s*/, $provider_asn_str;
+       
+        my $pdu =
+            APNIC::RPKI::RTR::PDU::ASPA->new(
+                version       => 1,
+                flags         => 1,
+                afi_flags     => 3,
+                customer_asn  => $customer_asn,
+                provider_asns => \@provider_asns,
+            );
+        $changeset->add_pdu($pdu);
+        write_file($changeset_path,
+                   $changeset->serialise_json());
+    } elsif ($op_name eq 'remove-aspa') {
+        my $data = eval { read_file($changeset_path); };
+        if (my $error = $@){
+            error("No changeset has been started.");
+        }
+        my $changeset =
+            APNIC::RPKI::RTR::Changeset->deserialise_json(
+                $data
+            );
+
+        my $aspa = shift @args;
+        my ($customer_asn, $provider_asn_str) =
+            ($aspa =~ /^(?:AS)?(\d+)\s*=>\s*(.+)$/);
+        my @provider_asns =
+            map { s/AS//i; $_ }
+                split /\s*,\s*/, $provider_asn_str;
+       
+        my $pdu =
+            APNIC::RPKI::RTR::PDU::ASPA->new(
+                version       => 1,
+                flags         => 0,
+                afi_flags     => 3,
+                customer_asn  => $customer_asn,
+                provider_asns => \@provider_asns,
+            );
+        $changeset->add_pdu($pdu);
+        write_file($changeset_path,
+                   $changeset->serialise_json());
+    } elsif ($op_name eq 'commit-changeset') {
+        my $data = eval { read_file($changeset_path); };
+        if (my $error = $@){
+            error("No changeset has been started.");
+        }
+        my $changeset =
+            APNIC::RPKI::RTR::Changeset->deserialise_json(
+                $data
+            );
+
+        my $mnt =
+            APNIC::RPKI::RTR::Server::Maintainer->new(
+                data_dir => $dir
+            );
+        $mnt->apply_changeset($changeset);
+        unlink $changeset_path;
+    } else {
+        error("Unknown operation name '$op_name'.");
+    }
+}
+
+main(@ARGV);
+
+1;

@@ -1,0 +1,78 @@
+#!/usr/bin/perl
+
+use warnings;
+use strict;
+
+use APNIC::RPKI::RTR::Server;
+
+sub usage
+{
+    print <<EOF;
+rpki-rtr-server {data-directory} init --server {server} --port {port}
+
+  Starts a new server, using the specified data directory. 
+EOF
+}
+
+sub error
+{
+    my ($error) = @_;
+
+    print STDERR "$error\n";
+
+    usage();
+
+    exit(10);
+}
+
+sub main
+{
+    my ($dir, $op_name, @args) = @_;
+
+    if (not $dir) {
+        error("Data directory must be provided.");
+    }
+    if (not -d $dir) {
+        my $res = mkdir $dir;
+        if (not $res) {
+            error("Unable to make directory: $!");
+        }
+    }
+
+    if (not $op_name) {
+        error("Operation name not provided.");
+    } elsif ($op_name eq 'init') {
+        my $server;
+        my $port;
+        while (@args) {
+            my $key = shift @args;
+            if ($key eq '--server') {
+                $server = shift @args;
+            } elsif ($key eq '--port') {
+                $port = shift @args;
+            } else {
+                error("Invalid argument '$key'");
+            }
+        }
+        if (not $server or not $port) {
+            error("Server and port must be provided.");
+        }
+
+        my $server_obj =
+            APNIC::RPKI::RTR::Server->new(
+                data_dir => $dir,
+                server   => $server,
+                port     => $port,
+            );
+
+        $server_obj->run();
+
+        return 1;
+    } else {
+        error("Unknown operation name '$op_name'.");
+    }
+}
+
+main(@ARGV);
+
+1;
