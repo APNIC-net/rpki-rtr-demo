@@ -11,7 +11,7 @@ use APNIC::RPKI::RTR::Changeset;
 
 use File::Temp qw(tempdir);
 
-use Test::More tests => 3;
+use Test::More tests => 5;
 
 my $pid;
 
@@ -176,6 +176,60 @@ my $pid;
         use Data::Dumper;
         diag Dumper($error);
     }
+
+    # "If the router requests Q == 0 and it still fails with the cache
+    # responding with an Error Report with Error Code 4, then the
+    # router MUST abort the transport connection, as negotiation is
+    # hopeless."
+
+    $res = kill('TERM', $pid);
+
+    $data_dir = tempdir(CLEANUP => 1);
+    $mnt =
+        APNIC::RPKI::RTR::Server::Maintainer->new(
+            data_dir => $data_dir
+        );
+    $server =
+        APNIC::RPKI::RTR::Server->new(
+            server             => '127.0.0.1',
+            port               => $port,
+            data_dir           => $data_dir,
+            supported_versions => [2]
+        );
+
+    if (my $ppid = fork()) {
+        $pid = $ppid;
+    } else {
+        $server->run();
+        exit(0);
+    }
+    sleep(1);
+
+    $changeset = APNIC::RPKI::RTR::Changeset->new();
+    $pdu =
+        APNIC::RPKI::RTR::PDU::IPv4Prefix->new(
+            version       => 1,
+            flags         => 1,
+            asn           => 4608,
+            address       => '1.0.0.0',
+            prefix_length => 24,
+            max_length    => 32
+        );
+    $changeset->add_pdu($pdu);
+    $mnt->apply_changeset($changeset);
+
+    $client =
+        APNIC::RPKI::RTR::Client->new(
+            server             => '127.0.0.1',
+            port               => $port,
+            supported_versions => [0],
+        );
+
+    eval { $client->reset() };
+    $error = $@;
+    ok($error, 'Client supporting v0 does not work with v2 server');
+    like($error, qr/Unsupported server version '2'/,
+        'Got expected error message');
 }
 
 END {

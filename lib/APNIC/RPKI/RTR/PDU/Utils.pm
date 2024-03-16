@@ -54,7 +54,7 @@ sub parse_pdu
     my $buf = recv_all($socket, 8);
     my ($version, $type, $session_id, $length) =
         unpack("CCnN", $buf);
-    if (not (($version == 1) or ($version == 2))) {
+    if (not (($version >= 0) and ($version <= 2))) {
         die "Unsupported version '$version' ($type, $session_id, $length)";
     }
 

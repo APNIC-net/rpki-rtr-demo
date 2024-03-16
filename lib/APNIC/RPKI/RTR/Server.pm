@@ -39,9 +39,9 @@ sub new
 
     my $session_id = int(rand(65535));
 
-    my @svs = @{$args{'supported_versions'} || [1, 2]};
+    my @svs = @{$args{'supported_versions'} || [0, 1, 2]};
     for my $sv (@svs) {
-        if (not (($sv == 1) or ($sv == 2))) {
+        if (not ($sv >= 0 and $sv <= 2)) {
             die "Version '$sv' is not supported.";
         }
     }

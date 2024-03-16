@@ -29,7 +29,7 @@ sub new
     }
     my @svs = @{$args{'supported_versions'} || [1, 2]};
     for my $sv (@svs) {
-        if (not (($sv == 1) or ($sv == 2))) {
+        if (not (($sv >= 0) and ($sv <= 2))) {
             die "Version '$sv' is not supported.";
         }
     }
@@ -235,7 +235,7 @@ sub reset
         my $last_failure = $self->{'last_failure'};
         if ($last_failure) {
             my $eod = $self->{'eod'};
-            if ($eod) {
+            if ($eod and ($self->{'current_version'} > 0)) {
                 my $retry_interval = $eod->refresh_interval();
                 my $min_retry_time = $last_failure + $retry_interval;
                 if (time() < $min_retry_time) {
@@ -299,17 +299,15 @@ sub refresh
     if (not $force) {
         my $last_failure = $self->{'last_failure'};
         my $eod = $self->{'eod'};
-        if ($last_failure) {
-            if ($eod) {
-                my $retry_interval = $eod->refresh_interval();
-                my $min_retry_time = $last_failure + $retry_interval;
-                if (time() < $min_retry_time) {
-                    dprint("client: not retrying, retry interval not reached");
-                    return;
-                }
+        if ($last_failure and $eod and ($self->{'current_version'} > 0)) {
+            my $retry_interval = $eod->refresh_interval();
+            my $min_retry_time = $last_failure + $retry_interval;
+            if (time() < $min_retry_time) {
+                dprint("client: not retrying, retry interval not reached");
+                return;
             }
         }
-        if ($eod) {
+        if ($eod and ($self->{'current_version'} > 0)) {
             my $last_run = $self->{'last_run'};
             my $refresh_interval = $eod->refresh_interval();
             my $min_refresh_time = $last_run + $refresh_interval;
@@ -354,17 +352,22 @@ sub reset_if_required
     my $last_run     = $self->{'last_run'};
 
     if ($last_failure > $last_run) {
-        if ($eod) {
-            my $last_use_time =
+        my $last_use_time;
+        if ($eod and ($self->{'current_version'} > 0)) {
+            $last_use_time =
                 $last_failure + $eod->expire_interval();
-            if (time() > $last_use_time) {
-                dprint("client: removing state and resetting, reached expiry time");
-                delete $self->{'state'};
-                delete $self->{'eod'};
-                delete $self->{'last_run'};
-                delete $self->{'last_failure'};
-                return $self->reset();
-            }
+        } else {
+            # It may be worth making this configurable, though it is
+            # only useful for v0 clients.
+            $last_use_time = $last_failure + 3600;
+        }
+        if (time() > $last_use_time) {
+            dprint("client: removing state and resetting, reached expiry time");
+            delete $self->{'state'};
+            delete $self->{'eod'};
+            delete $self->{'last_run'};
+            delete $self->{'last_failure'};
+            return $self->reset();
         }
     }
 
