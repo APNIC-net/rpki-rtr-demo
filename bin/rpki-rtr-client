@@ -8,6 +8,7 @@ use File::Slurp qw(read_file write_file);
 
 use APNIC::RPKI::RTR::Client;
 use APNIC::RPKI::Validator::ASPA;
+use APNIC::RPKI::Validator::ROA qw(ROV_INVALID ROV_UNKNOWN ROV_VALID);
 
 sub usage
 {
@@ -221,6 +222,39 @@ sub main
         } else {
             print "Invalid\n";
         }
+    } elsif ($op_name eq 'route-origin-validation') {
+        my $client_json = read_file("$dir/client.json");
+        my $client =
+            APNIC::RPKI::RTR::Client->deserialise_json($client_json);
+
+        my $asn;
+        my $prefix;
+
+        while (@args) {
+            my $key = shift @args;
+            if ($key eq '--asn') {
+                $asn = shift @args;
+            } elsif ($key eq '--prefix') {
+                $prefix = shift @args;
+            } else {
+                error("Invalid argument '$key'");
+            }
+        }
+        if (not $asn or not $prefix) {
+            error("ASN and prefix must be provided.");
+        }
+
+        my $state = $client->{'state'};
+        APNIC::RPKI::Validator::ROA->validate($state, $asn, $prefix);
+
+        if ($res == ROV_UNKNOWN) {
+            print "UNKOWN ROV for $asn $prefix.";
+        } elsif ($res == ROV_INVALID) {
+            print "INVALID ROV for $asn $prefix.";
+        } else {
+            print "VALID ROV for $asn $prefix.";
+        }
+
     } else {
         error("Unknown operation name '$op_name'");
     }
