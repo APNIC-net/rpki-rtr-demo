@@ -6,6 +6,7 @@ use strict;
 use IO::Socket qw(AF_INET SOCK_STREAM SHUT_WR);
 use File::Slurp qw(read_file);
 use JSON::XS qw(decode_json);
+use List::Util qw(max);
 
 use APNIC::RPKI::RTR::Changeset;
 use APNIC::RPKI::RTR::State;
@@ -38,16 +39,26 @@ sub new
 
     my $session_id = int(rand(65535));
 
+    my @svs = @{$args{'supported_versions'} || [1, 2]};
+    for my $sv (@svs) {
+        if (not (($sv == 1) or ($sv == 2))) {
+            die "Version '$sv' is not supported.";
+        }
+    }
+
     my $self = {
-        server           => $server,
-        port             => $port,
-        data_dir         => $data_dir,
-        refresh_interval => $refresh_interval,
-        retry_interval   => $retry_interval,
-        expire_interval  => $expire_interval,
-        strict_send      => $args{'strict_send'},
-        strict_receive   => $args{'strict_receive'},
-        session_id       => $session_id,
+        server                => $server,
+        port                  => $port,
+        data_dir              => $data_dir,
+        refresh_interval      => $refresh_interval,
+        retry_interval        => $retry_interval,
+        expire_interval       => $expire_interval,
+        strict_send           => $args{'strict_send'},
+        strict_receive        => $args{'strict_receive'},
+        session_id            => $session_id,
+        supported_versions    => \@svs,
+        sv_lookup             => { map { $_ => 1 } @svs },
+        max_supported_version => (max @svs)
     };
 
     bless $self, $class;
@@ -96,11 +107,11 @@ sub run
 
             my $pdu = parse_pdu($client);
             my $version = $pdu->version();
-            if (not (($version == 1) or ($version == 2))) {
+            if (not $self->{'sv_lookup'}->{$version}) {
                 dprint("server: unsupported version '$version'");
                 my $err_pdu =
                     APNIC::RPKI::RTR::PDU::ErrorReport->new(
-                        version    => 2,
+                        version    => $self->{'max_supported_version'},
                         error_code => 4,
                     );
                 $client->send($err_pdu->serialise_binary());

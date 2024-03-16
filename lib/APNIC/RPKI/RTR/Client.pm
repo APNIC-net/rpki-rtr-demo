@@ -6,6 +6,7 @@ use strict;
 use File::Slurp qw(write_file);
 use IO::Socket qw(AF_INET SOCK_STREAM TCP_NODELAY IPPROTO_TCP);
 use JSON::XS qw(encode_json decode_json);
+use List::Util qw(max);
 use Math::BigInt;
 use Net::IP::XS qw(ip_inttobin ip_bintoip ip_compress_address);
 
@@ -26,20 +27,24 @@ sub new
     if (not $server) {
         die "A server must be provided.";
     }
-    my $version = $args{'version'} || 1;
-    if (not (($version == 1) or ($version == 2))) {
-        die "Version '$version' is invalid.";
-    } 
+    my @svs = @{$args{'supported_versions'} || [1, 2]};
+    for my $sv (@svs) {
+        if (not (($sv == 1) or ($sv == 2))) {
+            die "Version '$sv' is not supported.";
+        }
+    }
 
     my $port = $args{'port'} || 323;
 
     my $self = {
-        version        => $version,
-        server         => $server,
-        port           => $port,
-        debug          => $args{'debug'},
-        strict_send    => $args{'strict_send'},
-        strict_receive => $args{'strict_receive'},
+        supported_versions    => \@svs,
+        sv_lookup             => { map { $_ => 1 } @svs },
+        max_supported_version => (max @svs),
+        server                => $server,
+        port                  => $port,
+        debug                 => $args{'debug'},
+        strict_send           => $args{'strict_send'},
+        strict_receive        => $args{'strict_receive'},
     };
     bless $self, $class;
     return $self;
@@ -100,13 +105,16 @@ sub _close_socket
 
 sub _send_reset_query
 {
-    my ($self) = @_;
+    my ($self, $version) = @_;
 
     dprint("client: sending reset query");
     my $socket = $self->{'socket'};
     my $reset_query =
         APNIC::RPKI::RTR::PDU::ResetQuery->new(
-            version => $self->{'version'}
+            version =>
+                ((defined $version)
+                    ? $version
+                    : $self->{'max_supported_version'})
         );
     my $data = $reset_query->serialise_binary();
     my $res = $socket->send($data);
@@ -129,7 +137,7 @@ sub _send_serial_query
     dprint("client: serial number is '".$state->{'serial_number'}."'");
     my $serial_query =
         APNIC::RPKI::RTR::PDU::SerialQuery->new(
-            version       => $self->{'version'},
+            version       => $self->{'current_version'},
             session_id    => $state->session_id(),
             serial_number => $state->{'serial_number'},
         );
@@ -163,6 +171,10 @@ sub _receive_cache_response
         $self->_close_socket();
         if ($pdu->error_code() == 2) {  
             die "Server has no data";
+        } elsif ($pdu->error_code() == 4) {
+            my $max_version = $pdu->version();
+            die "Server does not support client version ".
+                "(maximum supported version is '$max_version')";
         } else {
             die "Got error response: ".$pdu->serialise_json();
         }
@@ -187,13 +199,13 @@ sub _process_responses
         dprint("client: processing response");
         my $pdu = parse_pdu($socket);
         dprint("client: processing response: got PDU: ".$pdu->serialise_json());
-        if ($pdu->version() != $self->{'version'}) {
+        if ($pdu->version() != $self->{'current_version'}) {
             if ($pdu->type() == 10) {
                 die "client: got error PDU with unexpected version";
             }
 	    my $err_pdu =
 		APNIC::RPKI::RTR::PDU::ErrorReport->new(
-		    version    => $self->{'version'},
+		    version    => $self->{'current_version'},
 		    error_code => 8,
 		);
 	    $socket->send($err_pdu->serialise_binary());
@@ -236,11 +248,25 @@ sub reset
 
     $self->_init_socket_if_not_exists();
     $self->_send_reset_query();
-    my $pdu = $self->_receive_cache_response();
-    my $version = $pdu->version();
-    if ($version != $self->{'version'}) {
-        die "Unhandled version '$version'.";
+    my $pdu = eval { $self->_receive_cache_response(); };
+    if (my $error = $@) {
+        delete $self->{'socket'};
+        if ($error =~ /maximum supported version is '(\d+)'/) {
+            my $version = $1;
+            if ($self->{'sv_lookup'}->{$version}) {
+                $self->_init_socket_if_not_exists();
+                $self->_send_reset_query($version);
+                # No point trying to catch the error here.
+                $pdu = $self->_receive_cache_response();
+            } else {
+                die "Unsupported server version '$version'";
+            }
+        } else {
+            die $error;
+        }
     }
+    my $version = $pdu->version();
+    $self->{'current_version'} = $version;
 
     my $state =
         APNIC::RPKI::RTR::State->new(
@@ -298,9 +324,8 @@ sub refresh
     $self->_send_serial_query();
     my $pdu = $self->_receive_cache_response();
     my $version = $pdu->version();
-    if ($version != $self->{'version'}) {
-        die "Unhandled version '$version'.";
-    }
+    $self->{'current_version'} = $version;
+    # todo: negotiation checks needed here.
 
     my ($res, $changeset, $other_pdu) = $self->_process_responses();
     if (not $res) {
@@ -369,7 +394,8 @@ sub serialise_json
         } qw(state eod)),
         (map {
             $self->{$_} ? ($_ => $self->{$_}) : ()
-        } qw(server port last_run last_failure version)),
+        } qw(server port last_run last_failure supported_versions
+             sv_lookup max_supported_version)),
     };
     return encode_json($data);
 }
