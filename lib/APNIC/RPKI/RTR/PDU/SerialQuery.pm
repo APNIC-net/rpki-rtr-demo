@@ -121,7 +121,7 @@ sub supported_in_version
 {
     my ($self, $version) = @_;
 
-    return (($version == 1) or ($version == 2));
+    return (($version >= 0) and ($version <= 2));
 }
 
 1;
