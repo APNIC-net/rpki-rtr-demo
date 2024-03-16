@@ -33,7 +33,7 @@ sub new
     my $self = {
         session_id    => $session_id,
         serial_number => $serial_number,
-        vrps          => {},
+        vrps          => $args{vrps},
         rks           => {},
         aspas         => {},
     };
