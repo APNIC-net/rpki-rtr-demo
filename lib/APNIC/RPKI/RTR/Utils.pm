@@ -59,7 +59,7 @@ sub dprint
 
     if ($ENV{'APNIC_DEBUG'}) {
         for my $msg (@msgs) {
-            print STDERR $msg."\n";
+            print STDERR "$$: $msg\n";
         }
     }
 }

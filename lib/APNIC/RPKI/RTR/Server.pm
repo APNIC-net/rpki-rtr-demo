@@ -103,6 +103,8 @@ sub run
         dprint("server: got client connection");
 
         if (my $child_pid = fork()) {
+            dprint("server: forking to handle connection ".
+                   "(new PID is $child_pid)");
             push @children_pids, $child_pid;
         } else {
             $self->handle_client_connection($client, $data_dir);
@@ -204,15 +206,6 @@ sub handle_client_connection {
                     $client->send($err_pdu->serialise_binary());
                     goto FINISHED;
                 }
-            }
-            if ($pdu->session_id() ne $self->session_id()) {
-                my $err_pdu =
-                    APNIC::RPKI::RTR::PDU::ErrorReport->new(
-                        version    => $version,
-                        error_code => 0,
-                    );
-                $client->send($err_pdu->serialise_binary());
-                goto FINISHED;
             }
 
             my $cr_pdu =
