@@ -55,6 +55,7 @@ sub new
         expire_interval       => $expire_interval,
         strict_send           => $args{'strict_send'},
         strict_receive        => $args{'strict_receive'},
+        no_session_id_check   => $args{'no_session_id_check'},
         session_id            => $session_id,
         supported_versions    => \@svs,
         sv_lookup             => { map { $_ => 1 } @svs },
@@ -171,14 +172,16 @@ sub run
                 }
             } elsif ($type == 1) {
                 dprint("server: got serial query");
-                if ($pdu->session_id() ne $self->session_id()) {
-                    my $err_pdu =
-                        APNIC::RPKI::RTR::PDU::ErrorReport->new(
-                            version    => $version,
-                            error_code => 0,
-                        );
-                    $client->send($err_pdu->serialise_binary());
-                    goto FINISHED;
+                if (not $self->{'no_session_id_check'}) {
+                    if ($pdu->session_id() ne $self->session_id()) {
+                        my $err_pdu =
+                            APNIC::RPKI::RTR::PDU::ErrorReport->new(
+                                version    => $version,
+                                error_code => 0,
+                            );
+                        $client->send($err_pdu->serialise_binary());
+                        goto FINISHED;
+                    }
                 }
 
                 my $cr_pdu =
