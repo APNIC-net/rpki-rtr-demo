@@ -42,9 +42,9 @@ my $pid;
 
     my $client =
         APNIC::RPKI::RTR::Client->new(
-            server  => '127.0.0.1',
-            port    => $port,
-            version => 2,
+            server             => '127.0.0.1',
+            port               => $port,
+            supported_versions => [2],
         );
 
     # Try to reset.  Server should respond with 'no data' error.

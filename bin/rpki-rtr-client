@@ -67,7 +67,7 @@ sub main
     } elsif ($op_name eq 'init') {
         my $server;
         my $port;
-        my $version;
+        my @supported_versions;
         while (@args) {
             my $key = shift @args;
             if ($key eq '--server') {
@@ -75,7 +75,8 @@ sub main
             } elsif ($key eq '--port') {
                 $port = shift @args;
             } elsif ($key eq '--version') {
-                $version = shift @args;
+                my @versions = split /,/, (shift @args);
+                push @supported_versions, @versions;
             } else {
                 error("Invalid argument '$key'");
             }
@@ -87,9 +88,9 @@ sub main
 
         my $client =
             APNIC::RPKI::RTR::Client->new(
-                version => $version,
-                server  => $server,
-                port    => $port,
+                supported_versions => \@supported_versions,
+                server             => $server,
+                port               => $port,
             );
 
         my $client_json = $client->serialise_json();

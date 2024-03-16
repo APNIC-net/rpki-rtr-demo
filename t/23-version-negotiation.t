@@ -11,12 +11,17 @@ use APNIC::RPKI::RTR::Changeset;
 
 use File::Temp qw(tempdir);
 
-use Test::More tests => 12;
+use Test::More tests => 3;
 
 my $pid;
 
 {
-    # Set up the server and the client.
+    # "If a cache which supports version C receives a query with
+    # Protocol Version Q < C, and the cache does not support versions
+    # <= Q, the cache MUST send an Error Report (Section 5.11) with
+    # Protocol Version C and Error Code 4 ("Unsupported Protocol
+    # Version") and disconnect the transport, as negotiation is
+    # hopeless."
 
     my $data_dir = tempdir(CLEANUP => 1);
     my $mnt =
@@ -40,13 +45,6 @@ my $pid;
         exit(0);
     }
     sleep(1);
-
-    # "If a cache which supports version C receives a query with
-    # Protocol Version Q < C, and the cache does not support versions
-    # <= Q, the cache MUST send an Error Report (Section 5.11) with
-    # Protocol Version C and Error Code 4 ("Unsupported Protocol
-    # Version") and disconnect the transport, as negotiation is
-    # hopeless."
 
     my $client =
         APNIC::RPKI::RTR::Client->new(
