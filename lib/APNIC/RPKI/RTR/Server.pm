@@ -171,6 +171,16 @@ sub run
                 }
             } elsif ($type == 1) {
                 dprint("server: got serial query");
+                if ($pdu->session_id() ne $self->session_id()) {
+                    my $err_pdu =
+                        APNIC::RPKI::RTR::PDU::ErrorReport->new(
+                            version    => $version,
+                            error_code => 0,
+                        );
+                    $client->send($err_pdu->serialise_binary());
+                    goto FINISHED;
+                }
+
                 my $cr_pdu =
                     APNIC::RPKI::RTR::PDU::CacheResponse->new(
                         version    => $version,
@@ -182,6 +192,23 @@ sub run
 
                 # Serial query.
                 my $last_serial_number = $pdu->serial_number();
+                if (not -e "$data_dir/changeset_$last_serial_number.json") {
+                    # Assuming that the absence of this changeset
+                    # means that truncation has occurred such that the
+                    # client can't be sure they'll get the right data.
+                    # (Strictly speaking, the absence of this
+                    # changeset might not be an issue, but checking
+                    # for the absence of the next changeset doesn't
+                    # work, so this is the next-best option.)
+                    my $cr_pdu =
+                        APNIC::RPKI::RTR::PDU::CacheReset->new(
+                            version => $version,
+                        );
+                    my $sb = $cr_pdu->serialise_binary();
+                    dprint("server: sending cache reset: ".$cr_pdu->serialise_json());
+                    $client->send($sb);
+                    goto FINISHED;
+                }
                 my @changeset_paths;
                 for (my $i = $last_serial_number + 1;; $i++) {
                     my $changeset_path = "$data_dir/changeset_$i.json";

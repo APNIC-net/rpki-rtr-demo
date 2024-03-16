@@ -163,6 +163,16 @@ sub _receive_cache_response
     dprint("client: received PDU: ".$pdu->serialise_json());
     if ($type == 3) {
         dprint("client: received cache response PDU");
+        my $state = $self->{'state'};
+        if ($state and ($pdu->session_id() != $state->{'session_id'})) {
+            my $err_pdu =
+                APNIC::RPKI::RTR::PDU::ErrorReport->new(
+                    version    => $self->{'current_version'},
+                    error_code => 0,
+                );
+            $socket->send($err_pdu->serialise_binary());
+            die "client: got PDU with unexpected session";
+        }
         delete $self->{'last_failure'};
         return $pdu;
     } elsif ($type == 10) {
@@ -219,6 +229,9 @@ sub _process_responses
             return (0, $changeset, $pdu);
         } elsif ($pdu->type() == 0) {
             $serial_notify = 1;
+        } elsif ($pdu->type() == 8) {
+            dprint("client: got cache reset PDU");
+            return (0, $changeset, $pdu);
         } else {
             warn "Unexpected PDU";
         }
@@ -328,6 +341,14 @@ sub refresh
     my ($res, $changeset, $other_pdu) = $self->_process_responses();
     if (not $res) {
         if ($other_pdu) {
+            if ($other_pdu->type() == 8) {
+                # Cache reset PDU: call reset.
+                $self->{'state'}    = undef;
+                $self->{'eod'}      = undef;
+                $self->{'last_run'} = undef;
+                $self->{'socket'}   = undef;
+                return $self->reset(1);
+            }
             warn $other_pdu->serialise_json(),"\n";
         }
         die "Failed to process cache responses";
