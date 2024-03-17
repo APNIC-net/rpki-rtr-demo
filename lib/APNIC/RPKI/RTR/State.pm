@@ -87,8 +87,8 @@ sub apply_changeset
             } else {
                 warn "Unexpected flags value, skipping";
             }
-        } elsif ($pdu->type() == 7) {
-            my $ski = $pdu->ski();
+        } elsif ($pdu->type() == 9) {
+            my $ski = Math::BigInt->new($pdu->ski());
             my $asn = $pdu->asn();
             my $spki = $pdu->spki();
             my $flags = $pdu->flags();

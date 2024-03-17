@@ -1,0 +1,70 @@
+{
+	"metadata": {
+		"buildmachine": "sng-vrp-gen1.rpki-client.org",
+		"buildtime": "2024-03-17T02:54:33Z",
+		"elapsedtime": 390,
+		"usertime": 324,
+		"systemtime": 79,
+		"roas": 199758,
+		"failedroas": 12,
+		"invalidroas": 0,
+		"spls": 1,
+		"failedspls": 0,
+		"invalidspls": 0,
+		"aspas": 96,
+		"failedaspas": 31,
+		"invalidaspas": 0,
+		"bgpsec_pubkeys": 3,
+		"certificates": 41946,
+		"invalidcertificates": 1,
+		"taks": 0,
+		"tals": 5,
+		"invalidtals": 0,
+		"talfiles": [
+			"/etc/rpki/afrinic.tal",
+			"/etc/rpki/apnic.tal",
+			"/etc/rpki/lacnic.tal",
+			"/etc/rpki/ripe.tal",
+			"/etc/rpki/arin.tal"
+		],
+		"manifests": 41945,
+		"failedmanifests": 133,
+		"crls": 41812,
+		"gbrs": 2,
+		"repositories": 93,
+		"vrps": 535910,
+		"uniquevrps": 524054,
+		"vsps": 1,
+		"uniquevsps": 1,
+		"vaps": 65,
+		"uniquevaps": 65,
+		"cachedir_new_files": 142,
+		"cachedir_del_files": 3,
+		"cachedir_del_dirs": 300,
+		"cachedir_superfluous_files": 35792,
+		"cachedir_del_superfluous_files": 233
+	},
+	"roas": [
+		{ "asn": 13335, "prefix": "1.0.0.0/24", "maxLength": 24, "ta": "apnic", "expires": 1711203467 },
+		{ "asn": 38803, "prefix": "1.0.4.0/24", "maxLength": 24, "ta": "apnic", "expires": 1711224809 },
+		{ "asn": 38803, "prefix": "1.0.4.0/22", "maxLength": 22, "ta": "apnic", "expires": 1711224809 },
+		{ "asn": 38803, "prefix": "1.0.5.0/24", "maxLength": 24, "ta": "apnic", "expires": 1711224809 },
+		{ "asn": 38803, "prefix": "1.0.6.0/24", "maxLength": 24, "ta": "apnic", "expires": 1711224809 },
+		{ "asn": 38803, "prefix": "1.0.7.0/24", "maxLength": 24, "ta": "apnic", "expires": 1711224809 },
+		{ "asn": 18144, "prefix": "1.0.64.0/18", "maxLength": 18, "ta": "apnic", "expires": 1711062383 }
+	],
+	"bgpsec_keys": [
+		{
+			"asn": 945,
+			"ski": "510F485D29A29DB7B515F9C478F8ED3CB7AA7D23",
+			"pubkey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhv5HEBGixUjKJTlenvcD1Axyi07rFdVY1KhN4vMPYy5y0Mx6zfaiEqJN27jK/l61xC36Vsaezd7eXAsZ1AEEsQ==",
+			"ta": "arin",
+			"expires": 1741576417
+		}
+	],
+	"aspas": [
+		{ "customer_asid": 945, "expires": 1710693852, "providers": [ 174, 1299, 3491, 6461, 6939, 7018, 7922, 9002, 32097 ] },
+		{ "customer_asid": 970, "expires": 1710705076, "providers": [ 54874 ] },
+		{ "customer_asid": 7480, "expires": 1710709245, "providers": [ 983, 6939, 41378, 50058, 138997 ] }
+	]
+}
