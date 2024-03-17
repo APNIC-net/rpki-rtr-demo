@@ -104,7 +104,7 @@ sub serialise_binary
                 $self->version(),
                 $self->type(),
                 0,
-                8 + (4 * $pc),
+                16 + (4 * $pc),
                 $self->flags(),
                 # Always IPv4 and IPv6.
                 3,
