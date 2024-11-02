@@ -10,7 +10,7 @@ jobs:
           git clone https://github.com/tanneberger/rtrlib
           cd rtrlib
           cmake -D CMAKE_BUILD_TYPE=Debug . && make && sudo make install
-          cd .. && rm -rf rtrlib
+          cd ..
           sudo cpanm . && sudo make clean
           export HAS_RTRCLIENT=1
           export HAS_ASPA_RTRCLIENT=1
