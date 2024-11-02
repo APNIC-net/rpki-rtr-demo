@@ -47,7 +47,7 @@ sub validate
 
                 $route_with_covering_prefix =
                     "AS$vrp_asn " . $vrp_prefix->prefix;
-                dprint("route-origin-validation: Found vrp " .
+                dprint("route-origin-validation: Found VRP " .
                     "($route_with_covering_prefix) with covering prefix.");
 
                 my %prefix_len_value = %{$vrp_address_value{$prefix_len}};
@@ -55,7 +55,7 @@ sub validate
                     if ($route_prefix->prefixlen <= $max_len
                             and $vrp_asn != 0
                             and $vrp_asn == $asn) {
-                        dprint("route-origin-validation: Found valid rov" .
+                        dprint("route-origin-validation: Found valid ROV " .
                             "($route_with_covering_prefix-$max_len).");
                         return ROV_VALID;
                     } else {
@@ -68,12 +68,12 @@ sub validate
 
     # A covering prefix of a non-matching ASN would be 'INVALID'.
     if ($route_with_covering_prefix) {
-        dprint("route-origin-validation: Found invalid rov " .
+        dprint("route-origin-validation: Found invalid ROV " .
             "($route_with_covering_prefix).");
         $result = ROV_INVALID;
     }
 
-    dprint("route-origin-validation: No vrp with covering prefix.");
+    dprint("route-origin-validation: No VRP with covering prefix.");
     return $result;
 }
 

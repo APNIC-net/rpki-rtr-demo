@@ -85,7 +85,9 @@ sub main
         if (not $server or not $port) {
             error("Server and port must be provided.");
         }
-        $version ||= 2;
+        if (not @supported_versions) {
+            push @supported_versions, 2;
+        }
 
         my $client =
             APNIC::RPKI::RTR::Client->new(
@@ -245,14 +247,15 @@ sub main
         }
 
         my $state = $client->{'state'};
-        APNIC::RPKI::Validator::ROA->validate($state, $asn, $prefix);
+        my $res =
+            APNIC::RPKI::Validator::ROA->validate($state, $asn, $prefix);
 
         if ($res == ROV_UNKNOWN) {
-            print "UNKOWN ROV for $asn $prefix.";
+            print "Unknown\n";
         } elsif ($res == ROV_INVALID) {
-            print "INVALID ROV for $asn $prefix.";
+            print "Invalid\n";
         } else {
-            print "VALID ROV for $asn $prefix.";
+            print "Valid\n";
         }
 
     } else {
