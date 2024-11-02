@@ -11,7 +11,8 @@ jobs:
           export PATH=$PATH:/root/.cargo/bin
           git clone https://github.com/bgp/stayrtr
           cd stayrtr
-          GOPATH=/usr/local go install cmd/stayrtr/stayrtr.go
+          go install cmd/stayrtr/stayrtr.go
+          export PATH=$PATH:/root/go/bin
           git clone https://github.com/tanneberger/rtrlib
           cd rtrlib
           git checkout aspa-fixes
