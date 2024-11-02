@@ -6,9 +6,12 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - run: |
-          sudo apt-get update && sudo apt-get install gcc build-essential cpanminus cmake git libssh-dev rustc cargo
+          sudo apt-get update && sudo apt-get install gcc build-essential cpanminus cmake git libssh-dev rustc cargo golang
           cargo install rtrtr
           export PATH=$PATH:/root/.cargo/bin
+          git clone https://github.com/bgp/stayrtr
+          cd stayrtr
+          GOPATH=/usr/local go install cmd/stayrtr/stayrtr.go
           git clone https://github.com/tanneberger/rtrlib
           cd rtrlib
           git checkout aspa-fixes
@@ -23,5 +26,6 @@ jobs:
           export HAS_RTRCLIENT=1
           export HAS_ASPA_RTRCLIENT=1
           export HAS_RTRTR=1
+          export HAS_STAYRTR=1
           export APNIC_DEBUG=1
           perl Makefile.PL && make && make test
