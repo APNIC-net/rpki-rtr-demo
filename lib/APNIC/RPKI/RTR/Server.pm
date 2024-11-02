@@ -190,8 +190,6 @@ sub handle_client_connection
             $res = 0;
             goto FINISHED;
         }
-        use Data::Dumper;
-        print Dumper([$client, $client->peerport()]);
         $versions->{$client->peerport()} = $version;
         my $type = $pdu->type();
         if ($type == PDU_RESET_QUERY()) {

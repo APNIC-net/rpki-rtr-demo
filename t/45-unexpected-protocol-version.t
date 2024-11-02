@@ -82,7 +82,7 @@ my $pid;
     # Try to refresh, confirm that it fails due to an unexpected
     # protocol version.
 
-    eval { $client->refresh(1, 1) };
+    eval { $client->refresh(1, 0, 1) };
     $error = $@;
     ok($error, 'Unable to refresh client');
     like($error, qr/got PDU with unexpected version/,

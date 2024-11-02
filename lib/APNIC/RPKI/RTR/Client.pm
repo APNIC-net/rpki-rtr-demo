@@ -47,6 +47,7 @@ sub new
         debug                 => $args{'debug'},
         strict_send           => $args{'strict_send'},
         strict_receive        => $args{'strict_receive'},
+        state_path            => $args{'state_path'}, 
     };
     bless $self, $class;
     return $self;
@@ -67,6 +68,9 @@ sub _init_socket
         PeerHost => $server,
         PeerPort => $port,
     );
+    if (not $socket) {
+        die "Unable to create socket ($server:$port): $!";
+    }
     $socket->setsockopt(IPPROTO_TCP, TCP_NODELAY, 1);
 
     if (not $socket) {
@@ -253,7 +257,7 @@ sub _process_responses
 
 sub reset
 {
-    my ($self, $force) = @_;
+    my ($self, $force, $persist) = @_;
 
     if (not $force) {
         my $last_failure = $self->{'last_failure'};
@@ -264,7 +268,12 @@ sub reset
                 my $min_retry_time = $last_failure + $retry_interval;
                 if (time() < $min_retry_time) {
                     dprint("client: not retrying, retry interval not reached");
-                    return;
+                    if ($persist) {
+                        my $sleep = $min_retry_time - time();
+                        dprint("client: sleeping for ${sleep}s before retrying");
+                        sleep($sleep);
+                        return $self->reset($force, $persist);
+                    }
                 }
             }
         }
@@ -317,14 +326,22 @@ sub reset
         $state->{'serial_number'} = $other_pdu->serial_number();
     }
 
-    $self->_close_socket();
+    if ($persist) {
+        if (my $sp = $self->{'state_path'}) {
+            my $data = $self->serialise_json();
+            write_file($sp, $data);
+        }
+        return $self->refresh(0, $persist);
+    } else {
+        $self->_close_socket();
+    }
 
     return 1;
 }
 
 sub refresh
 {
-    my ($self, $force, $version_override) = @_;
+    my ($self, $force, $persist, $version_override) = @_;
 
     if (not $force) {
         my $last_failure = $self->{'last_failure'};
@@ -334,6 +351,32 @@ sub refresh
             my $min_retry_time = $last_failure + $retry_interval;
             if (time() < $min_retry_time) {
                 dprint("client: not retrying, retry interval not reached");
+                if ($persist) {
+                    my $current_time = time();
+                    my $sleep = $min_retry_time - $current_time;
+                    if (my $socket = $self->{'socket'}) {
+                        dprint("client: blocking for ${sleep}s before refresh");
+                        my $select = IO::Select->new();
+                        $select->add($socket);
+                        my ($ready) = $select->can_read($sleep);
+                        my $wake_time = time();
+                        my $diff_time = $wake_time - $current_time;
+                        dprint("client: blocked for ${diff_time}s ".
+                               "before server readable");
+                        $select->remove($socket);
+                        if ($ready) {
+                            my $pdu = parse_pdu($socket);
+                            if ($pdu->type() != PDU_SERIAL_NOTIFY()) {
+                                die "Expected serial notify PDU";
+                            }
+                            return $self->refresh(1, $persist,
+                                                  $version_override);
+                        }
+                    } else {
+                        die "Cannot call persistent refresh ".
+                            "without there being a socket";
+                    }
+                }
                 return;
             }
         }
@@ -343,6 +386,32 @@ sub refresh
             my $min_refresh_time = $last_run + $refresh_interval;
             if (time() < $min_refresh_time) {
                 dprint("client: not refreshing, refresh interval not reached");
+                if ($persist) {
+                    my $current_time = time();
+                    my $sleep = $min_refresh_time - $current_time;
+                    if (my $socket = $self->{'socket'}) {
+                        dprint("client: blocking for ${sleep}s before refresh");
+                        my $select = IO::Select->new();
+                        $select->add($socket);
+                        my ($ready) = $select->can_read($sleep);
+                        my $wake_time = time();
+                        my $diff_time = $wake_time - $current_time;
+                        dprint("client: blocked for ${diff_time}s ".
+                               "before server readable");
+                        $select->remove($socket);
+                        if ($ready) {
+                            my $pdu = parse_pdu($socket);
+                            if ($pdu->type() != PDU_SERIAL_NOTIFY()) {
+                                die "Expected serial notify PDU";
+                            }
+                            return $self->refresh(1, $persist,
+                                                  $version_override);
+                        }
+                    } else {
+                        die "Cannot call persistent refresh ".
+                            "without there being a socket";
+                    }
+                }
                 return;
             }
         }
@@ -382,7 +451,15 @@ sub refresh
         $self->{'state'}->{'serial_number'} = $other_pdu->serial_number();
     }
 
-    $self->_close_socket();
+    if ($persist) {
+        if (my $sp = $self->{'state_path'}) {
+            my $data = $self->serialise_json();
+            write_file($sp, $data);
+        }
+        return $self->refresh(0, $persist, $version_override);
+    } else {
+        $self->_close_socket();
+    }
 
     return 1;
 }
