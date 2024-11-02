@@ -58,7 +58,8 @@ sub apply_changeset
     } else {
         $state = APNIC::RPKI::RTR::State->new(session_id => 1);
     }
-    $state->apply_changeset($changeset);
+    my $error_pdu = $state->apply_changeset($changeset, 0, 1);
+
     my $new_encoded = $state->serialise_json();
     write_file("$data_dir/snapshot.json", $new_encoded);
 

@@ -15,6 +15,10 @@ sub new
     my $class = shift;
     my %args = @_;
 
+    if (not defined $args{'serial_number'}) {
+        die "No serial number provided";
+    }
+
     my $self = {
         version          => $args{'version'},
         session_id       => $args{'session_id'},
