@@ -10,11 +10,13 @@ use APNIC::RPKI::RTR::PDU::IPv4Prefix;
 use APNIC::RPKI::RTR::Changeset;
 
 use File::Temp qw(tempdir);
+use List::MoreUtils qw(before);
 use Test::More;
 
-# Per https://github.com/tanneberger/rtrlib.
+# Per https://github.com/tanneberger/rtrlib
+# at ba4bef884dbb638548e8c17679f9a5595da741fd.
 if ($ENV{'HAS_ASPA_RTRCLIENT'}) {
-    plan tests => 3;
+    plan tests => 4;
 } else {
     plan skip_all => 'ASPA rtrclient not available';
 }
@@ -76,22 +78,23 @@ my $pid;
             ? ""
             : " 2>/dev/null";
     my @raw_res =
-        `rtrclient -a -p tcp 127.0.0.1 $port $error_output`;
+        `rtrclient -e -a -p tcp 127.0.0.1 $port $error_output`;
     my @res =
-        map { s/\s+/ /g; $_ }
-        grep { $_ and /^\s*\+/ }
-        map { s/\s*//; chomp; $_ }
+        map { s/\s+/ /g; s/^\s*//; s/\s*$//; $_ }
+        grep { not /HOST/ }
+        before { /Sync done/ }
             @raw_res;
     if ($ENV{'APNIC_DEBUG'}) {
         use Data::Dumper;
         diag Dumper(\@res);
     }
-    my $header = shift @res;
-    is(@res, 2, 'Got two lines in rtrclient output');
+    is(@res, 3, 'Got three lines in rtrclient output');
     is($res[0], '+ 1.0.0.0 24 - 32 4608',
         'Got correct VRP line in rtrclient output');
-    is($res[1], '+ ASPA 4608 => [ 1, 2, 3, 4 ]',
-        'Got correct ASPA line in rtrclient output');
+    is($res[1], 'Customer ASN: 4608',
+        'Got correct first ASPA line in rtrclient output');
+    is($res[2], 'Provider ASNs: 1, 2, 3, 4',
+        'Got correct second ASPA line in rtrclient output');
 
     my $res = kill('TERM', $pid);
 }
