@@ -118,6 +118,7 @@ my $pid;
             max_length    => 8
         );
     $changeset->add_pdu($pdu2);
+    $mnt->apply_changeset($changeset);
 
     eval { $client->refresh(1) };
     $error = $@;

@@ -301,7 +301,12 @@ sub reset
         }
         die "Failed to process cache responses";
     } else {
-        $state->apply_changeset($changeset);
+        my $error_pdu = $state->apply_changeset($changeset, $version);
+        if ($error_pdu and ref $error_pdu) {
+            my $socket = $self->{'socket'};
+            $socket->send($error_pdu->serialise_binary());
+            die "client: got withdrawal of unknown record";
+        }
         $self->{'eod'} = $other_pdu;
         $self->{'last_run'} = time();
         $state->{'serial_number'} = $other_pdu->serial_number();
@@ -360,7 +365,12 @@ sub refresh
         }
         die "Failed to process cache responses";
     } else {
-        $self->{'state'}->apply_changeset($changeset);
+        my $error_pdu = $self->{'state'}->apply_changeset($changeset, $version);
+        if ($error_pdu and ref $error_pdu) {
+            my $socket = $self->{'socket'};
+            $socket->send($error_pdu->serialise_binary());
+            die "client: got withdrawal of unknown record";
+        }
         $self->{'eod'} = $other_pdu;
         $self->{'last_run'} = time();
         $self->{'state'}->{'serial_number'} = $other_pdu->serial_number();

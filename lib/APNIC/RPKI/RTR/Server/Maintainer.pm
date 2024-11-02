@@ -14,7 +14,7 @@ sub new
     my $class = shift;
     my %args = @_;
     my $self = {
-        data_dir => $args{'data_dir'}
+        data_dir => $args{'data_dir'},
     };
     bless $self, $class;
     return $self;

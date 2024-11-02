@@ -13,7 +13,7 @@ use APNIC::RPKI::RTR::PDU::Utils qw(parse_pdu);
 
 use File::Temp qw(tempdir);
 
-use Test::More tests => 2;
+use Test::More tests => 3;
 
 my $pid;
 
@@ -62,14 +62,30 @@ my $pid;
     $changeset->add_pdu($pdu);
     $mnt->apply_changeset($changeset);
 
-    # Treat all PDUs as if they are unsupported, and then try to
-    # reset.
-
-    %APNIC::RPKI::RTR::Changeset::ADDABLE_PDU_TYPES = ();
     eval { $client->reset() };
     my $error = $@;
+    ok((not $error), 'Reset client successfully');
+
+    my $changeset_2 = APNIC::RPKI::RTR::Changeset->new();
+    $pdu =
+        APNIC::RPKI::RTR::PDU::IPv4Prefix->new(
+            version       => 1,
+            flags         => 0,
+            asn           => 4608,
+            address       => '2.0.0.0',
+            prefix_length => 24,
+            max_length    => 32
+        );
+    $changeset_2->add_pdu($pdu);
+    $mnt->apply_changeset($changeset_2);
+
+    # Try to refresh, confirm that it fails due to the unexpected
+    # withdrawal.
+
+    eval { $client->refresh(1) };
+    $error = $@;
     ok($error, 'Unable to reset client');
-    like($error, qr/unexpected type/,
+    like($error, qr/got withdrawal of unknown record/,
         'Got correct error message');
 
     my $res = kill('TERM', $pid);

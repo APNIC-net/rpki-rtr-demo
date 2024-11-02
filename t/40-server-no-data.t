@@ -70,7 +70,7 @@ my $pid;
     # yields a "no data" error.
     unlink $server->{'data_dir'}.'/snapshot.json' or die $!;
     eval { $client->refresh(1) };
-    my $error = $@;
+    $error = $@;
     ok($error, 'No data on server side');
     like($error, qr/Server has no data/,
         'Got expected error message');

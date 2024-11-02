@@ -32,11 +32,11 @@ sub new
     my $serial_number = $args{'serial_number'};
 
     my $self = {
-        session_id    => $session_id,
-        serial_number => $serial_number,
-        vrps          => $args{vrps},
-        rks           => {},
-        aspas         => {},
+        session_id      => $session_id,
+        serial_number   => $serial_number,
+        vrps            => $args{vrps},
+        rks             => {},
+        aspas           => {},
     };
     bless $self, $class;
 
@@ -59,7 +59,7 @@ sub session_id
 
 sub apply_changeset
 {
-    my ($self, $changeset) = @_;
+    my ($self, $changeset, $version) = @_;
 
     my @pdus = @{$changeset->{'pdus'}};
     my $pdu_count = scalar @pdus;
@@ -78,6 +78,17 @@ sub apply_changeset
                 $self->{'vrps'}->{$asn}->{$addr}->{$length}->{$max_length} = 1;
             } elsif ($flags == 0) {
                 dprint("state: removing IP prefix: $asn, $addr/$length-$max_length");
+                if (not exists $self->{'vrps'}->{$asn}->{$addr}->{$length}->{$max_length}) {
+                    dprint("state: withdrawal of unknown record");
+                    my $error_pdu =
+			APNIC::RPKI::RTR::PDU::ErrorReport->new(
+			    version    => $version,
+			    error_code => ERR_WITHDRAWAL_OF_UNKNOWN_RECORD(),
+			);
+                    return $error_pdu;
+                } else {
+                    dprint("state: withdrawal of known record");
+                }
 		delete $self->{'vrps'}->{$asn}->{$addr}->{$length}->{$max_length};
 		if (keys %{$self->{'vrps'}->{$asn}->{$addr}->{$length}} == 0) {
 		    delete $self->{'vrps'}->{$asn}->{$addr}->{$length};
@@ -100,6 +111,17 @@ sub apply_changeset
             if ($flags == 1) {
                 $self->{'rks'}->{$asn}->{$ski->bstr()}->{$spki} = 1; 
             } elsif ($flags == 0) {
+                if (not exists $self->{'rks'}->{$asn}->{$ski->bstr()}->{$spki}) {
+                    dprint("state: withdrawal of unknown record");
+                    my $error_pdu =
+			APNIC::RPKI::RTR::PDU::ErrorReport->new(
+			    version    => $version,
+			    error_code => ERR_WITHDRAWAL_OF_UNKNOWN_RECORD(),
+			);
+                    return $error_pdu;
+                } else {
+                    dprint("state: withdrawal of known record");
+                }
 		delete $self->{'rks'}->{$asn}->{$ski->bstr()}->{$spki};
 		if (keys %{$self->{'rks'}->{$asn}->{$ski->bstr()}} == 0) {
 		    delete $self->{'rks'}->{$asn}->{$ski->bstr()};
@@ -118,6 +140,17 @@ sub apply_changeset
             if ($flags == 1) {
                 $self->{'aspas'}->{$customer_asn} = \@provider_asns;
             } else {
+                if (not exists $self->{'aspas'}->{$customer_asn}) {
+                    dprint("state: withdrawal of unknown record");
+                    my $error_pdu =
+			APNIC::RPKI::RTR::PDU::ErrorReport->new(
+			    version    => $version,
+			    error_code => ERR_WITHDRAWAL_OF_UNKNOWN_RECORD(),
+			);
+                    return $error_pdu;
+                } else {
+                    dprint("state: withdrawal of known record");
+                }
                 delete $self->{'aspas'}->{$customer_asn};
             }
         } else {
