@@ -57,6 +57,7 @@ sub new
         strict_send           => $args{'strict_send'},
         strict_receive        => $args{'strict_receive'},
         no_session_id_check   => $args{'no_session_id_check'},
+        no_ss_exists_check    => $args{'no_ss_exists_check'},
         session_id            => $session_id,
         supported_versions    => \@svs,
         sv_lookup             => { map { $_ => 1 } @svs },
@@ -124,15 +125,18 @@ sub run
     return 1;
 }
 
-sub handle_client_connection {
+sub handle_client_connection
+{
     my ($self, $client, $data_dir) = @_;
+
+    my $version = $self->{'max_supported_version'};
     eval {
         my $client_address = $client->peerhost();
         my $client_port = $client->peerport();
         dprint("$$ server: connection from $client_address:$client_port");
 
         my $pdu = parse_pdu($client);
-        my $version = $pdu->version();
+        $version = $pdu->version();
         if (not $self->{'sv_lookup'}->{$version}) {
             dprint("$$ server: unsupported version '$version'");
             my $err_pdu =
@@ -148,7 +152,7 @@ sub handle_client_connection {
             dprint("$$ server: got reset query");
             my $ss_path = "$data_dir/snapshot.json";
             my $has_snapshot = -e $ss_path;
-            if (not $has_snapshot) {
+            if (not $self->{'no_ss_exists_check'} and not $has_snapshot) {
                 dprint("$$ server: no snapshot");
                 my $err_pdu =
                     APNIC::RPKI::RTR::PDU::ErrorReport->new(
@@ -287,6 +291,12 @@ sub handle_client_connection {
         }
     };
     if (my $error = $@) {
+        my $err_pdu =
+            APNIC::RPKI::RTR::PDU::ErrorReport->new(
+                version    => $version,
+                error_code => ERR_INTERNAL_ERROR(),
+            );
+        $client->send($err_pdu->serialise_binary());
         warn("server: failed to handle request/connection: $error");
     }
     FINISHED: {
