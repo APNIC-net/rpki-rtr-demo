@@ -11,6 +11,7 @@ jobs:
           cd rtrlib
           git checkout aspa-fixes
           sed -i 's/case EOD:/case EOD:\n;/' rtrlib/rtr/packets.c
+          rm doxygen/examples/rtr_mgr.c
           cmake -D CMAKE_BUILD_TYPE=Debug . && make && sudo make install
           cd .. && rm -rf rtrlib
           export LD_LIBRARY_PATH=/usr/local/lib:/usr/local/lib64
