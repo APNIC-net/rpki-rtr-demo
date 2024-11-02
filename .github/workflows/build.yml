@@ -6,13 +6,9 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - run: |
-          sudo apt-get update && sudo apt-get install gcc build-essential cpanminus cmake git libssh-dev rustc cargo golang
+          sudo apt-get update && sudo apt-get install gcc build-essential cpanminus cmake git libssh-dev rustc cargo stayrtr
           cargo install rtrtr
           export PATH=$PATH:/root/.cargo/bin
-          git clone https://github.com/bgp/stayrtr
-          cd stayrtr
-          go install cmd/stayrtr/stayrtr.go
-          export PATH=$PATH:/root/go/bin
           git clone https://github.com/tanneberger/rtrlib
           cd rtrlib
           git checkout aspa-fixes
