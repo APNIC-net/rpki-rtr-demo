@@ -13,6 +13,8 @@ use File::Temp qw(tempdir);
 use List::MoreUtils qw(before);
 use Test::More;
 
+plan skip_all => 'ASPA rtrlib not yet updated for 16';
+
 # Per https://github.com/tanneberger/rtrlib
 # at ba4bef884dbb638548e8c17679f9a5595da741fd.
 if ($ENV{'HAS_ASPA_RTRCLIENT'}) {

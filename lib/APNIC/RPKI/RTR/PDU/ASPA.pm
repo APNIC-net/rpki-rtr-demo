@@ -27,18 +27,12 @@ sub new
     if (not defined $args{'flags'}) {
         die "Expected flags";
     }
-    # Once servers all support 11, which requires that the AFI flags
-    # be set, this can be restored.  (stayrtr sets this value to 0.)
-    # if (not $args{'afi_flags'}) {
-    #    die "Expected AFI flags";
-    # }
 
     my $self = {
         version       => $args{'version'},
         flags         => $args{'flags'},
         customer_asn  => $args{'customer_asn'},
         provider_asns => $args{'provider_asns'},
-        afi_flags     => $args{'afi_flags'},
     };
     bless $self, $class;
     return $self;
@@ -101,15 +95,12 @@ sub serialise_binary
     }
     my $pc = scalar @provider_asns;
 
-    return pack("CCnNCCnNN$pc",
+    return pack("CCCCNNN$pc",
                 $self->version(),
                 $self->type(),
-                0,
-                16 + (4 * $pc),
                 $self->flags(),
-                # Always IPv4 and IPv6.
-                3,
-                $pc,
+                0,
+                12 + (4 * $pc),
                 $self->customer_asn(),
                 @{$self->provider_asns()});
 }
@@ -118,17 +109,18 @@ sub deserialise_binary
 {
     my ($class, $version, $session_id, $length, $socket) = @_;
 
-    my $buf = recv_all($socket, 8);
-    my ($flags, $afi_flags, $provider_count, $customer_asn) =
-	unpack("CCnN", $buf);
-    $buf = recv_all($socket, $provider_count * 4);
+    my $buf = recv_all($socket, 4);
+    my ($customer_asn) = unpack("N", $buf);
+    my $provider_bytes = $length - 12;
+    $buf = recv_all($socket, $provider_bytes);
+    my $provider_count = $provider_bytes / 4;
     my @provider_asns = unpack("N$provider_count", $buf);
+    my $flags = ($session_id >> 8) & 0xFF;
 
     return
         APNIC::RPKI::RTR::PDU::ASPA->new(
             version       => $version,
             flags         => $flags,
-            afi_flags     => $afi_flags,
             customer_asn  => $customer_asn,
             provider_asns => \@provider_asns,
         );
@@ -184,7 +176,6 @@ sub equals
     }
 
     return (($self->customer_asn() == $other->customer_asn())
-                and ($self->afi_flags() == $other->afi_flags())
                 and ($self->flags() == $other->flags()));
 }
 
