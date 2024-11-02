@@ -76,7 +76,7 @@ my $pid;
             ? ""
             : " 2>/dev/null";
     my @raw_res =
-        `rtrclient -e -a -p tcp 127.0.0.1 $port $error_output`;
+        `rtrclient -a -p tcp 127.0.0.1 $port $error_output`;
     my @res =
         map { s/\s+/ /g; $_ }
         grep { $_ and /^\s*\+/ }
