@@ -3,6 +3,7 @@
 use warnings;
 use strict;
 
+use APNIC::RPKI::RTR::Constants;
 use APNIC::RPKI::RTR::PDU::Utils qw(parse_pdu);
 use APNIC::RPKI::RTR::PDU::IPv4Prefix;
 
@@ -68,11 +69,11 @@ use Test::More tests => 91;
         ),
         APNIC::RPKI::RTR::PDU::ErrorReport->new(
             version       => 1,
-            error_code    => 2,
+            error_code    => ERR_NO_DATA(),
         ),
         APNIC::RPKI::RTR::PDU::ErrorReport->new(
             version          => 1,
-            error_code       => 2,
+            error_code       => ERR_NO_DATA(),
             error_text       => 'asdfasdfasdf',
             encapsulated_pdu =>
                 APNIC::RPKI::RTR::PDU::SerialQuery->new(

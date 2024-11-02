@@ -59,7 +59,7 @@ my $pid;
         'Got expected error message');
 
     # "If a cache which supports version C receives a query with
-    # Protocol Version Q < C, and the ache can support version Q, the
+    # Protocol Version Q < C, and the cache can support version Q, the
     # cache MUST downgrade to protocol version Q, [RFC6810] or
     # [RFC8210], and respond with a Cache Response (Section 5.5) of
     # that Protocol Version, Q, and the RPKI-Rtr session is considered

@@ -169,7 +169,7 @@ sub _receive_cache_response
             my $err_pdu =
                 APNIC::RPKI::RTR::PDU::ErrorReport->new(
                     version    => $self->{'current_version'},
-                    error_code => 0,
+                    error_code => ERR_CORRUPT_DATA(),
                 );
             $socket->send($err_pdu->serialise_binary());
             die "client: got PDU with unexpected session";
