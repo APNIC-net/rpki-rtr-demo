@@ -95,12 +95,20 @@ my @pids;
 
     # Run rtrclient.
 
+    my $error_output =
+        $ENV{'APNIC_DEBUG'}
+            ? ""
+            : " 2>/dev/null";
     my @raw_res =
-        `rtrclient -e tcp 127.0.0.1 $port tcp 127.0.0.1 $port2 2>/dev/null`;
+        `rtrclient -e tcp 127.0.0.1 $port tcp 127.0.0.1 $port2 $error_output`;
     my @res =
         grep { $_ }
         map { s/\s*//; chomp; $_ }
             @raw_res;
+    if ($ENV{'APNIC_DEBUG'}) {
+        use Data::Dumper;
+        diag Dumper(\@res);
+    }
     my $header = shift @res;
     @res = sort @res;
     is(@res, 2, 'Got two VRP lines in rtrclient output');

@@ -71,13 +71,22 @@ my $pid;
     # Run rtrclient.  (The branch that supports ASPA records doesn't
     # print them when -e is set, so rely on the '+' lines instead.)
 
+    my $error_output =
+        $ENV{'APNIC_DEBUG'}
+            ? ""
+            : " 2>/dev/null";
     my @raw_res =
-        `rtrclient -e -a -p tcp 127.0.0.1 $port 2>/dev/null`;
+        `rtrclient -e -a -p tcp 127.0.0.1 $port $error_output`;
     my @res =
         map { s/\s+/ /g; $_ }
         grep { $_ and /^\s*\+/ }
         map { s/\s*//; chomp; $_ }
             @raw_res;
+    if ($ENV{'APNIC_DEBUG'}) {
+        use Data::Dumper;
+        diag Dumper(\@res);
+    }
+    my $header = shift @res;
     is(@res, 2, 'Got two lines in rtrclient output');
     is($res[0], '+ 1.0.0.0 24 - 32 4608',
         'Got correct VRP line in rtrclient output');

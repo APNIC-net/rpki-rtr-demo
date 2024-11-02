@@ -68,6 +68,10 @@ my $pid;
         grep { $_ }
         map { s/\s*//; chomp; $_ }
             `rtrclient -e tcp 127.0.0.1 $port $error_output`;
+    if ($ENV{'APNIC_DEBUG'}) {
+        use Data::Dumper;
+        diag Dumper(\@res);
+    }
     my $header = shift @res;
     is(@res, 1, 'Got one VRP line in rtrclient output');
     is($res[0], '1.0.0.0/24-32 AS 4608',
