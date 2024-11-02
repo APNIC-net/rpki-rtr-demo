@@ -321,7 +321,7 @@ sub reset
 
 sub refresh
 {
-    my ($self, $force) = @_;
+    my ($self, $force, $version_override) = @_;
 
     if (not $force) {
         my $last_failure = $self->{'last_failure'};
@@ -349,7 +349,7 @@ sub refresh
     $self->_send_serial_query();
     my $pdu = $self->_receive_cache_response();
     my $version = $pdu->version();
-    $self->{'current_version'} = $version;
+    $self->{'current_version'} = $version_override || $version;
     # todo: negotiation checks needed here.
 
     my ($res, $changeset, $other_pdu) = $self->_process_responses();

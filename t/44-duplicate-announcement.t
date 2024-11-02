@@ -84,7 +84,7 @@ my $pid;
 
     eval { $client->refresh(1) };
     $error = $@;
-    ok($error, 'Unable to reset client');
+    ok($error, 'Unable to refresh client');
     like($error, qr/Duplicate Announcement Received/,
         'Got correct error message');
 
