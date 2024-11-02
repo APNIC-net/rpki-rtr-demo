@@ -300,6 +300,14 @@ sub handle_client_connection
                 dprint("$$ server: sending end of data PDU: ".$eod_pdu->serialise_json());
                 $client->send($eod_pdu->serialise_binary());
             }
+        } else {
+            my $err_pdu =
+                APNIC::RPKI::RTR::PDU::ErrorReport->new(
+                    version    => $version,
+                    error_code => ERR_INVALID_REQUEST(),
+                );
+            $client->send($err_pdu->serialise_binary());
+            warn("server: invalid request from client");
         }
     };
     if (my $error = $@) {
