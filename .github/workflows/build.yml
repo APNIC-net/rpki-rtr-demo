@@ -6,7 +6,9 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - run: |
-          sudo apt-get update && sudo apt-get install gcc build-essential cpanminus cmake git libssh-dev
+          sudo apt-get update && sudo apt-get install gcc build-essential cpanminus cmake git libssh-dev rustc cargo
+          cargo install rtrtr
+          export PATH=$PATH:/root/.cargo/bin
           git clone https://github.com/tanneberger/rtrlib
           cd rtrlib
           git checkout aspa-fixes
@@ -20,5 +22,6 @@ jobs:
           sudo cpanm . && sudo make clean
           export HAS_RTRCLIENT=1
           export HAS_ASPA_RTRCLIENT=1
+          export HAS_RTRTR=1
           export APNIC_DEBUG=1
           perl Makefile.PL && make && make test
