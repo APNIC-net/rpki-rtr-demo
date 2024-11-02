@@ -143,7 +143,7 @@ my @pids;
         'Got correct ASPA line in rtrclient output (3)');
     is($res[3], 'Customer ASN: 4608',
         'Got correct ASPA line in rtrclient output (4)');
-    is($res[5], 'Provider ASNs: 1, 2, 3, 4',
+    is($res[4], 'Provider ASNs: 1, 2, 3, 4',
         'Got correct ASPA line in rtrclient output (5)');
     is($res[5], 'Provider ASNs: 4, 5, 6, 7',
         'Got correct ASPA line in rtrclient output (6)');
