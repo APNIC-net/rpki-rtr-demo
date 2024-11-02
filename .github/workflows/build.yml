@@ -6,6 +6,12 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - run: |
-          sudo apt-get update && sudo apt-get install build-essential cpanminus 
+          sudo apt-get update && sudo apt-get install build-essential cpanminus cmake git libssh-dev
+          git clone https://github.com/tanneberger/rtrlib
+          cd rtrlib
+          cmake -D CMAKE_BUILD_TYPE=Debug . && make && sudo make install
+          cd .. && rm -rf rtrlib
           sudo cpanm . && sudo make clean
+          export HAS_RTRCLIENT=1
+          export HAS_ASPA_RTRCLIENT=1
           perl Makefile.PL && make && make test
