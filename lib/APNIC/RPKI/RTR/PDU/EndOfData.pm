@@ -88,7 +88,7 @@ sub serialise_binary
     my ($self) = @_;
 
     if ($self->version() == 0) {
-        return pack("CCnNNNNN",
+        return pack("CCnNN",
                     $self->version(),
                     $self->type(),
                     $self->session_id(),
