@@ -70,22 +70,22 @@ my $pid;
     $pdu =
         APNIC::RPKI::RTR::PDU::IPv4Prefix->new(
             version       => 1,
-            flags         => 0,
+            flags         => 1,
             asn           => 4608,
-            address       => '2.0.0.0',
+            address       => '1.0.0.0',
             prefix_length => 24,
             max_length    => 32
         );
     $changeset_2->add_pdu($pdu);
     $mnt->apply_changeset($changeset_2);
 
-    # Try to refresh, confirm that it fails due to the unexpected
-    # withdrawal.
+    # Try to refresh, confirm that it fails due to the duplicate
+    # announcement.
 
     eval { $client->refresh(1) };
     $error = $@;
     ok($error, 'Unable to reset client');
-    like($error, qr/Withdrawal of Unknown Record/,
+    like($error, qr/Duplicate Announcement Received/,
         'Got correct error message');
 
     my $res = kill('TERM', $pid);

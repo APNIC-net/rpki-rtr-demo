@@ -21,7 +21,8 @@ use JSON::XS qw(decode_json);
 
 use base qw(Exporter);
 
-our @EXPORT_OK = qw(parse_pdu);
+our @EXPORT_OK = qw(parse_pdu
+                    error_type_to_string);
 
 my %TYPE_TO_MODULE = (
     PDU_SERIAL_NOTIFY()  => 'SerialNotify',
@@ -37,6 +38,19 @@ my %TYPE_TO_MODULE = (
     PDU_ASPA()           => 'ASPA',
 );
 
+my %ERROR_TYPE_TO_STRING = (
+    ERR_CORRUPT_DATA()                    => 'Corrupt Data',
+    ERR_INTERNAL_ERROR()                  => 'Internal Error',
+    ERR_NO_DATA()                         => 'No Data',
+    ERR_INVALID_REQUEST()                 => 'Invalid Request',
+    ERR_UNSUPPORTED_VERSION()             => 'Unsupported Version',
+    ERR_UNSUPPORTED_PDU_TYPE()            => 'Unsuppported PDU Type',
+    ERR_WITHDRAWAL_OF_UNKNOWN_RECORD()    => 'Withdrawal of Unknown Record',
+    ERR_DUPLICATE_ANNOUNCEMENT_RECEIVED() => 'Duplicate Announcement Received',
+    ERR_UNEXPECTED_PROTOCOL_VERSION()     => 'Unexpected Protocol Version',
+    ERR_ASPA_PROVIDER_LIST_ERROR()        => 'ASPA Provider List Error',
+);
+
 sub type_to_module
 {
     my ($type) = @_;
@@ -46,6 +60,17 @@ sub type_to_module
         die "Type '$type' does not map to a PDU module.";
     }
     return "APNIC::RPKI::RTR::PDU::".$TYPE_TO_MODULE{$type};
+}
+
+sub error_type_to_string
+{
+    my ($type) = @_;
+
+    my $string = exists $ERROR_TYPE_TO_STRING{$type};
+    if (not $string) {
+        die "Error type '$type' does not map to a string.";
+    }
+    return $ERROR_TYPE_TO_STRING{$type};
 }
 
 sub parse_pdu

@@ -75,6 +75,17 @@ sub apply_changeset
             my $flags      = $pdu->flags();
             if ($flags == 1) {
                 dprint("state: adding IP prefix: $asn, $addr/$length-$max_length");
+                if (exists $self->{'vrps'}->{$asn}->{$addr}->{$length}->{$max_length}) {
+                    dprint("state: addition of known record");
+                    my $error_pdu =
+			APNIC::RPKI::RTR::PDU::ErrorReport->new(
+			    version    => $version,
+			    error_code => ERR_DUPLICATE_ANNOUNCEMENT_RECEIVED(),
+			);
+                    return $error_pdu;
+                } else {
+                    dprint("state: addition of unknown record");
+                }
                 $self->{'vrps'}->{$asn}->{$addr}->{$length}->{$max_length} = 1;
             } elsif ($flags == 0) {
                 dprint("state: removing IP prefix: $asn, $addr/$length-$max_length");
@@ -109,6 +120,17 @@ sub apply_changeset
             my $spki = $pdu->spki();
             my $flags = $pdu->flags();
             if ($flags == 1) {
+                if (exists $self->{'rks'}->{$asn}->{$ski->bstr()}->{$spki}) {
+                    dprint("state: addition of known record");
+                    my $error_pdu =
+			APNIC::RPKI::RTR::PDU::ErrorReport->new(
+			    version    => $version,
+			    error_code => ERR_DUPLICATE_ANNOUNCEMENT_RECEIVED(),
+			);
+                    return $error_pdu;
+                } else {
+                    dprint("state: addition of unknown record");
+                }
                 $self->{'rks'}->{$asn}->{$ski->bstr()}->{$spki} = 1; 
             } elsif ($flags == 0) {
                 if (not exists $self->{'rks'}->{$asn}->{$ski->bstr()}->{$spki}) {

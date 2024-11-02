@@ -13,7 +13,8 @@ use Net::IP::XS qw(ip_inttobin ip_bintoip ip_compress_address);
 use APNIC::RPKI::RTR::Constants;
 use APNIC::RPKI::RTR::Changeset;
 use APNIC::RPKI::RTR::State;
-use APNIC::RPKI::RTR::PDU::Utils qw(parse_pdu);
+use APNIC::RPKI::RTR::PDU::Utils qw(parse_pdu
+                                    error_type_to_string);
 use APNIC::RPKI::RTR::PDU::ResetQuery;
 use APNIC::RPKI::RTR::Utils qw(inet_ntop dprint);
 
@@ -305,7 +306,8 @@ sub reset
         if ($error_pdu and ref $error_pdu) {
             my $socket = $self->{'socket'};
             $socket->send($error_pdu->serialise_binary());
-            die "client: got withdrawal of unknown record";
+            die "client: got error: ".
+                error_type_to_string($error_pdu->error_code());
         }
         $self->{'eod'} = $other_pdu;
         $self->{'last_run'} = time();
@@ -369,7 +371,8 @@ sub refresh
         if ($error_pdu and ref $error_pdu) {
             my $socket = $self->{'socket'};
             $socket->send($error_pdu->serialise_binary());
-            die "client: got withdrawal of unknown record";
+            die "client: got error: ".
+                error_type_to_string($error_pdu->error_code());
         }
         $self->{'eod'} = $other_pdu;
         $self->{'last_run'} = time();
