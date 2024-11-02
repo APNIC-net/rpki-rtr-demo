@@ -6,7 +6,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - run: |
-          sudo apt-get update && sudo apt-get install build-essential cpanminus cmake git libssh-dev
+          sudo apt-get update && sudo apt-get install gcc build-essential cpanminus cmake git libssh-dev
           git clone https://github.com/tanneberger/rtrlib
           cd rtrlib
           git checkout aspa-fixes
