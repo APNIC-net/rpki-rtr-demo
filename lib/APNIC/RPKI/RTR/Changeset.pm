@@ -8,7 +8,7 @@ use APNIC::RPKI::RTR::PDU::Utils;
 
 use JSON::XS qw(decode_json encode_json);
 
-my %ADDABLE_PDU_TYPES =
+our %ADDABLE_PDU_TYPES =
     map { $_ => 1 }
         (PDU_IPV4_PREFIX(),
          PDU_IPV6_PREFIX(),

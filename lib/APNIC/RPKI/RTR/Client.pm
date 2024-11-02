@@ -214,12 +214,12 @@ sub _process_responses
             if ($pdu->type() == PDU_ERROR_REPORT()) {
                 die "client: got error PDU with unexpected version";
             }
-	    my $err_pdu =
-		APNIC::RPKI::RTR::PDU::ErrorReport->new(
-		    version    => $self->{'current_version'},
-		    error_code => ERR_UNEXPECTED_PROTOCOL_VERSION(),
-		);
-	    $socket->send($err_pdu->serialise_binary());
+            my $err_pdu =
+                APNIC::RPKI::RTR::PDU::ErrorReport->new(
+                    version    => $self->{'current_version'},
+                    error_code => ERR_UNEXPECTED_PROTOCOL_VERSION(),
+                );
+            $socket->send($err_pdu->serialise_binary());
             die "client: got PDU with unexpected version";
         }
         if ($changeset->can_add_pdu($pdu)) {
@@ -234,7 +234,13 @@ sub _process_responses
             dprint("client: got cache reset PDU");
             return (0, $changeset, $pdu);
         } else {
-            warn "Unexpected PDU";
+            my $err_pdu =
+                APNIC::RPKI::RTR::PDU::ErrorReport->new(
+                    version    => $self->{'current_version'},
+                    error_code => ERR_UNSUPPORTED_PDU_TYPE(),
+                );
+            $socket->send($err_pdu->serialise_binary());
+            die "client: got PDU of unexpected type";
         }
     }
 
