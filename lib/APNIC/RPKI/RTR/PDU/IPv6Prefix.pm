@@ -6,6 +6,7 @@ use strict;
 use JSON::XS qw(encode_json decode_json);
 use Net::IP::XS qw(ip_compress_address);
 
+use APNIC::RPKI::RTR::Constants;
 use APNIC::RPKI::RTR::Utils qw(inet_pton
                                inet_ntop
                                dprint
@@ -32,7 +33,7 @@ sub new
 
 sub type
 {
-    return 6;
+    return PDU_IPV6_PREFIX();
 }
 
 sub type_str

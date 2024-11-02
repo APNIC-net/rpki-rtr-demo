@@ -5,6 +5,7 @@ use strict;
 
 use JSON::XS qw(encode_json decode_json);
 
+use APNIC::RPKI::RTR::Constants;
 use APNIC::RPKI::RTR::Utils qw(dprint
                                recv_all);
 
@@ -28,7 +29,7 @@ sub new
 
 sub type
 {
-    return 9;
+    return PDU_ROUTER_KEY();
 }
 
 sub type_str

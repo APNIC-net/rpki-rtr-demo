@@ -29,6 +29,7 @@ my @pids;
     shift @stayrtr_pids;
     my %stayrtr_pid_lookup;
     for my $stayrtr_pid (@stayrtr_pids) {
+        $stayrtr_pid =~ s/^\s*//;
         $stayrtr_pid =~ s/\s.*//;
         chomp $stayrtr_pid;
         $stayrtr_pid_lookup{$stayrtr_pid} = 1;
@@ -49,6 +50,7 @@ my @pids;
     @stayrtr_pids = `ps -C stayrtr`;
     shift @stayrtr_pids;
     for my $stayrtr_pid (@stayrtr_pids) {
+        $stayrtr_pid =~ s/^\s*//;
         $stayrtr_pid =~ s/\s.*//;
         chomp $stayrtr_pid;
         if (not $stayrtr_pid_lookup{$stayrtr_pid}) {

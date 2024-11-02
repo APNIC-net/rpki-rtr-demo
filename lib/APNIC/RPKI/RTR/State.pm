@@ -6,6 +6,7 @@ use strict;
 use Math::BigInt;
 use JSON::XS qw(encode_json decode_json);
 
+use APNIC::RPKI::RTR::Constants;
 use APNIC::RPKI::RTR::PDU::IPv4Prefix;
 use APNIC::RPKI::RTR::PDU::IPv6Prefix;
 use APNIC::RPKI::RTR::Utils qw(dprint);
@@ -60,10 +61,13 @@ sub apply_changeset
 {
     my ($self, $changeset) = @_;
 
-    dprint("state: applying changeset");
     my @pdus = @{$changeset->{'pdus'}};
+    my $pdu_count = scalar @pdus;
+    dprint("state: applying changeset ($pdu_count PDUs)");
     for my $pdu (@pdus) {
-        if ($pdu->type() == 4 or $pdu->type() == 6) {
+        if ($pdu->type() == PDU_IPV4_PREFIX()
+                or $pdu->type() == PDU_IPV6_PREFIX()) {
+            dprint("state: applying changeset: IP prefix");
             my $asn        = $pdu->asn();
             my $addr       = $pdu->address(),
             my $length     = $pdu->prefix_length();
@@ -87,7 +91,8 @@ sub apply_changeset
             } else {
                 warn "Unexpected flags value, skipping";
             }
-        } elsif ($pdu->type() == 9) {
+        } elsif ($pdu->type() == PDU_ROUTER_KEY()) {
+            dprint("state: applying changeset: router key");
             my $ski = Math::BigInt->new($pdu->ski());
             my $asn = $pdu->asn();
             my $spki = $pdu->spki();
@@ -105,7 +110,8 @@ sub apply_changeset
             } else {
                 warn "Unexpected flags value, skipping";
             }
-        } elsif ($pdu->type() == 11) {
+        } elsif ($pdu->type() == PDU_ASPA()) {
+            dprint("state: applying changeset: ASPA");
             my $customer_asn = $pdu->customer_asn();
             my @provider_asns = @{$pdu->provider_asns()};
             my $flags = $pdu->flags();
@@ -173,6 +179,26 @@ sub pdus
                 provider_asns => \@provider_asns
             );
         push @pdus, $pdu;
+    }
+
+    my $rks = $self->{'rks'};
+    @asns = keys %{$rks};
+    for my $asn (@asns) {
+        my $skis = $rks->{$asn};
+        for my $ski (keys %{$skis}) {
+            my @spkis = keys %{$skis->{$ski}};
+            for my $spki (@spkis) {
+                my $pdu =
+                    APNIC::RPKI::RTR::PDU::RouterKey->new(
+                        version => 1,
+                        flags   => 1,
+                        ski     => $ski,
+                        asn     => $asn,
+                        spki    => $spki
+                    );
+                push @pdus, $pdu;
+            }
+        }
     }
 
     return @pdus;

@@ -5,6 +5,7 @@ use strict;
 
 use JSON::XS qw(encode_json decode_json);
 
+use APNIC::RPKI::RTR::Constants;
 use APNIC::RPKI::RTR::Utils qw(recv_all);
 
 use base qw(APNIC::RPKI::RTR::PDU);
@@ -28,7 +29,7 @@ sub new
 
 sub type
 {
-    return 7;
+    return PDU_END_OF_DATA();
 }
 
 sub type_str

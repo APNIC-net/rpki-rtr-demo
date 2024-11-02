@@ -3,6 +3,7 @@ package APNIC::RPKI::RTR::PDU::Utils;
 use warnings;
 use strict;
 
+use APNIC::RPKI::RTR::Constants;
 use APNIC::RPKI::RTR::PDU::SerialNotify;
 use APNIC::RPKI::RTR::PDU::SerialQuery;
 use APNIC::RPKI::RTR::PDU::ResetQuery;
@@ -23,17 +24,17 @@ use base qw(Exporter);
 our @EXPORT_OK = qw(parse_pdu);
 
 my %TYPE_TO_MODULE = (
-    0  => 'SerialNotify',
-    1  => 'SerialQuery',
-    2  => 'ResetQuery',
-    3  => 'CacheResponse',
-    4  => 'IPv4Prefix',
-    6  => 'IPv6Prefix',
-    7  => 'EndOfData',
-    8  => 'CacheReset',
-    9  => 'RouterKey',
-    10 => 'ErrorReport',
-    11 => 'ASPA',
+    PDU_SERIAL_NOTIFY()  => 'SerialNotify',
+    PDU_SERIAL_QUERY()   => 'SerialQuery',
+    PDU_RESET_QUERY()    => 'ResetQuery',
+    PDU_CACHE_RESPONSE() => 'CacheResponse',
+    PDU_IPV4_PREFIX()    => 'IPv4Prefix',
+    PDU_IPV6_PREFIX()    => 'IPv6Prefix',
+    PDU_END_OF_DATA()    => 'EndOfData',
+    PDU_CACHE_RESET()    => 'CacheReset',
+    PDU_ROUTER_KEY()     => 'RouterKey',
+    PDU_ERROR_REPORT()   => 'ErrorReport',
+    PDU_ASPA()           => 'ASPA',
 );
 
 sub type_to_module

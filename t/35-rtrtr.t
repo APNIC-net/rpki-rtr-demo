@@ -105,6 +105,7 @@ EOF
     @rtrtr_pids = `ps -C rtrtr`;
     shift @rtrtr_pids;
     for my $rtrtr_pid (@rtrtr_pids) {
+        $rtrtr_pid =~ s/^\s*//;
         $rtrtr_pid =~ s/\s.*//;
         chomp $rtrtr_pid;
         if (not $rtrtr_pid_lookup{$rtrtr_pid}) {

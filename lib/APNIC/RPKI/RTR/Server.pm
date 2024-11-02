@@ -8,6 +8,7 @@ use File::Slurp qw(read_file);
 use JSON::XS qw(decode_json);
 use List::Util qw(max);
 
+use APNIC::RPKI::RTR::Constants;
 use APNIC::RPKI::RTR::Changeset;
 use APNIC::RPKI::RTR::State;
 use APNIC::RPKI::RTR::Utils qw(dprint);
@@ -137,13 +138,13 @@ sub handle_client_connection {
             my $err_pdu =
                 APNIC::RPKI::RTR::PDU::ErrorReport->new(
                     version    => $self->{'max_supported_version'},
-                    error_code => 4,
+                    error_code => ERR_UNSUPPORTED_VERSION(),
                 );
             $client->send($err_pdu->serialise_binary());
             goto FINISHED;
         }
         my $type = $pdu->type();
-        if ($type == 2) {
+        if ($type == PDU_RESET_QUERY()) {
             dprint("$$ server: got reset query");
             my $ss_path = "$data_dir/snapshot.json";
             my $has_snapshot = -e $ss_path;
@@ -152,7 +153,7 @@ sub handle_client_connection {
                 my $err_pdu =
                     APNIC::RPKI::RTR::PDU::ErrorReport->new(
                         version    => $version,
-                        error_code => 2,
+                        error_code => ERR_NO_DATA(),
                     );
                 $client->send($err_pdu->serialise_binary());
             } else {
@@ -194,14 +195,14 @@ sub handle_client_connection {
                 dprint("$$ server: sending end of data PDU: ".$eod_pdu->serialise_json());
                 $client->send($eod_pdu->serialise_binary());
             }
-        } elsif ($type == 1) {
+        } elsif ($type == PDU_SERIAL_QUERY()) {
             dprint("$$ server: got serial query");
             if (not $self->{'no_session_id_check'}) {
                 if ($pdu->session_id() ne $self->session_id()) {
                     my $err_pdu =
                         APNIC::RPKI::RTR::PDU::ErrorReport->new(
                             version    => $version,
-                            error_code => 0,
+                            error_code => ERR_CORRUPT_DATA(),
                         );
                     $client->send($err_pdu->serialise_binary());
                     goto FINISHED;

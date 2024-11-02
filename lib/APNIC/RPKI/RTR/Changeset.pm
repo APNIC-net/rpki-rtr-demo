@@ -3,13 +3,17 @@ package APNIC::RPKI::RTR::Changeset;
 use warnings;
 use strict;
 
+use APNIC::RPKI::RTR::Constants;
 use APNIC::RPKI::RTR::PDU::Utils;
 
 use JSON::XS qw(decode_json encode_json);
 
 my %ADDABLE_PDU_TYPES =
     map { $_ => 1 }
-        qw(4 6 9 11);
+        (PDU_IPV4_PREFIX(),
+         PDU_IPV6_PREFIX(),
+         PDU_ROUTER_KEY(),
+         PDU_ASPA());
 
 sub new
 {

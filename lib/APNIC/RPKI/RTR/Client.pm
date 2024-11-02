@@ -10,6 +10,7 @@ use List::Util qw(max);
 use Math::BigInt;
 use Net::IP::XS qw(ip_inttobin ip_bintoip ip_compress_address);
 
+use APNIC::RPKI::RTR::Constants;
 use APNIC::RPKI::RTR::Changeset;
 use APNIC::RPKI::RTR::State;
 use APNIC::RPKI::RTR::PDU::Utils qw(parse_pdu);
@@ -161,7 +162,7 @@ sub _receive_cache_response
 
     my $type = $pdu->type();
     dprint("client: received PDU: ".$pdu->serialise_json());
-    if ($type == 3) {
+    if ($type == PDU_CACHE_RESPONSE()) {
         dprint("client: received cache response PDU");
         my $state = $self->{'state'};
         if ($state and ($pdu->session_id() != $state->{'session_id'})) {
@@ -175,13 +176,13 @@ sub _receive_cache_response
         }
         delete $self->{'last_failure'};
         return $pdu;
-    } elsif ($type == 10) {
+    } elsif ($type == PDU_ERROR_REPORT()) {
         dprint("client: received error response PDU");
         $self->{'last_failure'} = time();
         $self->_close_socket();
-        if ($pdu->error_code() == 2) {  
+        if ($pdu->error_code() == ERR_NO_DATA()) {
             die "Server has no data";
-        } elsif ($pdu->error_code() == 4) {
+        } elsif ($pdu->error_code() == ERR_UNSUPPORTED_VERSION()) {
             my $max_version = $pdu->version();
             die "Server does not support client version ".
                 "(maximum supported version is '$max_version')";
@@ -210,26 +211,26 @@ sub _process_responses
         my $pdu = parse_pdu($socket);
         dprint("client: processing response: got PDU: ".$pdu->serialise_json());
         if ($pdu->version() != $self->{'current_version'}) {
-            if ($pdu->type() == 10) {
+            if ($pdu->type() == PDU_ERROR_REPORT()) {
                 die "client: got error PDU with unexpected version";
             }
 	    my $err_pdu =
 		APNIC::RPKI::RTR::PDU::ErrorReport->new(
 		    version    => $self->{'current_version'},
-		    error_code => 8,
+		    error_code => ERR_UNEXPECTED_PROTOCOL_VERSION(),
 		);
 	    $socket->send($err_pdu->serialise_binary());
             die "client: got PDU with unexpected version";
         }
         if ($changeset->can_add_pdu($pdu)) {
             $changeset->add_pdu($pdu);
-        } elsif ($pdu->type() == 7) {
+        } elsif ($pdu->type() == PDU_END_OF_DATA()) {
             return (1, $changeset, $pdu);
-        } elsif ($pdu->type() == 10) {
+        } elsif ($pdu->type() == PDU_ERROR_REPORT()) {
             return (0, $changeset, $pdu);
-        } elsif ($pdu->type() == 0) {
+        } elsif ($pdu->type() == PDU_SERIAL_NOTIFY()) {
             $serial_notify = 1;
-        } elsif ($pdu->type() == 8) {
+        } elsif ($pdu->type() == PDU_CACHE_RESET()) {
             dprint("client: got cache reset PDU");
             return (0, $changeset, $pdu);
         } else {
@@ -242,7 +243,7 @@ sub _process_responses
 
 sub reset
 {
-    my ($self, $force) = @_; 
+    my ($self, $force) = @_;
 
     if (not $force) {
         my $last_failure = $self->{'last_failure'};
@@ -341,7 +342,7 @@ sub refresh
     my ($res, $changeset, $other_pdu) = $self->_process_responses();
     if (not $res) {
         if ($other_pdu) {
-            if ($other_pdu->type() == 8) {
+            if ($other_pdu->type() == PDU_CACHE_RESET()) {
                 # Cache reset PDU: call reset.
                 $self->{'state'}    = undef;
                 $self->{'eod'}      = undef;

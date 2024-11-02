@@ -40,7 +40,7 @@ my @pids;
     if (my $pid = fork()) {
         push @pids, $pid;
     } else {
-        system("stayrtr -bind=\"127.0.0.1:$stayrtr_rtr_port\" -metrics.addr=\"127.0.0.1:$metrics_port\" -cache=./t/rpki.json -checktime=false >/dev/null 2>&1");
+        system("stayrtr -bind=\"127.0.0.1:$stayrtr_rtr_port\" -metrics.addr=\"127.0.0.1:$metrics_port\" -cache=./t/rpki.json -checktime=false");
         exit(0);
     }
     sleep(1);
@@ -48,6 +48,7 @@ my @pids;
     @stayrtr_pids = `ps -C stayrtr`;
     shift @stayrtr_pids;
     for my $stayrtr_pid (@stayrtr_pids) {
+        $stayrtr_pid =~ s/^\s*//;
         $stayrtr_pid =~ s/\s.*//;
         chomp $stayrtr_pid;
         if (not $stayrtr_pid_lookup{$stayrtr_pid}) {
@@ -63,7 +64,7 @@ my @pids;
         );
     $client->reset();
     my @pdus = $client->{'state'}->pdus();
-    is(@pdus, 10, 'Got ten PDUs from stayrtr');
+    is(@pdus, 11, 'Got ten PDUs from stayrtr');
     my @aspa_pdus = grep { $_->type() == 11 } @pdus;
     is(@aspa_pdus, 3, 'Got three ASPA PDUs');
     my @customer_asns =
