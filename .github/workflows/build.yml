@@ -6,6 +6,6 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - run: |
-          sudo apt-get update && sudo apt-get install build-essential cpanminus
-          cpanm .
+          sudo apt-get update && sudo apt-get install build-essential cpanminus 
+          sudo cpanm .
           perl Makefile.PL && make && make test
