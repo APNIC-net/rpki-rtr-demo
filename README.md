@@ -1,6 +1,6 @@
 ## rpki-rtr-demo
 
-[![Build Status](https://github.com/APNIC-net/rpki-rtr-demo/workflows/build/badge.svg?branch=main)](https://github.com/APNIC-net/rpki-rtr-demo/actions)
+[![Build Status](https://github.com/APNIC-net/rpki-rtr-demo/actions/workflows/build/badge.svg?branch=main)](https://github.com/APNIC-net/rpki-rtr-demo/actions)
 
 A proof-of-concept for the RPKI-to-Router protocol, as at
 [draft-ietf-sidrops-8210bis-16](https://www.ietf.org/archive/id/draft-ietf-sidrops-8210bis-16.txt).
