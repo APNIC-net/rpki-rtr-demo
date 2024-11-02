@@ -60,10 +60,14 @@ my $pid;
 
     # Run rtrclient.
 
+    my $error_output =
+        $ENV{'APNIC_DEBUG'}
+            ? ""
+            : " 2>/dev/null";
     my @res =
         grep { $_ }
         map { s/\s*//; chomp; $_ }
-            `rtrclient -e tcp 127.0.0.1 $port 2>/dev/null`;
+            `rtrclient -e tcp 127.0.0.1 $port $error_output`;
     my $header = shift @res;
     is(@res, 1, 'Got one VRP line in rtrclient output');
     is($res[0], '1.0.0.0/24-32 AS 4608',

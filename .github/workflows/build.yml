@@ -14,4 +14,5 @@ jobs:
           sudo cpanm . && sudo make clean
           export HAS_RTRCLIENT=1
           export HAS_ASPA_RTRCLIENT=1
+          export APNIC_DEBUG=1
           perl Makefile.PL && make && make test
