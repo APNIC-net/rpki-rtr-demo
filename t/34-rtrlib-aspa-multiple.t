@@ -124,6 +124,7 @@ my @pids;
     my @raw_res =
         `rtrclient -e -a -p tcp 127.0.0.1 $port tcp 127.0.0.1 $port2 2>/dev/null`;
     my @res =
+        sort
         map { s/\s+/ /g; s/^\s*//; s/\s*$//; $_ }
         map { s/:\d+//; $_ }
         grep { not /HOST/ }
@@ -136,14 +137,13 @@ my @pids;
     is(@res, 6, 'Got six lines in rtrclient output');
     is($res[0], '+ 127.0.0.1 1.0.0.0 24 - 32 4608',
         'Got correct VRP line in rtrclient output (1)');
-    is($res[1], 'Customer ASN: 4608',
-        'Got correct ASPA line in rtrclient output (2)');
-    is($res[2], 'Provider ASNs: 1, 2, 3, 4',
+    is($res[1], '+ 127.0.0.1 2.0.0.0 24 - 32 4608',
+        'Got correct VRP line in rtrclient output (2)');
+    is($res[2], 'Customer ASN: 4608',
         'Got correct ASPA line in rtrclient output (3)');
-    is($res[3], '+ 127.0.0.1 2.0.0.0 24 - 32 4608',
-        'Got correct VRP line in rtrclient output (4)');
-    # todo: it's arguable that this isn't correct.
-    is($res[4], 'Customer ASN: 4608',
+    is($res[3], 'Customer ASN: 4608',
+        'Got correct ASPA line in rtrclient output (4)');
+    is($res[5], 'Provider ASNs: 1, 2, 3, 4',
         'Got correct ASPA line in rtrclient output (5)');
     is($res[5], 'Provider ASNs: 4, 5, 6, 7',
         'Got correct ASPA line in rtrclient output (6)');
