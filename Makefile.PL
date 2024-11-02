@@ -21,7 +21,8 @@ my $output = WriteMakefile(
                         'File::Slurp' => 0,
                         'IO::Socket'  => 0,
                         'JSON::XS'    => 0,
-                        'Net::IP::XS' => 0 }
+                        'Net::IP::XS' => 0,
+                        'IO::Select'  => 0, }
 );
 
 1;

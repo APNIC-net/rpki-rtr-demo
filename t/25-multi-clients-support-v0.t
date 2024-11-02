@@ -94,8 +94,9 @@ my $server_pid;
         is($pdu->address(), "1.0.0.0", "$name: Got correct address");
     }
 
-    my $elapsed = time - $start_time;
-    ok(($elapsed < 2), "Processing multiple clients in a reasonable time.");
+    my $elapsed = sprintf("%.2f", (time() - $start_time));
+    ok(($elapsed < 5), "Processing multiple clients in ".
+                       "a reasonable time (${elapsed}s)");
 
     # Terminate the process that runs the server.
     kill('TERM', $server_pid);

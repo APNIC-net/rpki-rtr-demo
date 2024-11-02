@@ -3,6 +3,7 @@ package APNIC::RPKI::RTR::Server;
 use warnings;
 use strict;
 
+use IO::Select;
 use IO::Socket qw(AF_INET SOCK_STREAM SHUT_WR);
 use File::Slurp qw(read_file);
 use JSON::XS qw(decode_json);
@@ -82,7 +83,7 @@ sub run
     dprint("server: starting server");
     my $server = $self->{'server'};
     my $port = $self->{'port'};
-    my $socket =
+    my $server_socket =
         IO::Socket->new(
             Domain    => AF_INET,
             Type      => SOCK_STREAM,
@@ -92,34 +93,70 @@ sub run
             ReusePort => 1,
             Listen    => 1,
         );
-    if (not $socket) {
+    if (not $server_socket) {
         die "Unable to start server socket: $!";
     }
     dprint("server: started on $server:$port");
     my $data_dir = $self->{'data_dir'};
 
-    my @children_pids = ();
+    my $select = IO::Select->new($server_socket);
+    my $last_update = (stat("$data_dir/snapshot.json"))[7] || 0;
+    my %versions;
+
     for (;;) {
-        dprint("server: waiting for client connection");
-        my $client = $socket->accept();
-        dprint("server: got client connection");
-
-        if (my $child_pid = fork()) {
-            dprint("server: forking to handle connection ".
-                   "(new PID is $child_pid)");
-            push @children_pids, $child_pid;
-        } else {
-            $self->handle_client_connection($client, $data_dir);
-            exit(0);
+        my @ready = $select->can_read(1);
+        my %skip_update_check;
+        for my $socket (@ready) {
+            if ($socket == $server_socket) {
+                my $new_socket = $socket->accept();
+                my $pp = $new_socket->peerport();
+                $select->add($new_socket);
+                dprint("server: adding new client to pool: $pp");
+                $skip_update_check{$pp} = 1;
+            } else {
+                my $pp = $socket->peerport() || "(N/A)";
+                dprint("server: handling client connection ".
+                       "for $pp");
+                my $res =
+                    $self->handle_client_connection($socket, $data_dir,
+                                                    \%versions);
+                if (not $res) {
+                    dprint("server: request for $pp failed, closing");
+                    $select->remove($socket);
+                    $socket->shutdown(SHUT_WR);
+                    $socket->close();
+                } else {
+                    dprint("server: request for $pp succeeded");
+                }
+            }
         }
-    }
-
-    for my $child_pid (@children_pids) {
-        waitpid($child_pid, 0);
-    }
-
-    if ($#children_pids + 1) {
-        $socket->close();
+        my $new_last_update = (stat("$data_dir/snapshot.json"))[7] || 0;
+        if ($new_last_update > $last_update) {
+            $last_update = $new_last_update;
+            dprint("server: state has been updated, send serial notify to clients");
+            my $ss_path = "$data_dir/snapshot.json";
+            my $data = read_file($ss_path);
+            my $state =
+                APNIC::RPKI::RTR::State->deserialise_json($data);
+            $state->{'session_id'} = $self->{'session_id'};
+            my $serial_number = $state->serial_number();
+            for my $socket ($select->can_write(0)) {
+                my $pp = $socket->peerport();
+                if ($skip_update_check{$pp}) {
+                    next;
+                }
+                dprint("server: sending serial notify to $pp ".
+                        "($serial_number)");
+                my $version = $versions{$pp} || 0;
+                my $pdu =
+                    APNIC::RPKI::RTR::PDU::SerialNotify->new(
+                        version       => $version,
+                        session_id    => $self->{'session_id'},
+                        serial_number => $serial_number,
+                    );
+                $socket->send($pdu->serialise_binary());
+            }
+        }
     }
 
     return 1;
@@ -127,15 +164,20 @@ sub run
 
 sub handle_client_connection
 {
-    my ($self, $client, $data_dir) = @_;
+    my ($self, $client, $data_dir, $versions) = @_;
 
     my $version = $self->{'max_supported_version'};
+    my $res = 1;
     eval {
-        my $client_address = $client->peerhost();
-        my $client_port = $client->peerport();
+        my $client_address = $client->peerhost() || '(N/A)';
+        my $client_port = $client->peerport() || '(N/A)';
         dprint("$$ server: connection from $client_address:$client_port");
 
         my $pdu = parse_pdu($client);
+        if (not $pdu) {
+            # Socket is closed.
+            return 0;
+        }
         $version = $pdu->version();
         if (not $self->{'sv_lookup'}->{$version}) {
             dprint("$$ server: unsupported version '$version'");
@@ -145,8 +187,12 @@ sub handle_client_connection
                     error_code => ERR_UNSUPPORTED_VERSION(),
                 );
             $client->send($err_pdu->serialise_binary());
+            $res = 0;
             goto FINISHED;
         }
+        use Data::Dumper;
+        print Dumper([$client, $client->peerport()]);
+        $versions->{$client->peerport()} = $version;
         my $type = $pdu->type();
         if ($type == PDU_RESET_QUERY()) {
             dprint("$$ server: got reset query");
@@ -160,6 +206,8 @@ sub handle_client_connection
                         error_code => ERR_NO_DATA(),
                     );
                 $client->send($err_pdu->serialise_binary());
+                $res = 0;
+                goto FINISHED;
             } else {
                 dprint("$$ server: has snapshot");
                 my $cr_pdu =
@@ -209,6 +257,7 @@ sub handle_client_connection
                             error_code => ERR_CORRUPT_DATA(),
                         );
                     $client->send($err_pdu->serialise_binary());
+                    $res = 0;
                     goto FINISHED;
                 }
             }
@@ -223,6 +272,8 @@ sub handle_client_connection
                         error_code => ERR_NO_DATA(),
                     );
                 $client->send($err_pdu->serialise_binary());
+                $res = 0;
+                goto FINISHED;
             } else {
                 my $cr_pdu =
                     APNIC::RPKI::RTR::PDU::CacheResponse->new(
@@ -308,6 +359,8 @@ sub handle_client_connection
                 );
             $client->send($err_pdu->serialise_binary());
             warn("server: invalid request from client");
+            $res = 0;
+            goto FINISHED;
         }
     };
     if (my $error = $@) {
@@ -318,12 +371,14 @@ sub handle_client_connection
             );
         $client->send($err_pdu->serialise_binary());
         warn("server: failed to handle request/connection: $error");
+        return 0;
     }
+
     FINISHED: {
-        dprint("$$ server: finished with client");
-        $client->shutdown(SHUT_WR);
-        $client->close();
+        dprint("$$ server: finished with client request");
     }
+
+    return $res;
 }
 
 1;

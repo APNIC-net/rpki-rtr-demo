@@ -68,7 +68,7 @@ sub recv_all
 {
     my ($socket, $length) = @_;
 
-    my $limit = 30;
+    my $limit = 10;
     my $buf = "";
     while ((length($buf) != $length) and ($limit > 0)) {
         my $tbuf = "";
@@ -80,6 +80,10 @@ sub recv_all
         }
         $buf .= $tbuf;
         my $lb = length($buf);
+        if ($lb == 0) {
+            # Socket is closed.
+            return -1; 
+        }
         dprint("recv_all: buffer now contains '$lb' bytes");
         if (length($buf) != $length) {
             sleep(0.1);
@@ -87,7 +91,7 @@ sub recv_all
         $limit--;
     }
     if (length($buf) != $length) {
-        die "Unable to receive data from socket (waited 3s)";
+        die "Unable to receive data from socket (waited 1s)";
     }
 
     return $buf;

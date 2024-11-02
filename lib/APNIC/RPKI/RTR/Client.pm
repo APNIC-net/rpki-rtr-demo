@@ -190,6 +190,9 @@ sub _receive_cache_response
         } else {
             die "Got error response: ".$pdu->serialise_json();
         }
+    } elsif ($type == PDU_SERIAL_NOTIFY()) {
+        dprint("client: received serial notify, ignore");
+        return $self->_receive_cache_response();
     } else {
         dprint("client: received unexpected PDU");
         $self->{'last_failure'} = time();

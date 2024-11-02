@@ -78,6 +78,9 @@ sub parse_pdu
     my ($socket) = @_;
 
     my $buf = recv_all($socket, 8);
+    if ($buf and $buf =~ "-1") {
+        return;
+    }
     my ($version, $type, $session_id, $length) =
         unpack("CCnN", $buf);
     if (not (($version >= 0) and ($version <= 2))) {

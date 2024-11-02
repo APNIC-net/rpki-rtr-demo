@@ -64,7 +64,7 @@ sub serialise_binary
                 $self->type(),
                 $self->session_id(),
                 12,
-                $self->serial_number);
+                $self->serial_number());
 }
 
 sub deserialise_binary
