@@ -4,7 +4,7 @@ use warnings;
 use strict;
 
 use APNIC::RPKI::RTR::Constants;
-use APNIC::RPKI::RTR::PDU::Utils;
+use APNIC::RPKI::RTR::PDU::Utils qw(order_pdus);
 
 use JSON::XS qw(decode_json encode_json);
 
@@ -108,6 +108,13 @@ sub serialise_json
 }
 
 sub pdus
+{
+    my ($self) = @_;
+
+    return order_pdus($self->_pdus());
+}
+
+sub _pdus
 {
     my ($self) = @_;
 

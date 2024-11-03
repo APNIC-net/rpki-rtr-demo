@@ -218,6 +218,10 @@ sub _process_responses
     for (;;) {
         dprint("client: processing response");
         my $pdu = parse_pdu($socket);
+        # For tests only.
+        if ($self->{'pdu_cb'}) {
+            $self->{'pdu_cb'}->($pdu);
+        }
         dprint("client: processing response: got PDU: ".$pdu->serialise_json());
         if ($pdu->version() != $self->{'current_version'}) {
             if ($pdu->type() == PDU_ERROR_REPORT()) {

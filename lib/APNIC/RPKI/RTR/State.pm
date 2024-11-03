@@ -9,6 +9,7 @@ use JSON::XS qw(encode_json decode_json);
 use APNIC::RPKI::RTR::Constants;
 use APNIC::RPKI::RTR::PDU::IPv4Prefix;
 use APNIC::RPKI::RTR::PDU::IPv6Prefix;
+use APNIC::RPKI::RTR::PDU::Utils qw(order_pdus);
 use APNIC::RPKI::RTR::Utils qw(dprint);
 
 my $MAX_SERIAL_NUMBER = Math::BigInt->new(1)->blsft(32)->bsub(1);
@@ -207,6 +208,13 @@ sub apply_changeset
 }
 
 sub pdus
+{
+    my ($self) = @_;
+
+    return order_pdus($self->_pdus());
+}
+
+sub _pdus
 {
     my ($self) = @_;
 

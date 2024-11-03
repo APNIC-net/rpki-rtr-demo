@@ -22,6 +22,7 @@ use JSON::XS qw(decode_json);
 use base qw(Exporter);
 
 our @EXPORT_OK = qw(parse_pdu
+                    order_pdus
                     error_type_to_string);
 
 my %TYPE_TO_MODULE = (
@@ -92,6 +93,31 @@ sub parse_pdu
         $module->deserialise_binary(
             $version, $session_id, $length, $socket
         );
+}
+
+sub order_pdus
+{
+    my (@pdus) = @_;
+
+    my @ip_pdus =
+        map  { $_->[0] }
+        sort { ($a->[0]->type() <=> $b->[0]->type())
+                || ($a->[1] <=> $b->[1])
+                || ($b->[0]->prefix_length()
+                    <=> $a->[0]->prefix_length())
+                || ($b->[0]->max_length()
+                    <=> $a->[0]->max_length()) }
+        map  { [ $_, $_->address_as_number() ] }
+        grep { $_->type() == PDU_IPV4_PREFIX()
+            or $_->type() == PDU_IPV6_PREFIX() }
+            @pdus;
+
+    my @non_ip_pdus =
+        grep { $_->type() != PDU_IPV4_PREFIX()
+           and $_->type() != PDU_IPV6_PREFIX() }
+            @pdus;
+
+    return (@ip_pdus, @non_ip_pdus);
 }
 
 sub deserialise_json

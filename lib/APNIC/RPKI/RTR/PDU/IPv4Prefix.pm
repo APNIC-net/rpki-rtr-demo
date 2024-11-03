@@ -4,6 +4,7 @@ use warnings;
 use strict;
 
 use JSON::XS qw(encode_json decode_json);
+use Net::IP::XS;
 
 use APNIC::RPKI::RTR::Constants;
 use APNIC::RPKI::RTR::Utils qw(inet_pton
@@ -176,6 +177,14 @@ sub supported_in_version
     my ($self, $version) = @_;
 
     return (($version >= 0) and ($version <= 2));
+}
+
+sub address_as_number
+{
+    my ($self) = @_;
+
+    my $net_ip = Net::IP::XS->new($self->address());
+    return $net_ip->intip();
 }
 
 1;

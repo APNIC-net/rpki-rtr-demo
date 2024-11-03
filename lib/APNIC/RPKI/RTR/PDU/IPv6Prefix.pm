@@ -190,4 +190,12 @@ sub supported_in_version
     return (($version >= 0) and ($version <= 2));
 }
 
+sub address_as_number
+{
+    my ($self) = @_;
+
+    my $net_ip = Net::IP::XS->new($self->address());
+    return $net_ip->intip();
+}
+
 1;
