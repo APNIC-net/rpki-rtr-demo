@@ -539,6 +539,11 @@ sub state
 {
     my ($self) = @_;
 
+    my $fres = $self->flush_if_expired();
+    if ($fres) {
+        return;
+    }
+
     return $self->{'state'};
 }
 
