@@ -75,7 +75,7 @@ my $pid;
     like($error, qr/expire interval too small/,
         'Got correct error message');
 
-    my $res = kill('TERM', $pid);
+    $client->exit_server();
 }
 
 END {

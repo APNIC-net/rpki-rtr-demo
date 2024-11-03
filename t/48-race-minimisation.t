@@ -107,7 +107,7 @@ my $pid;
         'Got PDUs in expected order'
     );
 
-    my $res = kill('TERM', $pid);
+    $client->exit_server();
 }
 
 END {

@@ -15,6 +15,7 @@ use constant {
     PDU_ROUTER_KEY     => 9,
     PDU_ERROR_REPORT   => 10,
     PDU_ASPA           => 11,
+    PDU_EXIT           => 255,
 
     ERR_CORRUPT_DATA                    => 0,
     ERR_INTERNAL_ERROR                  => 1,
@@ -42,6 +43,7 @@ our @EXPORT = qw(
     PDU_ROUTER_KEY
     PDU_ERROR_REPORT
     PDU_ASPA
+    PDU_EXIT
 
     ERR_CORRUPT_DATA
     ERR_INTERNAL_ERROR

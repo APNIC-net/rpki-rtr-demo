@@ -37,6 +37,7 @@ my %TYPE_TO_MODULE = (
     PDU_ROUTER_KEY()     => 'RouterKey',
     PDU_ERROR_REPORT()   => 'ErrorReport',
     PDU_ASPA()           => 'ASPA',
+    PDU_EXIT()           => 'Exit',
 );
 
 my %ERROR_TYPE_TO_STRING = (

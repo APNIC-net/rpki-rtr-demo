@@ -230,6 +230,8 @@ my $pid;
     ok($error, 'Client supporting v0 does not work with v2 server');
     like($error, qr/Unsupported server version '2'/,
         'Got expected error message');
+
+    $client->exit_server();
 }
 
 END {

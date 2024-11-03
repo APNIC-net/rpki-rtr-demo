@@ -72,7 +72,7 @@ my $pid;
     like($error, qr/unexpected type/,
         'Got correct error message');
 
-    my $res = kill('TERM', $pid);
+    $client->exit_server();
 }
 
 END {

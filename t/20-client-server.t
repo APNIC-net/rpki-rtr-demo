@@ -146,7 +146,7 @@ my $pid;
     @pdus = $client->state()->pdus();
     is(@pdus, 2, 'State has two PDUs');
 
-    my $res = kill('TERM', $pid);
+    $client->exit_server();
 }
 
 END {

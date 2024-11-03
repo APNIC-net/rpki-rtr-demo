@@ -71,7 +71,7 @@ my $pid;
     like($error, qr/Failed to process cache responses/,
         'Got expected error message');
 
-    my $res = kill('TERM', $pid);
+    $client->exit_server();
 }
 
 END {

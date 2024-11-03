@@ -92,7 +92,7 @@ my $pid;
     is($state, undef, 'State not available on expiry '.
                       'interval being reached');
 
-    my $res = kill('TERM', $pid);
+    $client->exit_server();
 }
 
 END {

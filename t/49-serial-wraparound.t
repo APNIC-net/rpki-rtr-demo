@@ -112,7 +112,7 @@ my $pid;
     is($client->state()->serial_number(), 2,
         'Serial number wrapped as expected');
 
-    my $res = kill('TERM', $pid);
+    $client->exit_server();
 }
 
 END {

@@ -129,7 +129,7 @@ my $pid;
     is($pdu->type(), 4, 'Got IPv4 prefix PDU (1)');
     is($pdu->address(), '2.0.0.0', 'Got correct address (1)');
 
-    $res = kill('TERM', $pid);
+    $client->exit_server();
 }
 
 END {

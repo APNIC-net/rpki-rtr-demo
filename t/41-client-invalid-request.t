@@ -93,7 +93,7 @@ my $pid;
     is($pdu->error_code(), ERR_INVALID_REQUEST(),
         'Got correct error type');
 
-    $res = kill('TERM', $pid);
+    $client->exit_server();
 }
 
 END {

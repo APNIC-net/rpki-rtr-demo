@@ -124,7 +124,7 @@ my $pid;
     like($error, qr/"error_code":0/,
         'Got corrupt data PDU on session ID mismatch');
 
-    $res = kill('TERM', $pid);
+    $client->exit_server();
 }
 
 END {

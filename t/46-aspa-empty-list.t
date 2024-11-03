@@ -67,7 +67,7 @@ my $pid;
     like($error, qr/ASPA Provider List Error/,
         'Got expected error message');
 
-    my $res = kill('TERM', $pid);
+    $client->exit_server();
 }
 
 END {

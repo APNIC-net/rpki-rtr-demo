@@ -132,7 +132,7 @@ my $pid;
     @pdus = $client->state()->pdus();
     is(@pdus, 1, 'State has one PDU');
 
-    my $res = kill('TERM', $pid);
+    $client->exit_server();
 }
 
 END {

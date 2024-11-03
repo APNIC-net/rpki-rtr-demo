@@ -126,7 +126,7 @@ my $pid;
     like($error, qr/got PDU with unexpected session/,
         'Got correct error message');
 
-    $res = kill('TERM', $pid);
+    $client->exit_server();
 }
 
 END {

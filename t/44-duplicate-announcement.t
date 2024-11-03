@@ -88,7 +88,7 @@ my $pid;
     like($error, qr/Duplicate Announcement Received/,
         'Got correct error message');
 
-    my $res = kill('TERM', $pid);
+    $client->exit_server();
 }
 
 END {

@@ -88,7 +88,7 @@ my $pid;
     like($error, qr/got PDU with unexpected version/,
         'Got correct error message');
 
-    my $res = kill('TERM', $pid);
+    $client->exit_server();
 }
 
 END {

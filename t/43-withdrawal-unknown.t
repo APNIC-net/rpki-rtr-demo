@@ -88,7 +88,7 @@ my $pid;
     like($error, qr/Withdrawal of Unknown Record/,
         'Got correct error message');
 
-    my $res = kill('TERM', $pid);
+    $client->exit_server();
 }
 
 END {

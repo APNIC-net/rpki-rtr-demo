@@ -111,7 +111,9 @@ sub run
     my $serial_notify_period = $self->{'serial_notify_period'};
 
     for (;;) {
+        dprint("server: pending reads");
         my @ready = $select->can_read(1);
+        dprint("server: got reads: ".(scalar @ready));
         my %skip_update_check;
         for my $socket (@ready) {
             if ($socket == $server_socket) {
@@ -215,6 +217,8 @@ sub handle_client_connection
 
         my $pdu = parse_pdu($client);
         if (not $pdu) {
+            dprint("server: socket ($peerport) is closed");
+            $self->flush($client);
             # Socket is closed.
             return 0;
         }
@@ -250,7 +254,9 @@ sub handle_client_connection
             $res = 0;
             goto FINISHED;
         }
-        $versions->{$client->peerport()} = $version;
+        if (defined $client->peerport()) {
+            $versions->{$client->peerport()} = $version;
+        }
         my $type = $pdu->type();
         if ($type == PDU_RESET_QUERY()) {
             dprint("server: got reset query");
@@ -416,6 +422,9 @@ sub handle_client_connection
                 dprint("server: sending end of data PDU: ".$eod_pdu->serialise_json());
                 $client->send($eod_pdu->serialise_binary());
             }
+        } elsif ($pdu->type() == PDU_EXIT()) {
+            dprint("server: client triggered exit");
+            exit(0);
         } elsif ($pdu->type() == PDU_ERROR_REPORT()) {
             dprint("server: got error report from client: ".$pdu->serialise_json());
             $res = 0;

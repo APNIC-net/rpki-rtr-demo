@@ -75,7 +75,7 @@ my $pid;
     like($error, qr/Server has no data/,
         'Got expected error message');
 
-    my $res = kill('TERM', $pid);
+    $client->exit_server();
 }
 
 END {

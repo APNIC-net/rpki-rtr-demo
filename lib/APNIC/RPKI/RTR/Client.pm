@@ -5,7 +5,8 @@ use strict;
 
 use File::Slurp qw(write_file);
 use IO::Select;
-use IO::Socket qw(AF_INET SOCK_STREAM TCP_NODELAY IPPROTO_TCP);
+use IO::Socket qw(AF_INET SOCK_STREAM TCP_NODELAY IPPROTO_TCP
+                  SHUT_WR);
 use JSON::XS qw(encode_json decode_json);
 use List::Util qw(max);
 use Math::BigInt;
@@ -16,6 +17,7 @@ use APNIC::RPKI::RTR::Changeset;
 use APNIC::RPKI::RTR::State;
 use APNIC::RPKI::RTR::PDU::Utils qw(parse_pdu
                                     error_type_to_string);
+use APNIC::RPKI::RTR::PDU::Exit;
 use APNIC::RPKI::RTR::PDU::ResetQuery;
 use APNIC::RPKI::RTR::Utils qw(inet_ntop dprint);
 
@@ -210,8 +212,6 @@ sub _receive_cache_response
         dprint("client: received cache response PDU");
         my $state = $self->{'state'};
         if ($state and ($pdu->session_id() != $state->{'session_id'})) {
-            # All data has to be flushed at this point.
-            $self->flush();
             # The version may not have been negotiated by this point,
             # so default to zero in that case.
             my $cv = $self->{'current_version'} || 0;
@@ -223,6 +223,7 @@ sub _receive_cache_response
                 );
             my $socket = $self->{'socket'};
             $socket->send($err_pdu->serialise_binary());
+            $self->flush();
             die "client: got PDU with unexpected session";
         }
         delete $self->{'last_failure'};
@@ -580,6 +581,33 @@ sub refresh
     return 1;
 }
 
+sub exit_server
+{
+    my ($self) = @_;
+    
+    dprint("client: sending exit");
+    $self->_init_socket_if_not_exists();
+    my $socket = $self->{'socket'};
+    dprint("client: peerport is ".$socket->peerport()); 
+    my $cv = $self->{'current_version'} || 0;
+    my $exit =
+        APNIC::RPKI::RTR::PDU::Exit->new(
+            version    => $cv,
+            session_id => 0,
+        );
+    my $data = $exit->serialise_binary();
+    my $res = $socket->send($data);
+    if ($res != length($data)) {
+        die "Got unexpected send result for exit: '$res' ($!)";
+    }
+    dprint("client: sent exit");
+
+    # Pause here, to save having to do it in every test.
+    sleep(1);
+
+    return 1;
+}
+
 sub flush
 {
     my ($self) = @_;
@@ -591,6 +619,12 @@ sub flush
     delete $self->{'last_run'};
     delete $self->{'last_failure'};
     delete $self->{'current_version'};
+
+    if (my $socket = $self->{'socket'}) {
+	$socket->shutdown(SHUT_WR);
+	$socket->close();
+        $self->{'socket'} = undef;
+    }
 
     return 1;
 }
