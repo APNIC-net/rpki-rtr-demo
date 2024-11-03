@@ -192,6 +192,7 @@ sub _receive_cache_response
         dprint("client: received error response PDU");
         $self->{'last_failure'} = time();
         $self->_close_socket();
+        $self->flush_if_expired();
         if ($pdu->error_code() == ERR_NO_DATA()) {
             die "Server has no data";
         } elsif ($pdu->error_code() == ERR_UNSUPPORTED_VERSION()) {
@@ -207,6 +208,7 @@ sub _receive_cache_response
     } else {
         dprint("client: received unexpected PDU");
         $self->{'last_failure'} = time();
+        $self->flush_if_expired();
         die "Got unexpected PDU: ".$pdu->serialise_json();
     }
 }
@@ -356,6 +358,11 @@ sub refresh
 {
     my ($self, $force, $persist, $version_override, $success_cb) = @_;
 
+    my $flush_res = $self->flush_if_expired();
+    if ($flush_res) {
+        return $self->reset($force);
+    }
+
     if (not $force) {
         my $last_failure = $self->{'last_failure'};
         my $eod = $self->{'eod'};
@@ -486,32 +493,43 @@ sub refresh
     return 1;
 }
 
+sub flush_if_expired
+{
+    my ($self) = @_;
+
+    my $eod      = $self->{'eod'};
+    my $last_run = $self->{'last_run'};
+    if (not $last_run) {
+        return;
+    }
+
+    my $latest_run_time;
+    if ($eod and ($self->{'current_version'} > 0)) {
+        $latest_run_time = $last_run + $eod->expire_interval();
+    } else {
+        # It may be worth making this configurable, though it is
+        # only useful for v0 clients.
+        $latest_run_time = $last_run + 3600;
+    }
+    if (time() > $latest_run_time) {
+        dprint("client: flushing state, reached expiry time");
+        delete $self->{'state'};
+        delete $self->{'eod'};
+        delete $self->{'last_run'};
+        delete $self->{'last_failure'};
+        return 1;
+    }
+
+    return;
+}
+
 sub reset_if_required
 {
     my ($self) = @_;
 
-    my $eod          = $self->{'eod'};
-    my $last_failure = $self->{'last_failure'};
-    my $last_run     = $self->{'last_run'};
-
-    if ($last_failure > $last_run) {
-        my $last_use_time;
-        if ($eod and ($self->{'current_version'} > 0)) {
-            $last_use_time =
-                $last_failure + $eod->expire_interval();
-        } else {
-            # It may be worth making this configurable, though it is
-            # only useful for v0 clients.
-            $last_use_time = $last_failure + 3600;
-        }
-        if (time() > $last_use_time) {
-            dprint("client: removing state and resetting, reached expiry time");
-            delete $self->{'state'};
-            delete $self->{'eod'};
-            delete $self->{'last_run'};
-            delete $self->{'last_failure'};
-            return $self->reset();
-        }
+    my $flushed = $self->flush_if_expired();
+    if ($flushed) {
+        return $self->reset();
     }
 
     return;
