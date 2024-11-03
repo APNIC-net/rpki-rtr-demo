@@ -81,8 +81,9 @@ sub apply_changeset
                         dprint("state: addition of known record");
                         my $error_pdu =
                             APNIC::RPKI::RTR::PDU::ErrorReport->new(
-                                version    => $version,
-                                error_code => ERR_DUPLICATE_ANNOUNCEMENT_RECEIVED(),
+                                version          => $version,
+                                error_code       => ERR_DUPLICATE_ANNOUNCEMENT_RECEIVED(),
+                                encapsulated_pdu => $pdu,
                             );
                         return $error_pdu;
                     } else {
@@ -97,8 +98,9 @@ sub apply_changeset
                         dprint("state: withdrawal of unknown record");
                         my $error_pdu =
                             APNIC::RPKI::RTR::PDU::ErrorReport->new(
-                                version    => $version,
-                                error_code => ERR_WITHDRAWAL_OF_UNKNOWN_RECORD(),
+                                version          => $version,
+                                error_code       => ERR_WITHDRAWAL_OF_UNKNOWN_RECORD(),
+                                encapsulated_pdu => $pdu,
                             );
                         return $error_pdu;
                     } else {
@@ -130,8 +132,9 @@ sub apply_changeset
                         dprint("state: addition of known record");
                         my $error_pdu =
                             APNIC::RPKI::RTR::PDU::ErrorReport->new(
-                                version    => $version,
-                                error_code => ERR_DUPLICATE_ANNOUNCEMENT_RECEIVED(),
+                                version          => $version,
+                                error_code       => ERR_DUPLICATE_ANNOUNCEMENT_RECEIVED(),
+                                encapsulated_pdu => $pdu,
                             );
                         return $error_pdu;
                     } else {
@@ -145,8 +148,9 @@ sub apply_changeset
                         dprint("state: withdrawal of unknown record");
                         my $error_pdu =
                             APNIC::RPKI::RTR::PDU::ErrorReport->new(
-                                version    => $version,
-                                error_code => ERR_WITHDRAWAL_OF_UNKNOWN_RECORD(),
+                                version          => $version,
+                                error_code       => ERR_WITHDRAWAL_OF_UNKNOWN_RECORD(),
+                                encapsulated_pdu => $pdu,
                             );
                         return $error_pdu;
                     } else {
@@ -174,8 +178,9 @@ sub apply_changeset
                         dprint("state: no provider ASNs in ASPA announcement");
                         my $error_pdu =
                             APNIC::RPKI::RTR::PDU::ErrorReport->new(
-                                version    => $version,
-                                error_code => ERR_ASPA_PROVIDER_LIST_ERROR(),
+                                version          => $version,
+                                error_code       => ERR_ASPA_PROVIDER_LIST_ERROR(),
+                                encapsulated_pdu => $pdu,
                             );
                         return $error_pdu;
                     }
@@ -187,8 +192,9 @@ sub apply_changeset
                         dprint("state: withdrawal of unknown record");
                         my $error_pdu =
                             APNIC::RPKI::RTR::PDU::ErrorReport->new(
-                                version    => $version,
-                                error_code => ERR_WITHDRAWAL_OF_UNKNOWN_RECORD(),
+                                version          => $version,
+                                error_code       => ERR_WITHDRAWAL_OF_UNKNOWN_RECORD(),
+                                encapsulated_pdu => $pdu,
                             );
                         return $error_pdu;
                     } else {

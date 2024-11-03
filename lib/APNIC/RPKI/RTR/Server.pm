@@ -190,8 +190,9 @@ sub handle_client_connection
             dprint("$$ server: unsupported version '$version'");
             my $err_pdu =
                 APNIC::RPKI::RTR::PDU::ErrorReport->new(
-                    version    => $self->{'max_supported_version'},
-                    error_code => ERR_UNSUPPORTED_VERSION(),
+                    version          => $self->{'max_supported_version'},
+                    error_code       => ERR_UNSUPPORTED_VERSION(),
+                    encapsulated_pdu => $pdu,
                 );
             $client->send($err_pdu->serialise_binary());
             $res = 0;
@@ -207,8 +208,9 @@ sub handle_client_connection
                 dprint("$$ server: no snapshot");
                 my $err_pdu =
                     APNIC::RPKI::RTR::PDU::ErrorReport->new(
-                        version    => $version,
-                        error_code => ERR_NO_DATA(),
+                        version          => $version,
+                        error_code       => ERR_NO_DATA(),
+                        encapsulated_pdu => $pdu,
                     );
                 $client->send($err_pdu->serialise_binary());
                 $res = 0;
@@ -258,8 +260,9 @@ sub handle_client_connection
                 if ($pdu->session_id() ne $self->session_id()) {
                     my $err_pdu =
                         APNIC::RPKI::RTR::PDU::ErrorReport->new(
-                            version    => $version,
-                            error_code => ERR_CORRUPT_DATA(),
+                            version          => $version,
+                            error_code       => ERR_CORRUPT_DATA(),
+                            encapsulated_pdu => $pdu,
                         );
                     $client->send($err_pdu->serialise_binary());
                     $res = 0;
@@ -273,8 +276,9 @@ sub handle_client_connection
                 dprint("$$ server: no snapshot");
                 my $err_pdu =
                     APNIC::RPKI::RTR::PDU::ErrorReport->new(
-                        version    => $version,
-                        error_code => ERR_NO_DATA(),
+                        version          => $version,
+                        error_code       => ERR_NO_DATA(),
+                        encapsulated_pdu => $pdu,
                     );
                 $client->send($err_pdu->serialise_binary());
                 $res = 0;
@@ -362,8 +366,9 @@ sub handle_client_connection
         } else {
             my $err_pdu =
                 APNIC::RPKI::RTR::PDU::ErrorReport->new(
-                    version    => $version,
-                    error_code => ERR_INVALID_REQUEST(),
+                    version          => $version,
+                    error_code       => ERR_INVALID_REQUEST(),
+                    encapsulated_pdu => $pdu,
                 );
             $client->send($err_pdu->serialise_binary());
             warn("server: invalid request from client");

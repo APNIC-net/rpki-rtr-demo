@@ -179,8 +179,9 @@ sub _receive_cache_response
             delete $self->{'last_failure'};
             my $err_pdu =
                 APNIC::RPKI::RTR::PDU::ErrorReport->new(
-                    version    => $self->{'current_version'},
-                    error_code => ERR_CORRUPT_DATA(),
+                    version          => $self->{'current_version'},
+                    error_code       => ERR_CORRUPT_DATA(),
+                    encapsulated_pdu => $pdu,
                 );
             $socket->send($err_pdu->serialise_binary());
             die "client: got PDU with unexpected session";
@@ -234,8 +235,9 @@ sub _process_responses
             }
             my $err_pdu =
                 APNIC::RPKI::RTR::PDU::ErrorReport->new(
-                    version    => $self->{'current_version'},
-                    error_code => ERR_UNEXPECTED_PROTOCOL_VERSION(),
+                    version          => $self->{'current_version'},
+                    error_code       => ERR_UNEXPECTED_PROTOCOL_VERSION(),
+                    encapsulated_pdu => $pdu,
                 );
             $socket->send($err_pdu->serialise_binary());
             die "client: got PDU with unexpected version";
@@ -254,8 +256,9 @@ sub _process_responses
         } else {
             my $err_pdu =
                 APNIC::RPKI::RTR::PDU::ErrorReport->new(
-                    version    => $self->{'current_version'},
-                    error_code => ERR_UNSUPPORTED_PDU_TYPE(),
+                    version          => $self->{'current_version'},
+                    error_code       => ERR_UNSUPPORTED_PDU_TYPE(),
+                    encapsulated_pdu => $pdu,
                 );
             $socket->send($err_pdu->serialise_binary());
             die "client: got PDU of unexpected type";
