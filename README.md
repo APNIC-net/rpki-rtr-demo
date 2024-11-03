@@ -60,10 +60,7 @@ each command will print debug output to standard error.
 ### Todo
 
  - Documentation/tidying of code.
- - Serial notification support.
- - Multiple client support.
- - Duplicate announcement error handling.
- - (Lots of other stuff.)
+ - See [issues](https://github.com/APNIC-net/rpki-rtr-demo/issues).
 
 ### License
 
