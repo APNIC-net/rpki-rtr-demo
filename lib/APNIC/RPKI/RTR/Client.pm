@@ -172,6 +172,11 @@ sub _receive_cache_response
         dprint("client: received cache response PDU");
         my $state = $self->{'state'};
         if ($state and ($pdu->session_id() != $state->{'session_id'})) {
+            # All data has to be flushed at this point.
+            delete $self->{'state'};
+            delete $self->{'eod'};
+            delete $self->{'last_run'};
+            delete $self->{'last_failure'};
             my $err_pdu =
                 APNIC::RPKI::RTR::PDU::ErrorReport->new(
                     version    => $self->{'current_version'},

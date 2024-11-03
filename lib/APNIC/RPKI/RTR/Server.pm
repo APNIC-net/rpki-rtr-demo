@@ -153,7 +153,7 @@ sub run
                     next;
                 }
                 dprint("server: sending serial notify to $pp ".
-                        "($serial_number)");
+                       "($serial_number)");
                 my $version = $versions{$pp} || 0;
                 my $pdu =
                     APNIC::RPKI::RTR::PDU::SerialNotify->new(
@@ -227,7 +227,7 @@ sub handle_client_connection
                 my $data = read_file($ss_path);
                 my $state =
                     APNIC::RPKI::RTR::State->deserialise_json($data);
-                $state->{'session_id'} = $self->{'session_id'};
+                $state->{'session_id'} = $self->session_id();
 
                 for my $pdu ($state->pdus()) {
                     if ($pdu->supported_in_version($version)) {
@@ -243,7 +243,7 @@ sub handle_client_connection
                 my $eod_pdu =
                     APNIC::RPKI::RTR::PDU::EndOfData->new(
                         version          => $version,
-                        session_id       => $self->{'session_id'},
+                        session_id       => $self->session_id(),
                         serial_number    => $state->serial_number(),
                         refresh_interval => $self->{'refresh_interval'},
                         retry_interval   => $self->{'retry_interval'},
@@ -350,7 +350,7 @@ sub handle_client_connection
                 my $eod_pdu =
                     APNIC::RPKI::RTR::PDU::EndOfData->new(
                         version          => $version,
-                        session_id       => $self->{'session_id'},
+                        session_id       => $self->session_id(),
                         serial_number    => $serial_number,
                         refresh_interval => $self->{'refresh_interval'},
                         retry_interval   => $self->{'retry_interval'},

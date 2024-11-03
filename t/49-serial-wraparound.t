@@ -112,9 +112,6 @@ my $pid;
     is($client->state()->serial_number(), 2,
         'Serial number wrapped as expected');
 
-    use Data::Dumper;
-    warn Dumper($client);
-
     my $res = kill('TERM', $pid);
 }
 
