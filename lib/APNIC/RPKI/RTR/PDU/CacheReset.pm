@@ -6,6 +6,7 @@ use strict;
 use JSON::XS qw(encode_json decode_json);
 
 use APNIC::RPKI::RTR::Constants;
+use APNIC::RPKI::RTR::Utils qw(get_zero);
 
 use base qw(APNIC::RPKI::RTR::PDU);
 
@@ -45,7 +46,7 @@ sub serialise_binary
     return pack("CCnN",
                 $self->version(),
                 $self->type(),
-                0,
+                get_zero(16),
                 8);
 }
 

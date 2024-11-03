@@ -10,7 +10,8 @@ use APNIC::RPKI::RTR::Constants;
 use APNIC::RPKI::RTR::Utils qw(inet_pton
                                inet_ntop
                                dprint
-                               recv_all);
+                               recv_all
+                               get_zero);
 
 use base qw(APNIC::RPKI::RTR::PDU);
 
@@ -94,12 +95,12 @@ sub serialise_binary
     return pack("CCnNCCCCNN",
                 $self->version(),
                 $self->type(),
-                0,
+                get_zero(16),
                 20,
                 $self->flags(),
                 $self->prefix_length(),
                 $self->max_length(),
-                0,
+                get_zero(8),
                 inet_pton($self->address(), 4),
                 $self->asn());
 }

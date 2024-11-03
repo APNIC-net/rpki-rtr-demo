@@ -26,3 +26,5 @@ jobs:
           export HAS_STAYRTR=1
           export APNIC_DEBUG=1
           perl Makefile.PL && make && make test
+          export APNIC_RANDOMISE_ZERO=1
+          make test

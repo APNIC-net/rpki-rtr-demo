@@ -17,7 +17,8 @@ use base qw(Exporter);
 our @EXPORT_OK = qw(inet_ntop
                     inet_pton
                     dprint
-                    recv_all);
+                    recv_all
+                    get_zero);
 
 sub inet_ntop
 {
@@ -95,6 +96,21 @@ sub recv_all
     }
 
     return $buf;
+}
+
+sub get_zero
+{
+    my ($bits) = @_;
+
+    if (not $ENV{'APNIC_RANDOMISE_ZERO'}) {
+        return 0;
+    } else {
+        dprint("randomising zero");
+        my $num = int(rand(4294967295));
+        my $mask = (1 << $bits) - 1;
+        $num &= $mask;
+        return $num;
+    }
 }
 
 1;
