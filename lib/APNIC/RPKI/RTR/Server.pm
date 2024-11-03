@@ -39,6 +39,9 @@ sub new
     my $retry_interval   = $args{'retry_interval'}   || 600;
     my $expire_interval  = $args{'expire_interval'}  || 7200;
 
+    # Only overridable for tests.
+    my $serial_notify_period = $args{'serial_notify_period'} || 60;
+
     my $session_id = int(rand(65535));
 
     my @svs = @{$args{'supported_versions'} || [0, 1, 2]};
@@ -62,7 +65,8 @@ sub new
         session_id            => $session_id,
         supported_versions    => \@svs,
         sv_lookup             => { map { $_ => 1 } @svs },
-        max_supported_version => (max @svs)
+        max_supported_version => (max @svs),
+        serial_notify_period  => $serial_notify_period,
     };
 
     bless $self, $class;
@@ -103,6 +107,8 @@ sub run
     my $last_update = (stat("$data_dir/snapshot.json"))[7] || 0;
     $self->{'versions'} = {};
     $self->{'select'}   = $select;
+    my $last_serial_notify = 0;
+    my $serial_notify_period = $self->{'serial_notify_period'};
 
     for (;;) {
         my @ready = $select->can_read(1);
@@ -130,7 +136,15 @@ sub run
         }
         my $new_last_update = (stat("$data_dir/snapshot.json"))[7] || 0;
         if ($new_last_update > $last_update) {
+            my $now = time();
+            if (($last_serial_notify + $serial_notify_period) > $now) {
+                dprint("server: state has been updated, but rate ".
+                       "limit has been reached, so cannot send ".
+                       "serial notify");
+                next;
+            }
             $last_update = $new_last_update;
+            $last_serial_notify = $now;
             dprint("server: state has been updated, send serial notify to clients");
             my $ss_path = "$data_dir/snapshot.json";
             my $data = read_file($ss_path);

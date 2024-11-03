@@ -13,14 +13,14 @@ use File::Slurp qw(read_file);
 use File::Temp qw(tempdir);
 use JSON::XS qw(decode_json);
 
-use Test::More tests => 2;
+use Test::More tests => 6;
 
 my @pids;
 
 {
     # Set up the server and clients.
 
-    my $data_dir = tempdir(CLEANUP => 1); 
+    my $data_dir = tempdir(CLEANUP => 1);
     my $mnt =
         APNIC::RPKI::RTR::Server::Maintainer->new(
             data_dir => $data_dir
@@ -29,9 +29,10 @@ my @pids;
         ($$ + int(rand(1024))) % (65535 - 1024) + 1024;
     my $server =
         APNIC::RPKI::RTR::Server->new(
-            server   => '127.0.0.1',
-            port     => $port,
-            data_dir => $data_dir,
+            server               => '127.0.0.1',
+            port                 => $port,
+            data_dir             => $data_dir,
+            serial_notify_period => 5,
         );
 
     if (my $ppid = fork()) {
@@ -63,7 +64,7 @@ my @pids;
             port       => $port,
             state_path => $state_path,
         );
-    
+
     if (my $ppid = fork()) {
         push @pids, $ppid;
     } else {
@@ -79,7 +80,7 @@ my @pids;
             port       => $port,
             state_path => $state_path2,
         );
-    
+
     if (my $ppid = fork()) {
         push @pids, $ppid;
     } else {
@@ -87,9 +88,9 @@ my @pids;
         exit(0);
     }
     sleep(1);
-       
+
     # The clients are trying to reset, so they should get the 1.0.0.0/24
-    # prefix by way of a serial notify notification.
+    # prefix.
 
     for my $sp ($state_path, $state_path2) {
         my $state_data = read_file($state_path);
@@ -98,6 +99,45 @@ my @pids;
         ok((exists $state_data->{'vrps'}
                               ->{'4608'}->{'1.0.0.0'}->{'24'}),
             'Clients have first VRP');
+    }
+
+    # Add another VRP, confirm that the clients do not pick it up (at
+    # most one serial notify per specified period).
+
+    my $changeset_2 = APNIC::RPKI::RTR::Changeset->new();
+    my $pdu_2 =
+        APNIC::RPKI::RTR::PDU::IPv4Prefix->new(
+            version       => 1,
+            flags         => 1,
+            asn           => 4608,
+            address       => '2.0.0.0',
+            prefix_length => 24,
+            max_length    => 32,
+        );
+    $changeset_2->add_pdu($pdu_2);
+    $mnt->apply_changeset($changeset_2);
+    sleep(2);
+
+    for my $sp ($state_path, $state_path2) {
+        my $state_data = read_file($state_path);
+        $state_data = decode_json($state_data);
+        $state_data = decode_json($state_data->{'state'});
+        ok((not exists $state_data->{'vrps'}
+                              ->{'4608'}->{'2.0.0.0'}),
+            'Clients do not have second VRP');
+    }
+
+    # Sleep past the serial notify period, confirm the VRP is now
+    # available.
+    sleep(5);
+
+    for my $sp ($state_path, $state_path2) {
+        my $state_data = read_file($state_path);
+        $state_data = decode_json($state_data);
+        $state_data = decode_json($state_data->{'state'});
+        ok((exists $state_data->{'vrps'}
+                              ->{'4608'}->{'2.0.0.0'}),
+            'Clients now have second VRP');
     }
 
     for my $pid (@pids) {
