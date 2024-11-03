@@ -142,6 +142,13 @@ sub run
             my $serial_number = $state->serial_number();
             for my $socket ($select->can_write(0)) {
                 my $pp = $socket->peerport();
+                if (not defined $pp) {
+                    dprint("server: socket no longer available");
+                    $select->remove($socket);
+                    $socket->shutdown(SHUT_WR);
+                    $socket->close();
+                    next;
+                }
                 if ($skip_update_check{$pp}) {
                     next;
                 }

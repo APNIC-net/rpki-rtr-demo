@@ -21,20 +21,28 @@ rpki-rtr-client {data-directory} reset
 
   Reset the client's state as against the server.
 
-rpki-rtr-client {data-directory} refresh [--force]
+rpki-rtr-client {data-directory} refresh [--force] [--persist]
 
   Retrieve any changes that have happened since the last
-  synchronisation attempt.
+  synchronisation attempt.  If --persist is provided, the command will
+  await further changes, writing them to disk as they are received
+  for use with print.
 
 rpki-rtr-client {data-directory} print
 
   Print the current state of the client.
+
+rpki-rtr-client {data-directory} route-origin-validation --asn {asn} --prefix {prefix}
+
+  Perform route origin validation on an announcement (ASN-prefix
+  pair).
 
 rpki-rtr-client {data-directory} aspa-validation --announcement {announcement} --provider-asns {provider-asns}
 
   Perform ASPA validation on an announcement (in bgpdump one-line
   format) as received by an ASN with the specified set of provider
   ASNs.
+
 EOF
 }
 
@@ -114,9 +122,17 @@ sub main
         my $client =
             APNIC::RPKI::RTR::Client->deserialise_json($client_json);
         my $force = grep { $_ eq '--force' } @args;
-        $client->refresh($force);
-        $client_json = $client->serialise_json();
-        write_file("$dir/client.json", $client_json);
+        my $persist = grep { $_ eq '--persist' } @args;
+        if ($persist) {
+            $client->refresh($force, $persist, undef, sub {
+                $client_json = $client->serialise_json();
+                write_file("$dir/client.json", $client_json);
+            });
+        } else {
+            $client->refresh($force, $persist);
+            $client_json = $client->serialise_json();
+            write_file("$dir/client.json", $client_json);
+        }
         return 1;
     } elsif ($op_name eq 'print') {
         my $client_json = read_file("$dir/client.json");
