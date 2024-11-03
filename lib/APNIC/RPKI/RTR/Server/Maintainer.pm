@@ -24,6 +24,8 @@ sub apply_changeset
 {
     my ($self, $changeset) = @_;
 
+    $changeset->rationalise();
+
     my $data_dir = $self->{'data_dir'};
     my @contents = `ls $data_dir`;
     chomp for @contents;

@@ -45,23 +45,47 @@ sub add_pdu
     return 1;
 }
 
-sub apply_changeset
+sub rationalise
 {
-    my ($self, $changeset) = @_;
+    my ($self) = @_;
 
     my @final_pdus;
-    PDU: for my $pdu (@{$changeset->{'pdus'}}) {
+    PDU: for my $pdu ($self->pdus()) {
         for (my $i = 0; $i < @final_pdus; $i++) {
             my $fp = $final_pdus[$i];
             if ($pdu->is_reversal_of($fp)) {
                 splice(@final_pdus, $i, 1);
                 next PDU;
+            } elsif (($pdu->type() == PDU_ASPA())
+                        and ($fp->type() == PDU_ASPA())
+                        and ($pdu->flags() == 1)
+                        and ($fp->flags() == 1)) {
+                my %provider_asns =
+                    map { $_ => 1 }
+                        (@{$fp->provider_asns()},
+                         @{$pdu->provider_asns()});
+                my @final_provider_asns =
+                    sort keys %provider_asns;
+                $pdu->{'provider_asns'} =
+                    \@final_provider_asns;
+                splice(@final_pdus, $i, 1);
             }
         }
         push @final_pdus, $pdu;
     }
             
     $self->{'pdus'} = \@final_pdus;
+
+    return 1;
+}
+
+sub apply_changeset
+{
+    my ($self, $changeset) = @_;
+
+    push @{$self->{'pdus'}},
+         @{$changeset->{'pdus'}};
+    $self->rationalise();
     $self->{'last_serial_number'} =
         $changeset->{'last_serial_number'};
 
