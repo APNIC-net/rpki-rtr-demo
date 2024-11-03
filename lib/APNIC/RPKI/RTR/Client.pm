@@ -110,6 +110,45 @@ sub _close_socket
     return 1;
 }
 
+sub _current_version
+{
+    my ($self) = @_;
+
+    if (not exists $self->{'current_version'}
+            or not defined $self->{'current_version'}) {
+        die "Trying to get current version, but it is not set";
+    }
+
+    return $self->{'current_version'};
+}
+
+sub _parse_pdu
+{
+    my ($self) = @_;
+
+    my $socket = $self->{'socket'};
+    my $pdu = parse_pdu($socket);
+    if (my $cv = $self->{'current_version'}) {
+        if ($pdu->version() != $cv) {
+            if ($pdu->type() == PDU_ERROR_REPORT()) {
+                $self->flush();
+                die "client: got error report PDU with unexpected version";
+            }
+            my $err_pdu =
+                APNIC::RPKI::RTR::PDU::ErrorReport->new(
+                    version          => $cv,
+                    error_code       => ERR_UNEXPECTED_PROTOCOL_VERSION(),
+                    encapsulated_pdu => $pdu,
+                );
+            $socket->send($err_pdu->serialise_binary());
+            $self->flush();
+            die "client: got PDU with unexpected version";
+        }
+    }
+
+    return $pdu;
+}
+
 sub _send_reset_query
 {
     my ($self, $version) = @_;
@@ -144,7 +183,7 @@ sub _send_serial_query
     dprint("client: serial number is '".$state->{'serial_number'}."'");
     my $serial_query =
         APNIC::RPKI::RTR::PDU::SerialQuery->new(
-            version       => $self->{'current_version'},
+            version       => $self->_current_version(),
             session_id    => $state->session_id(),
             serial_number => $state->{'serial_number'},
         );
@@ -163,8 +202,7 @@ sub _receive_cache_response
     my ($self) = @_;
 
     dprint("client: receiving cache response");
-    my $socket = $self->{'socket'};
-    my $pdu = parse_pdu($socket);
+    my $pdu = $self->_parse_pdu();
 
     my $type = $pdu->type();
     dprint("client: received PDU: ".$pdu->serialise_json());
@@ -174,12 +212,16 @@ sub _receive_cache_response
         if ($state and ($pdu->session_id() != $state->{'session_id'})) {
             # All data has to be flushed at this point.
             $self->flush();
+            # The version may not have been negotiated by this point,
+            # so default to zero in that case.
+            my $cv = $self->{'current_version'} || 0;
             my $err_pdu =
                 APNIC::RPKI::RTR::PDU::ErrorReport->new(
-                    version          => $self->{'current_version'},
+                    version          => $cv,
                     error_code       => ERR_CORRUPT_DATA(),
                     encapsulated_pdu => $pdu,
                 );
+            my $socket = $self->{'socket'};
             $socket->send($err_pdu->serialise_binary());
             die "client: got PDU with unexpected session";
         }
@@ -222,25 +264,12 @@ sub _process_responses
 
     for (;;) {
         dprint("client: processing response");
-        my $pdu = parse_pdu($socket);
+        my $pdu = $self->_parse_pdu();
         # For tests only.
         if ($self->{'pdu_cb'}) {
             $self->{'pdu_cb'}->($pdu);
         }
         dprint("client: processing response: got PDU: ".$pdu->serialise_json());
-        if ($pdu->version() != $self->{'current_version'}) {
-            if ($pdu->type() == PDU_ERROR_REPORT()) {
-                die "client: got error PDU with unexpected version";
-            }
-            my $err_pdu =
-                APNIC::RPKI::RTR::PDU::ErrorReport->new(
-                    version          => $self->{'current_version'},
-                    error_code       => ERR_UNEXPECTED_PROTOCOL_VERSION(),
-                    encapsulated_pdu => $pdu,
-                );
-            $socket->send($err_pdu->serialise_binary());
-            die "client: got PDU with unexpected version";
-        }
         if ($changeset->can_add_pdu($pdu)) {
             $changeset->add_pdu($pdu);
         } elsif ($pdu->type() == PDU_END_OF_DATA()) {
@@ -255,7 +284,7 @@ sub _process_responses
         } else {
             my $err_pdu =
                 APNIC::RPKI::RTR::PDU::ErrorReport->new(
-                    version          => $self->{'current_version'},
+                    version          => $self->_current_version(),
                     error_code       => ERR_UNSUPPORTED_PDU_TYPE(),
                     encapsulated_pdu => $pdu,
                 );
@@ -272,7 +301,7 @@ sub _process_eod
     my ($self, $eod) = @_;
 
     my %defaults = (
-        version          => $self->{'current_version'},
+        version          => $self->_current_version(),
         error_code       => ERR_CORRUPT_DATA(),
         encapsulated_pdu => $eod,
     );
@@ -333,7 +362,7 @@ sub reset
         my $last_failure = $self->{'last_failure'};
         if ($last_failure) {
             my $eod = $self->{'eod'};
-            if ($eod and ($self->{'current_version'} > 0)) {
+            if ($eod and ($self->_current_version() > 0)) {
                 my $retry_interval = $eod->refresh_interval();
                 my $min_retry_time = $last_failure + $retry_interval;
                 if (time() < $min_retry_time) {
@@ -421,7 +450,7 @@ sub refresh
     if (not $force) {
         my $last_failure = $self->{'last_failure'};
         my $eod = $self->{'eod'};
-        if ($last_failure and $eod and ($self->{'current_version'} > 0)) {
+        if ($last_failure and $eod and ($self->_current_version() > 0)) {
             my $retry_interval = $eod->refresh_interval();
             my $min_retry_time = $last_failure + $retry_interval;
             if (time() < $min_retry_time) {
@@ -446,7 +475,7 @@ sub refresh
                            "before server readable");
                     $select->remove($socket);
                     if ($ready) {
-                        my $pdu = parse_pdu($socket);
+                        my $pdu = $self->_parse_pdu();
                         if ($pdu->type() != PDU_SERIAL_NOTIFY()) {
                             die "Expected serial notify PDU";
                         }
@@ -458,7 +487,7 @@ sub refresh
                 return;
             }
         }
-        if ($eod and ($self->{'current_version'} > 0)) {
+        if ($eod and ($self->_current_version() > 0)) {
             my $last_run = $self->{'last_run'};
             my $refresh_interval = $eod->refresh_interval();
             my $min_refresh_time = $last_run + $refresh_interval;
@@ -484,7 +513,7 @@ sub refresh
                            "before server readable");
                     $select->remove($socket);
                     if ($ready) {
-                        my $pdu = parse_pdu($socket);
+                        my $pdu = $self->_parse_pdu();
                         if ($pdu->type() != PDU_SERIAL_NOTIFY()) {
                             die "Expected serial notify PDU";
                         }

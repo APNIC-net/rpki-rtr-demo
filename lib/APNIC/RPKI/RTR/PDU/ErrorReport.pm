@@ -17,6 +17,10 @@ sub new
     my $class = shift;
     my %args = @_;
 
+    if (not defined $args{'version'}) {
+        die "Version not defined";
+    }
+
     my $self = {
         version          => $args{'version'},
         error_code       => $args{'error_code'},
