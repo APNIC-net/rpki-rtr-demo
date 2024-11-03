@@ -8,7 +8,11 @@ use APNIC::RPKI::RTR::Server;
 sub usage
 {
     print <<EOF;
-rpki-rtr-server {data-directory} init --server {server} --port {port}
+rpki-rtr-server {data-directory}
+    init
+    --server {server}
+    --port {port}
+    [--strict]
 
   Starts a new server, using the specified data directory. 
 EOF
@@ -44,12 +48,15 @@ sub main
     } elsif ($op_name eq 'init') {
         my $server;
         my $port;
+        my $strict;
         while (@args) {
             my $key = shift @args;
             if ($key eq '--server') {
                 $server = shift @args;
             } elsif ($key eq '--port') {
                 $port = shift @args;
+            } elsif ($key eq '--strict') {
+                $strict = 1;
             } else {
                 error("Invalid argument '$key'");
             }
@@ -63,6 +70,10 @@ sub main
                 data_dir => $dir,
                 server   => $server,
                 port     => $port,
+                (($strict)
+                    ? (strict_send    => 1,
+                       strict_receive => 1)
+                    : ())
             );
 
         $server_obj->run();

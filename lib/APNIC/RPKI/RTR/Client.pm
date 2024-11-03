@@ -48,7 +48,7 @@ sub new
         debug                 => $args{'debug'},
         strict_send           => $args{'strict_send'},
         strict_receive        => $args{'strict_receive'},
-        state_path            => $args{'state_path'}, 
+        state_path            => $args{'state_path'},
     };
     bless $self, $class;
     return $self;
@@ -173,10 +173,7 @@ sub _receive_cache_response
         my $state = $self->{'state'};
         if ($state and ($pdu->session_id() != $state->{'session_id'})) {
             # All data has to be flushed at this point.
-            delete $self->{'state'};
-            delete $self->{'eod'};
-            delete $self->{'last_run'};
-            delete $self->{'last_failure'};
+            $self->flush();
             my $err_pdu =
                 APNIC::RPKI::RTR::PDU::ErrorReport->new(
                     version          => $self->{'current_version'},
@@ -270,6 +267,64 @@ sub _process_responses
     return 0;
 }
 
+sub _process_eod
+{
+    my ($self, $eod) = @_;
+
+    my %defaults = (
+        version          => $self->{'current_version'},
+        error_code       => ERR_CORRUPT_DATA(),
+        encapsulated_pdu => $eod,
+    );
+    my $socket = $self->{'socket'};
+
+    if ($eod->type() != PDU_END_OF_DATA()) {
+        my $err_pdu =
+            APNIC::RPKI::RTR::PDU::ErrorReport->new(%defaults);
+        $socket->send($err_pdu->serialise_binary());
+        $self->flush();
+        die "client: PDU is not End of Data PDU";
+    }
+
+    if ($eod->version() > 0) {
+        my $refresh_interval = $eod->refresh_interval();
+        my $retry_interval   = $eod->retry_interval();
+        my $expire_interval  = $eod->expire_interval();
+
+        if ($self->{'strict_receive'}) {
+            my $msg;
+            if ($refresh_interval > 86400) {
+                $msg = "refresh interval too large";
+            } elsif ($retry_interval > 7200) {
+                $msg = "retry interval too large";
+            } elsif ($expire_interval < 600) {
+                $msg = "expire interval too small";
+            } elsif ($expire_interval > 172800) {
+                $msg = "expire interval too large";
+            } elsif ($expire_interval <= $refresh_interval) {
+                $msg = "expire interval must be greater than ".
+                       "refresh interval";
+            } elsif ($expire_interval <= $retry_interval) {
+                $msg = "expire interval must be greater than ".
+                       "retry interval";
+            }
+            if ($msg) {
+                my $err_pdu =
+                    APNIC::RPKI::RTR::PDU::ErrorReport->new(
+                        %defaults,
+                        error_text => $msg,
+                    );
+                $socket->send($err_pdu->serialise_binary());
+                $self->flush();
+                die "client: $msg";
+            }
+        }
+    }
+
+    $self->{'eod'} = $eod;
+    return 1;
+}
+
 sub reset
 {
     my ($self, $force, $persist) = @_;
@@ -336,7 +391,7 @@ sub reset
             die "client: got error: ".
                 error_type_to_string($error_pdu->error_code());
         }
-        $self->{'eod'} = $other_pdu;
+        $self->_process_eod($other_pdu);
         $self->{'last_run'} = time();
         $state->{'serial_number'} = $other_pdu->serial_number();
     }
@@ -472,7 +527,7 @@ sub refresh
             die "client: got error: ".
                 error_type_to_string($error_pdu->error_code());
         }
-        $self->{'eod'} = $other_pdu;
+        $self->_process_eod($other_pdu);
         $self->{'last_run'} = time();
         $self->{'state'}->{'serial_number'} = $other_pdu->serial_number();
     }
@@ -489,6 +544,21 @@ sub refresh
     } else {
         $self->_close_socket();
     }
+
+    return 1;
+}
+
+sub flush
+{
+    my ($self) = @_;
+
+    dprint("client: flushing state");
+
+    delete $self->{'state'};
+    delete $self->{'eod'};
+    delete $self->{'last_run'};
+    delete $self->{'last_failure'};
+    delete $self->{'current_version'};
 
     return 1;
 }
@@ -512,11 +582,8 @@ sub flush_if_expired
         $latest_run_time = $last_run + 3600;
     }
     if (time() > $latest_run_time) {
-        dprint("client: flushing state, reached expiry time");
-        delete $self->{'state'};
-        delete $self->{'eod'};
-        delete $self->{'last_run'};
-        delete $self->{'last_failure'};
+        dprint("client: reached expiry time");
+        $self->flush();
         return 1;
     }
 
@@ -558,7 +625,8 @@ sub serialise_json
         (map {
             $self->{$_} ? ($_ => $self->{$_}) : ()
         } qw(server port last_run last_failure supported_versions
-             sv_lookup max_supported_version current_version)),
+             sv_lookup max_supported_version current_version
+             strict_send strict_receive)),
     };
     return encode_json($data);
 }

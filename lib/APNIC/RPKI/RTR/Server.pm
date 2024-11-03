@@ -178,7 +178,7 @@ sub handle_client_connection
     eval {
         my $client_address = $client->peerhost() || '(N/A)';
         my $client_port = $client->peerport() || '(N/A)';
-        dprint("$$ server: connection from $client_address:$client_port");
+        dprint("server: connection from $client_address:$client_port");
 
         my $pdu = parse_pdu($client);
         if (not $pdu) {
@@ -187,7 +187,7 @@ sub handle_client_connection
         }
         $version = $pdu->version();
         if (not $self->{'sv_lookup'}->{$version}) {
-            dprint("$$ server: unsupported version '$version'");
+            dprint("server: unsupported version '$version'");
             my $err_pdu =
                 APNIC::RPKI::RTR::PDU::ErrorReport->new(
                     version          => $self->{'max_supported_version'},
@@ -201,11 +201,11 @@ sub handle_client_connection
         $versions->{$client->peerport()} = $version;
         my $type = $pdu->type();
         if ($type == PDU_RESET_QUERY()) {
-            dprint("$$ server: got reset query");
+            dprint("server: got reset query");
             my $ss_path = "$data_dir/snapshot.json";
             my $has_snapshot = -e $ss_path;
             if (not $self->{'no_ss_exists_check'} and not $has_snapshot) {
-                dprint("$$ server: no snapshot");
+                dprint("server: no snapshot");
                 my $err_pdu =
                     APNIC::RPKI::RTR::PDU::ErrorReport->new(
                         version          => $version,
@@ -216,14 +216,14 @@ sub handle_client_connection
                 $res = 0;
                 goto FINISHED;
             } else {
-                dprint("$$ server: has snapshot");
+                dprint("server: has snapshot");
                 my $cr_pdu =
                     APNIC::RPKI::RTR::PDU::CacheResponse->new(
                         version    => $version,
                         session_id => $self->session_id(),
                     );
                 my $sb = $cr_pdu->serialise_binary();
-                dprint("$$ server: sending cache response: ".$cr_pdu->serialise_json());
+                dprint("server: sending cache response: ".$cr_pdu->serialise_json());
                 $client->send($sb);
 
                 my $data = read_file($ss_path);
@@ -234,10 +234,10 @@ sub handle_client_connection
                 for my $pdu ($state->pdus()) {
                     if ($pdu->supported_in_version($version)) {
                         $pdu->{'version'} = $version;
-                        dprint("$$ server: sending PDU: ".$pdu->serialise_json());
+                        dprint("server: sending PDU: ".$pdu->serialise_json());
                         $client->send($pdu->serialise_binary());
                     } else {
-                        dprint("$$ server: not sending PDU, not supported in client version: ".
+                        dprint("server: not sending PDU, not supported in client version: ".
                             $pdu->serialise_json());
                     }
                 }
@@ -251,11 +251,11 @@ sub handle_client_connection
                         retry_interval   => $self->{'retry_interval'},
                         expire_interval  => $self->{'expire_interval'},
                     );
-                dprint("$$ server: sending end of data PDU: ".$eod_pdu->serialise_json());
+                dprint("server: sending end of data PDU: ".$eod_pdu->serialise_json());
                 $client->send($eod_pdu->serialise_binary());
             }
         } elsif ($type == PDU_SERIAL_QUERY()) {
-            dprint("$$ server: got serial query");
+            dprint("server: got serial query");
             if (not $self->{'no_session_id_check'}) {
                 if ($pdu->session_id() ne $self->session_id()) {
                     my $err_pdu =
@@ -273,7 +273,7 @@ sub handle_client_connection
             my $ss_path = "$data_dir/snapshot.json";
             my $has_snapshot = -e $ss_path;
             if (not $self->{'no_ss_exists_check'} and not $has_snapshot) {
-                dprint("$$ server: no snapshot");
+                dprint("server: no snapshot");
                 my $err_pdu =
                     APNIC::RPKI::RTR::PDU::ErrorReport->new(
                         version          => $version,
@@ -290,7 +290,7 @@ sub handle_client_connection
                         session_id => $self->session_id(),
                     );
                 my $sb = $cr_pdu->serialise_binary();
-                dprint("$$ server: sending cache response: ".$cr_pdu->serialise_json());
+                dprint("server: sending cache response: ".$cr_pdu->serialise_json());
                 $client->send($sb);
 
                 # Serial query.
@@ -342,10 +342,10 @@ sub handle_client_connection
                     for my $pdu ($first_changeset->pdus()) {
                         if ($pdu->supported_in_version($version)) {
                             $pdu->{'version'} = $version;
-                            dprint("$$ server: sending PDU: ".$pdu->serialise_json());
+                            dprint("server: sending PDU: ".$pdu->serialise_json());
                             $client->send($pdu->serialise_binary());
                         } else {
-                            dprint("$$ server: not sending PDU, not supported in client version: ".
+                            dprint("server: not sending PDU, not supported in client version: ".
                                 $pdu->serialise_json());
                         }
                     }
@@ -360,9 +360,13 @@ sub handle_client_connection
                         retry_interval   => $self->{'retry_interval'},
                         expire_interval  => $self->{'expire_interval'},
                     );
-                dprint("$$ server: sending end of data PDU: ".$eod_pdu->serialise_json());
+                dprint("server: sending end of data PDU: ".$eod_pdu->serialise_json());
                 $client->send($eod_pdu->serialise_binary());
             }
+        } elsif ($pdu->type() == PDU_ERROR_REPORT()) {
+            dprint("server: got error report from client: ".$pdu->serialise_json());
+            $res = 0;
+            goto FINISHED;
         } else {
             my $err_pdu =
                 APNIC::RPKI::RTR::PDU::ErrorReport->new(
@@ -371,7 +375,8 @@ sub handle_client_connection
                     encapsulated_pdu => $pdu,
                 );
             $client->send($err_pdu->serialise_binary());
-            warn("server: invalid request from client");
+            warn("server: invalid request from client: ".
+                 $pdu->serialise_json());
             $res = 0;
             goto FINISHED;
         }
@@ -388,7 +393,7 @@ sub handle_client_connection
     }
 
     FINISHED: {
-        dprint("$$ server: finished with client request");
+        dprint("server: finished with client request");
     }
 
     return $res;
