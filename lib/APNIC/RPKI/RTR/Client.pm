@@ -289,6 +289,7 @@ sub _process_responses
                     encapsulated_pdu => $pdu,
                 );
             $socket->send($err_pdu->serialise_binary());
+            $self->flush();
             die "client: got PDU of unexpected type";
         }
     }
@@ -417,6 +418,7 @@ sub reset
         if ($error_pdu and ref $error_pdu) {
             my $socket = $self->{'socket'};
             $socket->send($error_pdu->serialise_binary());
+            $self->flush();
             die "client: got error: ".
                 error_type_to_string($error_pdu->error_code());
         }
@@ -553,6 +555,7 @@ sub refresh
         if ($error_pdu and ref $error_pdu) {
             my $socket = $self->{'socket'};
             $socket->send($error_pdu->serialise_binary());
+            $self->flush();
             die "client: got error: ".
                 error_type_to_string($error_pdu->error_code());
         }
