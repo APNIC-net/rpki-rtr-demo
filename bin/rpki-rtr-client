@@ -6,6 +6,7 @@ use strict;
 use DateTime;
 use File::Slurp qw(read_file write_file);
 
+use APNIC::RPKI::RTR::Constants;
 use APNIC::RPKI::RTR::Client;
 use APNIC::RPKI::Validator::ASPA;
 use APNIC::RPKI::Validator::ROA qw(ROV_INVALID ROV_UNKNOWN ROV_VALID);
@@ -186,13 +187,14 @@ sub main
             print "State:\n";
             for my $pdu (@pdus) {
                 my $type_str = $pdu->type_str();
-                if (($pdu->type() == 4) or ($pdu->type() == 6)) {
+                if (($pdu->type() == PDU_IPV4_PREFIX())
+                        or ($pdu->type() == PDU_IPV6_PREFIX())) {
                     my $str = $pdu->address()."/".
                               $pdu->prefix_length()."-".
                               $pdu->max_length()." => ".
                               "AS".$pdu->asn();
                     print " - $type_str: $str\n";
-                } elsif ($pdu->type() == 11) {
+                } elsif ($pdu->type() == PDU_ASPA()) {
                     my $customer_asn = $pdu->customer_asn();
                     my @provider_asns = @{$pdu->provider_asns()};
                     my $str = "AS$customer_asn => ".

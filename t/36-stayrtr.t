@@ -3,6 +3,7 @@
 use warnings;
 use strict;
 
+use APNIC::RPKI::RTR::Constants;
 use APNIC::RPKI::RTR::Server;
 use APNIC::RPKI::RTR::Server::Maintainer;
 use APNIC::RPKI::RTR::Client;
@@ -67,7 +68,7 @@ my @pids;
     $client->reset();
     my @pdus = $client->{'state'}->pdus();
     is(@pdus, 11, 'Got ten PDUs from stayrtr');
-    my @aspa_pdus = grep { $_->type() == 11 } @pdus;
+    my @aspa_pdus = grep { $_->type() == PDU_ASPA() } @pdus;
     is(@aspa_pdus, 3, 'Got three ASPA PDUs');
     my @customer_asns =
         sort { $a <=> $b }
