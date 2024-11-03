@@ -313,6 +313,9 @@ sub handle_client_connection
                     my $changeset_path = "$data_dir/changeset_$i.json";
                     if (-e $changeset_path) {
                         push @changeset_paths, $changeset_path;
+                        if ($i == 4294967295) {
+                            $i = 0;
+                        }
                     } else {
                         last;
                     }

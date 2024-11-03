@@ -22,7 +22,7 @@ sub new
 
 sub apply_changeset
 {
-    my ($self, $changeset) = @_;
+    my ($self, $changeset, $override_serial) = @_;
 
     $changeset->rationalise();
 
@@ -39,12 +39,33 @@ sub apply_changeset
     }
     my $max_serial;
     if (@serials) {
-        $max_serial = max(@serials);
+        @serials = sort @serials;
+        $max_serial = $serials[$#serials];
+        # If both the top serial value and 1 are present as serials,
+        # then remove everything from the top of the list working
+        # backwards, for the purposes of figuring out the next serial.
+        if (($max_serial == 4294967295)
+                and ($serials[0] == 1)) {
+            while ($serials[$#serials] == $max_serial) {
+                pop @serials;
+                $max_serial--;
+            }
+            $max_serial = $serials[$#serials];
+        }
+    } elsif ($override_serial) {
+        $max_serial = $override_serial;
     } else {
         $max_serial = 0;
     }
- 
-    my $new_max_serial = $max_serial + 1;
+    if (defined $override_serial
+            and $max_serial != $override_serial) {
+        die "Override serial not used";
+    }
+
+    my $new_max_serial =
+        ($max_serial == 4294967295)
+            ? 1
+            : $max_serial + 1;
     $changeset->{'last_serial_number'} = $new_max_serial;
     my $encoded = $changeset->serialise_json();
     write_file("$data_dir/changeset_${new_max_serial}.json",
