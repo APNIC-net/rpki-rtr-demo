@@ -101,7 +101,8 @@ sub run
 
     my $select = IO::Select->new($server_socket);
     my $last_update = (stat("$data_dir/snapshot.json"))[7] || 0;
-    my %versions;
+    $self->{'versions'} = {};
+    $self->{'select'}   = $select;
 
     for (;;) {
         my @ready = $select->can_read(1);
@@ -118,13 +119,10 @@ sub run
                 dprint("server: handling client connection ".
                        "for $pp");
                 my $res =
-                    $self->handle_client_connection($socket, $data_dir,
-                                                    \%versions);
+                    $self->handle_client_connection($socket, $data_dir);
                 if (not $res) {
                     dprint("server: request for $pp failed, closing");
-                    $select->remove($socket);
-                    $socket->shutdown(SHUT_WR);
-                    $socket->close();
+                    $self->flush($socket);
                 } else {
                     dprint("server: request for $pp succeeded");
                 }
@@ -144,9 +142,7 @@ sub run
                 my $pp = $socket->peerport();
                 if (not defined $pp) {
                     dprint("server: socket no longer available");
-                    $select->remove($socket);
-                    $socket->shutdown(SHUT_WR);
-                    $socket->close();
+                    $self->flush($socket);
                     next;
                 }
                 if ($skip_update_check{$pp}) {
@@ -154,7 +150,7 @@ sub run
                 }
                 dprint("server: sending serial notify to $pp ".
                        "($serial_number)");
-                my $version = $versions{$pp} || 0;
+                my $version = $self->{'versions'}->{$pp} || 0;
                 my $pdu =
                     APNIC::RPKI::RTR::PDU::SerialNotify->new(
                         version       => $version,
@@ -169,16 +165,39 @@ sub run
     return 1;
 }
 
+sub flush
+{
+    my ($self, $client) = @_;
+
+    my $peerport = $client->peerport();
+    if (defined $peerport) {
+        delete $self->{'versions'}->{$peerport};
+    }
+
+    $self->{'select'}->remove($client);
+    $client->shutdown(SHUT_WR);
+    $client->close();
+
+    return 1;
+}
+
 sub handle_client_connection
 {
-    my ($self, $client, $data_dir, $versions) = @_;
+    my ($self, $client, $data_dir) = @_;
 
     my $version = $self->{'max_supported_version'};
+    my $versions = $self->{'versions'};
     my $res = 1;
     eval {
-        my $client_address = $client->peerhost() || '(N/A)';
-        my $client_port = $client->peerport() || '(N/A)';
+        my $peerhost = $client->peerhost();
+        my $peerport = $client->peerport();
+        my $client_address = $peerhost || '(N/A)';
+        my $client_port    = $peerport || '(N/A)';
         dprint("server: connection from $client_address:$client_port");
+        my $cv =
+            ($peerport)
+                ? $versions->{$peerport}
+                : undef;
 
         my $pdu = parse_pdu($client);
         if (not $pdu) {
@@ -186,6 +205,25 @@ sub handle_client_connection
             return 0;
         }
         $version = $pdu->version();
+        if ((defined $cv) and ($version != $cv)) {
+            if ($pdu->type() == PDU_ERROR_REPORT()) {
+                $self->flush($client);
+                dprint("server: got error report PDU with unexpected version");
+                $res = 0;
+                goto FINISHED;
+            }
+            my $err_pdu =
+                APNIC::RPKI::RTR::PDU::ErrorReport->new(
+                    version          => $cv,
+                    error_code       => ERR_UNEXPECTED_PROTOCOL_VERSION(),
+                    encapsulated_pdu => $pdu,
+                );
+            $client->send($err_pdu->serialise_binary());
+            $self->flush($client);
+            dprint("server: got PDU with unexpected version");
+            $res = 0;
+            goto FINISHED;
+        }
         if (not $self->{'sv_lookup'}->{$version}) {
             dprint("server: unsupported version '$version'");
             my $err_pdu =
@@ -265,6 +303,7 @@ sub handle_client_connection
                             encapsulated_pdu => $pdu,
                         );
                     $client->send($err_pdu->serialise_binary());
+                    $self->flush($client);
                     $res = 0;
                     goto FINISHED;
                 }
@@ -375,8 +414,9 @@ sub handle_client_connection
                     encapsulated_pdu => $pdu,
                 );
             $client->send($err_pdu->serialise_binary());
-            warn("server: invalid request from client: ".
-                 $pdu->serialise_json());
+            dprint("server: invalid request from client: ".
+                   $pdu->serialise_json());
+            $self->flush($client);
             $res = 0;
             goto FINISHED;
         }
@@ -388,7 +428,8 @@ sub handle_client_connection
                 error_code => ERR_INTERNAL_ERROR(),
             );
         $client->send($err_pdu->serialise_binary());
-        warn("server: failed to handle request/connection: $error");
+        dprint("server: failed to handle request/connection: $error");
+        $self->flush($client);
         return 0;
     }
 

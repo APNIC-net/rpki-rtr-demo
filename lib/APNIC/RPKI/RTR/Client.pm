@@ -409,7 +409,7 @@ sub reset
     my ($res, $changeset, $other_pdu) = $self->_process_responses();
     if (not $res) {
         if ($other_pdu) {
-            warn $other_pdu->serialise_json(),"\n";
+            dprint($other_pdu->serialise_json());
         }
         die "Failed to process cache responses";
     } else {
@@ -545,7 +545,7 @@ sub refresh
                 $self->{'socket'}   = undef;
                 return $self->reset(1);
             }
-            warn $other_pdu->serialise_json(),"\n";
+            dprint($other_pdu->serialise_json());
         }
         die "Failed to process cache responses";
     } else {
