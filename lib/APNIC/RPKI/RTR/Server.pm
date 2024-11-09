@@ -41,7 +41,14 @@ sub new
     my $expire_interval  = $args{'expire_interval'}  || 7200;
 
     my $strict_send = $args{'strict_send'};
-
+    if ($strict_send) {
+        my $msg = validate_intervals($refresh_interval,
+                                     $retry_interval,
+                                     $expire_interval);
+        if ($msg) {
+            die $msg;
+        }
+    }
 
     # Only overridable for tests.
     my $serial_notify_period = $args{'serial_notify_period'} || 60;
