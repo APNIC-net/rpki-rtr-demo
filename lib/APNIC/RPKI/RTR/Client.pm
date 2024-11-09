@@ -19,7 +19,9 @@ use APNIC::RPKI::RTR::PDU::Utils qw(parse_pdu
                                     error_type_to_string);
 use APNIC::RPKI::RTR::PDU::Exit;
 use APNIC::RPKI::RTR::PDU::ResetQuery;
-use APNIC::RPKI::RTR::Utils qw(inet_ntop dprint);
+use APNIC::RPKI::RTR::Utils qw(inet_ntop
+                               dprint
+                               validate_intervals);
 
 our $VERSION = "0.1";
 
@@ -335,22 +337,9 @@ sub _process_eod
         my $expire_interval  = $eod->expire_interval();
 
         if ($self->{'strict_receive'}) {
-            my $msg;
-            if ($refresh_interval > 86400) {
-                $msg = "refresh interval too large";
-            } elsif ($retry_interval > 7200) {
-                $msg = "retry interval too large";
-            } elsif ($expire_interval < 600) {
-                $msg = "expire interval too small";
-            } elsif ($expire_interval > 172800) {
-                $msg = "expire interval too large";
-            } elsif ($expire_interval <= $refresh_interval) {
-                $msg = "expire interval must be greater than ".
-                       "refresh interval";
-            } elsif ($expire_interval <= $retry_interval) {
-                $msg = "expire interval must be greater than ".
-                       "retry interval";
-            }
+            my $msg = validate_intervals($refresh_interval,
+                                         $retry_interval,
+                                         $expire_interval);
             if ($msg) {
                 my $err_pdu =
                     APNIC::RPKI::RTR::PDU::ErrorReport->new(

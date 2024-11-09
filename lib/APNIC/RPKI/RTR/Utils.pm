@@ -18,7 +18,8 @@ our @EXPORT_OK = qw(inet_ntop
                     inet_pton
                     dprint
                     recv_all
-                    get_zero);
+                    get_zero
+                    validate_intervals);
 
 sub inet_ntop
 {
@@ -111,6 +112,30 @@ sub get_zero
         $num &= $mask;
         return $num;
     }
+}
+
+sub validate_intervals
+{
+    my ($refresh_interval, $retry_interval, $expire_interval) = @_;
+
+    my $msg = "";
+    if ($refresh_interval > 86400) {
+        $msg = "refresh interval too large";
+    } elsif ($retry_interval > 7200) {
+        $msg = "retry interval too large";
+    } elsif ($expire_interval < 600) {
+        $msg = "expire interval too small";
+    } elsif ($expire_interval > 172800) {
+        $msg = "expire interval too large";
+    } elsif ($expire_interval <= $refresh_interval) {
+        $msg = "expire interval must be greater than ".
+               "refresh interval";
+    } elsif ($expire_interval <= $retry_interval) {
+        $msg = "expire interval must be greater than ".
+               "retry interval";
+    }
+
+    return $msg;
 }
 
 1;

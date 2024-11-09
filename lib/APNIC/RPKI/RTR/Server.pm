@@ -12,7 +12,8 @@ use List::Util qw(max);
 use APNIC::RPKI::RTR::Constants;
 use APNIC::RPKI::RTR::Changeset;
 use APNIC::RPKI::RTR::State;
-use APNIC::RPKI::RTR::Utils qw(dprint);
+use APNIC::RPKI::RTR::Utils qw(dprint
+                               validate_intervals);
 use APNIC::RPKI::RTR::PDU::Utils qw(parse_pdu);
 
 sub new
@@ -38,6 +39,9 @@ sub new
     my $refresh_interval = $args{'refresh_interval'} || 3600;
     my $retry_interval   = $args{'retry_interval'}   || 600;
     my $expire_interval  = $args{'expire_interval'}  || 7200;
+
+    my $strict_send = $args{'strict_send'};
+
 
     # Only overridable for tests.
     my $serial_notify_period = $args{'serial_notify_period'} || 60;
