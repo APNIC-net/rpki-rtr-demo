@@ -226,6 +226,19 @@ sub handle_client_connection
                 ? $versions->{$peerport}
                 : undef;
 
+        # For testing.
+        if ($ENV{'APNIC_SEND_EARLY_SERIAL_NOTIFY'}) {
+            dprint("server: sending early serial notify to ".
+                   "$client_address:$client_port");
+            my $pdu =
+                APNIC::RPKI::RTR::PDU::SerialNotify->new(
+                    version       => int(rand(3)),
+                    session_id    => int(rand(65535)),
+                    serial_number => int(rand(65535)),
+                );
+            $client->send($pdu->serialise_binary());
+        }
+
         my $pdu = parse_pdu($client);
         if (not $pdu) {
             dprint("server: socket ($peerport) is closed");

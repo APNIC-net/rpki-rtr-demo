@@ -73,7 +73,7 @@ my $pid;
     eval { $client->reset() };
     my $error = $@;
     ok((not $error), 'Reset client successfully');
- 
+
     sleep(2);
     my @pdus;
     $client->{'pdu_cb'} = sub { push @pdus, $_[0] };
@@ -83,7 +83,8 @@ my $pid;
 
     my @pdu_types = map { $_->type() } @pdus;
     is_deeply(\@pdu_types,
-              [ PDU_IPV4_PREFIX(),
+              [ PDU_CACHE_RESPONSE(),
+                PDU_IPV4_PREFIX(),
                 PDU_END_OF_DATA() ],
               'Reset on expiry interval being reached');
 

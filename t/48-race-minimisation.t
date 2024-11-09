@@ -97,7 +97,9 @@ my $pid;
     pop @pdus;
 
     my @data =
-        map { $_->address().'/'.$_->prefix_length() }
+        map  { $_->address().'/'.$_->prefix_length() }
+        grep {    ($_->type() == PDU_IPV4_PREFIX())
+               or ($_->type() == PDU_IPV6_PREFIX()) }
             @pdus;
     is_deeply(
         \@data,

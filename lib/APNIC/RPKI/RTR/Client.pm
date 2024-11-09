@@ -207,6 +207,9 @@ sub _receive_cache_response
 
     dprint("client: receiving cache response");
     my $pdu = $self->_parse_pdu();
+    if ($self->{'pdu_cb'}) {
+        $self->{'pdu_cb'}->($pdu);
+    }
 
     my $type = $pdu->type();
     dprint("client: received PDU: ".$pdu->serialise_json());
@@ -263,7 +266,6 @@ sub _process_responses
 
     my $socket  = $self->{'socket'};
     my $changeset = APNIC::RPKI::RTR::Changeset->new();
-    my $serial_notify = 0;
 
     for (;;) {
         dprint("client: processing response");
@@ -292,7 +294,7 @@ sub _process_responses
         } elsif ($pdu->type() == PDU_ERROR_REPORT()) {
             return (0, $changeset, $pdu);
         } elsif ($pdu->type() == PDU_SERIAL_NOTIFY()) {
-            $serial_notify = 1;
+            dprint("client: received serial notify, ignore");
         } elsif ($pdu->type() == PDU_CACHE_RESET()) {
             dprint("client: got cache reset PDU");
             return (0, $changeset, $pdu);
