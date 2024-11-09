@@ -291,6 +291,10 @@ sub handle_client_connection
 
                 for my $pdu ($state->pdus()) {
                     if ($pdu->supported_in_version($version)) {
+                        # For testing.
+                        if ($ENV{'APNIC_RESET_ANNOUNCE_ZERO'}) {
+                            $pdu->{'flags'} = 0;
+                        }
                         $pdu->{'version'} = $version;
                         dprint("server: sending PDU: ".$pdu->serialise_json());
                         $client->send($pdu->serialise_binary());

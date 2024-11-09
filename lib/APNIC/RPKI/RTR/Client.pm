@@ -255,7 +255,7 @@ sub _receive_cache_response
 
 sub _process_responses
 {
-    my ($self) = @_;
+    my ($self, $post_reset) = @_;
 
     dprint("client: processing responses");
 
@@ -272,6 +272,18 @@ sub _process_responses
         }
         dprint("client: processing response: got PDU: ".$pdu->serialise_json());
         if ($changeset->can_add_pdu($pdu)) {
+            # All addable PDUs will have a 'flags' method.
+            if ($post_reset and ($pdu->flags() != 1)) {
+                my $err_pdu =
+                    APNIC::RPKI::RTR::PDU::ErrorReport->new(
+                        version          => $self->_current_version(),
+                        error_code       => ERR_CORRUPT_DATA(),
+                        encapsulated_pdu => $pdu,
+                    );
+                $socket->send($err_pdu->serialise_binary());
+                $self->flush();
+                die "client: got PDU with announce not set to 1";
+            }
             $changeset->add_pdu($pdu);
         } elsif ($pdu->type() == PDU_END_OF_DATA()) {
             return (1, $changeset, $pdu);
@@ -408,7 +420,7 @@ sub reset
         );
     $self->{'state'} = $state;
 
-    my ($res, $changeset, $other_pdu) = $self->_process_responses();
+    my ($res, $changeset, $other_pdu) = $self->_process_responses(1);
     if (not $res) {
         if ($other_pdu) {
             dprint($other_pdu->serialise_json());
