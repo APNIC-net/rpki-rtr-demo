@@ -81,6 +81,7 @@ sub new
         max_supported_version => (max @svs),
         serial_notify_period  => $serial_notify_period,
         tcp_md5_key           => $args{'tcp_md5_key'},
+        ca_file               => $args{'ca_file'},
         cert_file             => $args{'cert_file'},
         key_file              => $args{'key_file'},
     };
@@ -127,7 +128,12 @@ sub run
                 ReusePort     => 1,
                 Listen        => 1,
                 SSL_cert_file => $self->{'cert_file'},
-                SSL_key_file  => $self->{'key_file'}
+                SSL_key_file  => $self->{'key_file'},
+                ($self->{'ca_file'}
+                    ? (SSL_ca_file     => $self->{'ca_file'},
+                       SSL_verify_mode => (SSL_VERIFY_PEER |
+                                           SSL_VERIFY_FAIL_IF_NO_PEER_CERT))
+                    : ())
             );
     } else {
         $server_socket =

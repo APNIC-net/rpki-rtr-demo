@@ -17,6 +17,7 @@ use APNIC::RPKI::RTR::PDU::ErrorReport;
 use APNIC::RPKI::RTR::PDU::ASPA;
 use APNIC::RPKI::RTR::Utils qw(recv_all);
 
+use IO::Socket::SSL;
 use JSON::XS qw(decode_json);
 
 use base qw(Exporter);
@@ -80,7 +81,7 @@ sub parse_pdu
     my ($socket) = @_;
 
     my $buf = recv_all($socket, 8);
-    if ($buf and $buf =~ "-1") {
+    if ($buf and $buf =~ /-1/) {
         return;
     }
     my ($version, $type, $session_id, $length) =

@@ -67,6 +67,8 @@ sub new
         timeout               => $args{'timeout'},
         tls                   => $args{'tls'},
         ca_file               => $args{'ca_file'},
+        cert_file             => $args{'cert_file'},
+        key_file              => $args{'key_file'},
     };
     bless $self, $class;
     return $self;
@@ -83,13 +85,15 @@ sub _init_socket
     my $socket;
     if ($self->{'tls'}) {
         $socket = IO::Socket::SSL->new(
-            Domain      => AF_INET,
-            Type        => SOCK_STREAM,
-            proto       => 'tcp',
-            PeerHost    => $server,
-            PeerPort    => $port,
-            Timeout     => $self->{'timeout'},
-            SSL_ca_file => $self->{'ca_file'},
+            Domain        => AF_INET,
+            Type          => SOCK_STREAM,
+            proto         => 'tcp',
+            PeerHost      => $server,
+            PeerPort      => $port,
+            Timeout       => $self->{'timeout'},
+            SSL_ca_file   => $self->{'ca_file'},
+            SSL_cert_file => $self->{'cert_file'},
+            SSL_key_file  => $self->{'key_file'},
         );
         if (not $socket) {
             die "Unable to create socket ($server:$port): ".
@@ -251,6 +255,9 @@ sub _receive_cache_response
 
     dprint("client: receiving cache response");
     my $pdu = $self->_parse_pdu();
+    if (not $pdu) {
+        die "Unable to retrieve PDU from server";
+    }
     if ($self->{'pdu_cb'}) {
         $self->{'pdu_cb'}->($pdu);
     }
@@ -740,7 +747,7 @@ sub serialise_json
         } qw(server port last_run last_failure supported_versions
              sv_lookup max_supported_version current_version
              strict_send strict_receive tcp_md5_key timeout
-             tls ca_file)),
+             tls ca_file cert_file key_file)),
     };
     return encode_json($data);
 }
