@@ -15,8 +15,11 @@ rpki-rtr-server {data-directory}
     [--strict]
     [--tcp-md5-key {key}]
     [--cert-file {path} --key-file {path}]
+    [--ca-file {path}]
 
-  Starts a new server, using the specified data directory. 
+  Starts a new server, using the specified data directory.  If
+  "--ca-file" is specified, all clients must connect using client
+  certificates.
 EOF
 }
 
@@ -53,6 +56,7 @@ sub main
         my $tcp_md5_key;
         my $cert_file;
         my $key_file;
+        my $ca_file;
         my $strict;
         while (@args) {
             my $key = shift @args;
@@ -68,6 +72,8 @@ sub main
                 $cert_file = shift @args;
             } elsif ($key eq '--key-file') {
                 $key_file = shift @args;
+            } elsif ($key eq '--ca-file') {
+                $ca_file = shift @args;
             } else {
                 error("Invalid argument '$key'");
             }
@@ -84,6 +90,7 @@ sub main
                 tcp_md5_key => $tcp_md5_key,
                 cert_file   => $cert_file,
                 key_file    => $key_file,
+                ca_file     => $ca_file,
                 (($strict)
                     ? (strict_send    => 1,
                        strict_receive => 1)

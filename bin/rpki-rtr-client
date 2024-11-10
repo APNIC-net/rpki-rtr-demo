@@ -18,6 +18,7 @@ rpki-rtr-client {data-directory} init --server {server} --port {port}
                                       [--version {version}] [--strict]
                                       [--tcp-md5-key {key}]
                                       [--ca-file {path}]
+                                      [--cert-file {path} --key-file {path}]
 
   Initialise a new client instance against the specified server.
 
@@ -83,6 +84,8 @@ sub main
         my $port;
         my $tcp_md5_key;
         my $ca_file;
+        my $cert_file;
+        my $key_file;
         my @supported_versions;
         my $strict;
         while (@args) {
@@ -100,6 +103,10 @@ sub main
                 $tcp_md5_key = shift @args;
             } elsif ($key eq '--ca-file') {
                 $ca_file = shift @args;
+            } elsif ($key eq '--cert-file') {
+                $cert_file = shift @args;
+            } elsif ($key eq '--key-file') {
+                $key_file = shift @args;
             } else {
                 error("Invalid argument '$key'");
             }
@@ -118,6 +125,8 @@ sub main
                 port               => $port,
                 tcp_md5_key        => $tcp_md5_key,
                 ca_file            => $ca_file,
+                cert_file          => $cert_file,
+                key_file           => $key_file,
                 ($strict)
                     ? (strict_send    => 1,
                        strict_receive => 1)
