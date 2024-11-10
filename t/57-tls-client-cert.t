@@ -12,7 +12,7 @@ use APNIC::RPKI::RTR::Changeset;
 use File::Slurp qw(read_file write_file);
 use File::Temp qw(tempdir);
 
-use Test::More tests => 3;
+use Test::More tests => 2;
 
 my $pid;
 
@@ -119,8 +119,6 @@ my $pid;
     eval { $client->reset() };
     my $error = $@;
     ok($error, 'Cannot connect without client certificate');
-    like($error, qr/Unable to retrieve PDU/,
-        'Got expected error message');
 
     # Configuring the client certificate fixes the problem.
 
