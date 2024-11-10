@@ -5,6 +5,8 @@ use strict;
 
 use Time::HiRes qw(sleep);
 
+use IO::Socket qw(IPPROTO_TCP TCP_MD5SIG);
+use IO::Socket::INET;
 use Net::IP::XS qw(ip_bintoip
                    ip_inttobin
                    ip_iptobin
@@ -19,7 +21,8 @@ our @EXPORT_OK = qw(inet_ntop
                     dprint
                     recv_all
                     get_zero
-                    validate_intervals);
+                    validate_intervals
+                    socket_inet);
 
 sub inet_ntop
 {
@@ -84,7 +87,7 @@ sub recv_all
         my $lb = length($buf);
         if ($lb == 0) {
             # Socket is closed.
-            return -1; 
+            return -1;
         }
         dprint("recv_all: buffer now contains '$lb' bytes");
         if (length($buf) != $length) {
@@ -136,6 +139,115 @@ sub validate_intervals
     }
 
     return $msg;
+}
+
+sub socket_inet
+{
+    my %args = @_;
+
+    my $sock = IO::Socket->new();
+    $sock->autoflush(1);
+    ${*$sock}{'io_socket_timeout'} =
+        delete $args{'Timeout'};
+    bless $sock, 'IO::Socket::INET';
+
+    my $arg = \%args;
+    my ($rport, $raddr);
+
+    if (exists $arg->{'LocalHost'}
+            and not exists $arg->{'LocalAddr'}) {
+        $arg->{'LocalAddr'} = $arg->{'LocalHost'};
+    }
+
+    my $laddr  = $arg->{'LocalAddr'};
+    my $lport  = $arg->{'LocalPort'};
+    my $listen = (exists $arg->{'Listen'} and $arg->{'Listen'});
+
+    my $laddr_num;
+    if (defined $laddr) {
+        $laddr_num = inet_aton($laddr);
+        if (not defined $laddr_num) {
+            die "Bad hostname '$laddr'";
+        }
+    }
+
+    if (exists $arg->{'PeerHost'}
+            and not exists $arg->{'PeerAddr'}) {
+        $arg->{'PeerAddr'} = $arg->{'PeerHost'};
+    }
+
+    if (not exists $arg->{'Listen'}) {
+        $raddr = $arg->{'PeerAddr'};
+        $rport = $arg->{'PeerPort'};
+    }
+
+    my $proto = IO::Socket::INET::_get_proto_number('tcp');
+    my $type = $arg->{'Type'};
+
+    my @raddr = ();
+    if (defined $raddr) {
+        @raddr = $sock->_get_addr($raddr, 0);
+        if (not @raddr) {
+            die "Bad hostname '$raddr'";
+        }
+    }
+
+    for (;;) {
+        my $res = $sock->socket(AF_INET, $type, $proto);
+        if (not $res) {
+            die "Unable to create socket: $!";
+        }
+
+        if (my $key = $arg->{'MD5Sig'}) {
+            my $packed_sig =
+                pack("SSA4x120x2Sx4",
+                     AF_INET,
+                     ($listen ? $lport     : $rport),
+                     ($listen ? $laddr_num : inet_aton($raddr)),
+                     length($key));
+            $packed_sig .= $key;
+            my $padding_count = 80 - length($key);
+            my $padding = join '', map { chr(0) } (1..$padding_count);
+            $packed_sig .= $padding;
+
+            my $rc = $sock->setsockopt(IPPROTO_TCP, TCP_MD5SIG,
+                                       $packed_sig);
+            if (not $rc) {
+                die "Failed to set MD5 signature option: $!";
+            }
+        }
+
+        if ($arg->{'ReusePort'}) {
+            my $res = $sock->sockopt(SO_REUSEPORT, 1);
+            if (not $res) {
+                die "Unable to set ReusePort: $!";
+            }
+        }
+
+        if ($listen) {
+            my $res = $sock->bind($lport || 0, $laddr_num);
+            if (not $res) {
+                die "Unable to bind socket: $!";
+            }
+            $res = $sock->listen($arg->{Listen} || 5);
+            if (not $res) {
+                die "Unable to listen for socket: $!";
+            }
+            last
+        }
+
+        $raddr = shift @raddr;
+
+        if ($sock->connect(pack_sockaddr_in($rport, $raddr))) {
+            return $sock;
+        }
+
+        if (not @raddr) {
+            die "Timeout: $!, $@";
+        }
+    }
+
+    $sock;
 }
 
 1;

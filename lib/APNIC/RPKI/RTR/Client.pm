@@ -21,7 +21,8 @@ use APNIC::RPKI::RTR::PDU::Exit;
 use APNIC::RPKI::RTR::PDU::ResetQuery;
 use APNIC::RPKI::RTR::Utils qw(inet_ntop
                                dprint
-                               validate_intervals);
+                               validate_intervals
+                               socket_inet);
 
 our $VERSION = "0.1";
 
@@ -66,7 +67,7 @@ sub _init_socket
     $self->_close_socket();
 
     my ($server, $port) = @{$self}{qw(server port)};
-    my $socket = IO::Socket->new(
+    my $socket = socket_inet(
         Domain   => AF_INET,
         Type     => SOCK_STREAM,
         proto    => 'tcp',

@@ -13,7 +13,8 @@ use APNIC::RPKI::RTR::Constants;
 use APNIC::RPKI::RTR::Changeset;
 use APNIC::RPKI::RTR::State;
 use APNIC::RPKI::RTR::Utils qw(dprint
-                               validate_intervals);
+                               validate_intervals
+                               socket_inet);
 use APNIC::RPKI::RTR::PDU::Utils qw(parse_pdu);
 
 sub new
@@ -99,7 +100,7 @@ sub run
     my $server = $self->{'server'};
     my $port = $self->{'port'};
     my $server_socket =
-        IO::Socket->new(
+        socket_inet(
             Domain    => AF_INET,
             Type      => SOCK_STREAM,
             proto     => 'tcp',
@@ -111,6 +112,7 @@ sub run
     if (not $server_socket) {
         die "Unable to start server socket: $!";
     }
+
     dprint("server: started on $server:$port");
     my $data_dir = $self->{'data_dir'};
 
