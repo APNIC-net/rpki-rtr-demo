@@ -14,6 +14,7 @@ rpki-rtr-server {data-directory}
     --port {port}
     [--strict]
     [--tcp-md5-key {key}]
+    [--cert-file {path} --key-file {path}]
 
   Starts a new server, using the specified data directory. 
 EOF
@@ -50,6 +51,8 @@ sub main
         my $server;
         my $port;
         my $tcp_md5_key;
+        my $cert_file;
+        my $key_file;
         my $strict;
         while (@args) {
             my $key = shift @args;
@@ -61,6 +64,10 @@ sub main
                 $strict = 1;
             } elsif ($key eq '--tcp-md5-key') {
                 $tcp_md5_key = shift @args;
+            } elsif ($key eq '--cert-file') {
+                $cert_file = shift @args;
+            } elsif ($key eq '--key-file') {
+                $key_file = shift @args;
             } else {
                 error("Invalid argument '$key'");
             }
@@ -75,6 +82,8 @@ sub main
                 server      => $server,
                 port        => $port,
                 tcp_md5_key => $tcp_md5_key,
+                cert_file   => $cert_file,
+                key_file    => $key_file,
                 (($strict)
                     ? (strict_send    => 1,
                        strict_receive => 1)

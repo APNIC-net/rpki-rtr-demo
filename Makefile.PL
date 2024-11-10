@@ -17,12 +17,13 @@ my $output = WriteMakefile(
     EXE_FILES      => [ qw(bin/rpki-rtr-client
                            bin/rpki-rtr-server
                            bin/rpki-rtr-server-mnt) ],
-    PREREQ_PM      => { 'Test::More'  => 0,
-                        'File::Slurp' => 0,
-                        'IO::Socket'  => 0,
-                        'JSON::XS'    => 0,
-                        'Net::IP::XS' => 0,
-                        'IO::Select'  => 0, }
+    PREREQ_PM      => { 'Test::More'      => 0,
+                        'File::Slurp'     => 0,
+                        'IO::Socket'      => 0,
+                        'JSON::XS'        => 0,
+                        'Net::IP::XS'     => 0,
+                        'IO::Select'      => 0,
+                        'IO::Socket::SSL' => 0, }
 );
 
 1;

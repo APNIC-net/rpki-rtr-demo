@@ -79,7 +79,12 @@ sub recv_all
         my $tbuf = "";
         my $new_length = ($length - length($buf));
         dprint("recv_all: requesting '$new_length' bytes from socket");
-        my $res = $socket->recv($tbuf, $new_length);
+        my $res;
+        if ($socket->isa("IO::Socket::SSL")) {
+            $res = $socket->sysread($tbuf, $new_length);
+        } else {
+            $res = $socket->recv($tbuf, $new_length);
+        }
         if (not defined $res) {
             die "Unable to receive data from socket: $!";
         }
@@ -229,7 +234,7 @@ sub socket_inet
             if (not $res) {
                 die "Unable to bind socket: $!";
             }
-            $res = $sock->listen($arg->{Listen} || 5);
+            $res = $sock->listen($listen || 5);
             if (not $res) {
                 die "Unable to listen for socket: $!";
             }

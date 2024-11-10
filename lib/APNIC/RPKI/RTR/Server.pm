@@ -5,6 +5,7 @@ use strict;
 
 use IO::Select;
 use IO::Socket qw(AF_INET SOCK_STREAM SHUT_WR);
+use IO::Socket::SSL;
 use File::Slurp qw(read_file);
 use JSON::XS qw(decode_json);
 use List::Util qw(max);
@@ -80,6 +81,8 @@ sub new
         max_supported_version => (max @svs),
         serial_notify_period  => $serial_notify_period,
         tcp_md5_key           => $args{'tcp_md5_key'},
+        cert_file             => $args{'cert_file'},
+        key_file              => $args{'key_file'},
     };
 
     bless $self, $class;
@@ -93,6 +96,17 @@ sub session_id
     return $self->{'session_id'};
 }
 
+sub _send
+{
+    my ($self, $socket, $data) = @_;
+
+    if ($socket->isa("IO::Socket::SSL")) {
+        return $socket->syswrite($data, length($data), 0);
+    } else {
+        return $socket->send($data);
+    }
+}
+
 sub run
 {
     my ($self) = @_;
@@ -100,17 +114,34 @@ sub run
     dprint("server: starting server");
     my $server = $self->{'server'};
     my $port = $self->{'port'};
-    my $server_socket =
-        socket_inet(
-            Domain    => AF_INET,
-            Type      => SOCK_STREAM,
-            proto     => 'tcp',
-            LocalHost => $self->{'server'},
-            LocalPort => $port,
-            ReusePort => 1,
-            Listen    => 1,
-            MD5Sig    => $self->{'tcp_md5_key'},
-        );
+
+    my $server_socket;
+    if ($self->{'cert_file'}) {
+        $server_socket =
+            IO::Socket::SSL->new(
+                Domain        => AF_INET,
+                Type          => SOCK_STREAM,
+                proto         => 'tcp',
+                LocalHost     => $self->{'server'},
+                LocalPort     => $port,
+                ReusePort     => 1,
+                Listen        => 1,
+                SSL_cert_file => $self->{'cert_file'},
+                SSL_key_file  => $self->{'key_file'}
+            );
+    } else {
+        $server_socket =
+            socket_inet(
+                Domain    => AF_INET,
+                Type      => SOCK_STREAM,
+                proto     => 'tcp',
+                LocalHost => $self->{'server'},
+                LocalPort => $port,
+                ReusePort => 1,
+                Listen    => 1,
+                MD5Sig    => $self->{'tcp_md5_key'},
+            );
+    }
     if (not $server_socket) {
         die "Unable to start server socket: $!";
     }
@@ -133,10 +164,15 @@ sub run
         for my $socket (@ready) {
             if ($socket == $server_socket) {
                 my $new_socket = $socket->accept();
-                my $pp = $new_socket->peerport();
-                $select->add($new_socket);
-                dprint("server: adding new client to pool: $pp");
-                $skip_update_check{$pp} = 1;
+                if (not $new_socket) {
+                    dprint("server: failed to accept: ".
+                           "$!, $SSL_ERROR");
+                } else {
+                    my $pp = $new_socket->peerport();
+                    $select->add($new_socket);
+                    dprint("server: adding new client to pool: $pp");
+                    $skip_update_check{$pp} = 1;
+                }
             } else {
                 my $pp = $socket->peerport() || "(N/A)";
                 dprint("server: handling client connection ".
@@ -188,7 +224,7 @@ sub run
                         session_id    => $self->{'session_id'},
                         serial_number => $serial_number,
                     );
-                $socket->send($pdu->serialise_binary());
+                $self->_send($socket, $pdu->serialise_binary());
             }
         }
     }
@@ -240,7 +276,7 @@ sub handle_client_connection
                     session_id    => int(rand(65535)),
                     serial_number => int(rand(65535)),
                 );
-            $client->send($pdu->serialise_binary());
+            $self->_send($client, $pdu->serialise_binary());
         }
 
         my $pdu = parse_pdu($client);
@@ -264,7 +300,7 @@ sub handle_client_connection
                     error_code       => ERR_UNEXPECTED_PROTOCOL_VERSION(),
                     encapsulated_pdu => $pdu,
                 );
-            $client->send($err_pdu->serialise_binary());
+            $self->_send($client, $err_pdu->serialise_binary());
             $self->flush($client);
             dprint("server: got PDU with unexpected version");
             $res = 0;
@@ -278,7 +314,7 @@ sub handle_client_connection
                     error_code       => ERR_UNSUPPORTED_VERSION(),
                     encapsulated_pdu => $pdu,
                 );
-            $client->send($err_pdu->serialise_binary());
+            $self->_send($client, $err_pdu->serialise_binary());
             $res = 0;
             goto FINISHED;
         }
@@ -298,7 +334,7 @@ sub handle_client_connection
                         error_code       => ERR_NO_DATA(),
                         encapsulated_pdu => $pdu,
                     );
-                $client->send($err_pdu->serialise_binary());
+                $self->_send($client, $err_pdu->serialise_binary());
                 $res = 0;
                 goto FINISHED;
             } else {
@@ -310,7 +346,7 @@ sub handle_client_connection
                     );
                 my $sb = $cr_pdu->serialise_binary();
                 dprint("server: sending cache response: ".$cr_pdu->serialise_json());
-                $client->send($sb);
+                $self->_send($client, $sb);
 
                 my $data = read_file($ss_path);
                 my $state =
@@ -325,7 +361,7 @@ sub handle_client_connection
                         }
                         $pdu->{'version'} = $version;
                         dprint("server: sending PDU: ".$pdu->serialise_json());
-                        $client->send($pdu->serialise_binary());
+                        $self->_send($client, $pdu->serialise_binary());
                     } else {
                         dprint("server: not sending PDU, not supported in client version: ".
                             $pdu->serialise_json());
@@ -342,7 +378,7 @@ sub handle_client_connection
                         expire_interval  => $self->{'expire_interval'},
                     );
                 dprint("server: sending end of data PDU: ".$eod_pdu->serialise_json());
-                $client->send($eod_pdu->serialise_binary());
+                $self->_send($client, $eod_pdu->serialise_binary());
             }
         } elsif ($type == PDU_SERIAL_QUERY()) {
             dprint("server: got serial query");
@@ -354,7 +390,7 @@ sub handle_client_connection
                             error_code       => ERR_CORRUPT_DATA(),
                             encapsulated_pdu => $pdu,
                         );
-                    $client->send($err_pdu->serialise_binary());
+                    $self->_send($client, $err_pdu->serialise_binary());
                     $self->flush($client);
                     $res = 0;
                     goto FINISHED;
@@ -371,7 +407,7 @@ sub handle_client_connection
                         error_code       => ERR_NO_DATA(),
                         encapsulated_pdu => $pdu,
                     );
-                $client->send($err_pdu->serialise_binary());
+                $self->_send($client, $err_pdu->serialise_binary());
                 $res = 0;
                 goto FINISHED;
             } else {
@@ -382,7 +418,7 @@ sub handle_client_connection
                     );
                 my $sb = $cr_pdu->serialise_binary();
                 dprint("server: sending cache response: ".$cr_pdu->serialise_json());
-                $client->send($sb);
+                $self->_send($client, $sb);
 
                 # Serial query.
                 my $last_serial_number = $pdu->serial_number();
@@ -400,7 +436,7 @@ sub handle_client_connection
                         );
                     my $sb = $cr_pdu->serialise_binary();
                     dprint("server: sending cache reset: ".$cr_pdu->serialise_json());
-                    $client->send($sb);
+                    $self->_send($client, $sb);
                     goto FINISHED;
                 }
                 my @changeset_paths;
@@ -434,7 +470,7 @@ sub handle_client_connection
                         if ($pdu->supported_in_version($version)) {
                             $pdu->{'version'} = $version;
                             dprint("server: sending PDU: ".$pdu->serialise_json());
-                            $client->send($pdu->serialise_binary());
+                            $self->_send($client, $pdu->serialise_binary());
                         } else {
                             dprint("server: not sending PDU, not supported in client version: ".
                                 $pdu->serialise_json());
@@ -452,7 +488,7 @@ sub handle_client_connection
                         expire_interval  => $self->{'expire_interval'},
                     );
                 dprint("server: sending end of data PDU: ".$eod_pdu->serialise_json());
-                $client->send($eod_pdu->serialise_binary());
+                $self->_send($client, $eod_pdu->serialise_binary());
             }
         } elsif ($pdu->type() == PDU_EXIT()) {
             dprint("server: client triggered exit");
@@ -468,7 +504,7 @@ sub handle_client_connection
                     error_code       => ERR_INVALID_REQUEST(),
                     encapsulated_pdu => $pdu,
                 );
-            $client->send($err_pdu->serialise_binary());
+            $self->_send($client, $err_pdu->serialise_binary());
             dprint("server: invalid request from client: ".
                    $pdu->serialise_json());
             $self->flush($client);
@@ -482,7 +518,7 @@ sub handle_client_connection
                 version    => $version,
                 error_code => ERR_INTERNAL_ERROR(),
             );
-        $client->send($err_pdu->serialise_binary());
+        $self->_send($client, $err_pdu->serialise_binary());
         dprint("server: failed to handle request/connection: $error");
         $self->flush($client);
         return 0;

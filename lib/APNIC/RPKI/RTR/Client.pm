@@ -7,6 +7,7 @@ use File::Slurp qw(write_file);
 use IO::Select;
 use IO::Socket qw(AF_INET SOCK_STREAM TCP_NODELAY IPPROTO_TCP
                   SHUT_WR);
+use IO::Socket::SSL;
 use JSON::XS qw(encode_json decode_json);
 use List::Util qw(max);
 use Math::BigInt;
@@ -44,6 +45,14 @@ sub new
 
     my $port = $args{'port'} || 323;
 
+    for my $key (qw(debug strict_send strict_receive
+                    state_path tcp_md5_key timeout
+                    tls ca_file)) {
+        if (not exists $args{$key}) {
+            $args{$key} = undef;
+        }
+    }
+
     my $self = {
         supported_versions    => \@svs,
         sv_lookup             => { map { $_ => 1 } @svs },
@@ -56,6 +65,8 @@ sub new
         state_path            => $args{'state_path'},
         tcp_md5_key           => $args{'tcp_md5_key'},
         timeout               => $args{'timeout'},
+        tls                   => $args{'tls'},
+        ca_file               => $args{'ca_file'},
     };
     bless $self, $class;
     return $self;
@@ -69,17 +80,34 @@ sub _init_socket
     $self->_close_socket();
 
     my ($server, $port) = @{$self}{qw(server port)};
-    my $socket = socket_inet(
-        Domain   => AF_INET,
-        Type     => SOCK_STREAM,
-        proto    => 'tcp',
-        PeerHost => $server,
-        PeerPort => $port,
-        MD5Sig   => $self->{'tcp_md5_key'},
-        Timeout  => $self->{'timeout'},
-    );
-    if (not $socket) {
-        die "Unable to create socket ($server:$port): $!";
+    my $socket;
+    if ($self->{'tls'}) {
+        $socket = IO::Socket::SSL->new(
+            Domain      => AF_INET,
+            Type        => SOCK_STREAM,
+            proto       => 'tcp',
+            PeerHost    => $server,
+            PeerPort    => $port,
+            Timeout     => $self->{'timeout'},
+            SSL_ca_file => $self->{'ca_file'},
+        );
+        if (not $socket) {
+            die "Unable to create socket ($server:$port): ".
+                (join ', ', grep { $_ } ($!, $SSL_ERROR));
+        }
+    } else {
+        $socket = socket_inet(
+            Domain   => AF_INET,
+            Type     => SOCK_STREAM,
+            proto    => 'tcp',
+            PeerHost => $server,
+            PeerPort => $port,
+            MD5Sig   => $self->{'tcp_md5_key'},
+            Timeout  => $self->{'timeout'},
+        );
+        if (not $socket) {
+            die "Unable to create socket ($server:$port): $!";
+        }
     }
     $socket->setsockopt(IPPROTO_TCP, TCP_NODELAY, 1);
 
@@ -149,13 +177,24 @@ sub _parse_pdu
                     error_code       => ERR_UNEXPECTED_PROTOCOL_VERSION(),
                     encapsulated_pdu => $pdu,
                 );
-            $socket->send($err_pdu->serialise_binary());
+            $self->_send($socket, $err_pdu->serialise_binary());
             $self->flush();
             die "client: got PDU with unexpected version";
         }
     }
 
     return $pdu;
+}
+
+sub _send
+{
+    my ($self, $socket, $data) = @_;
+
+    if ($socket->isa("IO::Socket::SSL")) {
+        return $socket->syswrite($data, length($data), 0);
+    } else {
+        return $socket->send($data);
+    }
 }
 
 sub _send_reset_query
@@ -172,7 +211,7 @@ sub _send_reset_query
                     : $self->{'max_supported_version'})
         );
     my $data = $reset_query->serialise_binary();
-    my $res = $socket->send($data);
+    my $res = $self->_send($socket, $data);
     if ($res != length($data)) {
         die "Got unexpected send result for reset query: '$res' ($!)";
     }
@@ -197,7 +236,7 @@ sub _send_serial_query
             serial_number => $state->{'serial_number'},
         );
     my $data = $serial_query->serialise_binary();
-    my $res = $socket->send($data);
+    my $res = $self->_send($socket, $data);
     if ($res != length($data)) {
         die "Got unexpected send result for serial query: '$res' ($!)";
     }
@@ -232,7 +271,7 @@ sub _receive_cache_response
                     encapsulated_pdu => $pdu,
                 );
             my $socket = $self->{'socket'};
-            $socket->send($err_pdu->serialise_binary());
+            $self->_send($socket, $err_pdu->serialise_binary());
             $self->flush();
             die "client: got PDU with unexpected session";
         }
@@ -289,7 +328,7 @@ sub _process_responses
                         error_code       => ERR_CORRUPT_DATA(),
                         encapsulated_pdu => $pdu,
                     );
-                $socket->send($err_pdu->serialise_binary());
+                $self->_send($socket, $err_pdu->serialise_binary());
                 $self->flush();
                 die "client: got PDU with announce not set to 1";
             }
@@ -310,7 +349,7 @@ sub _process_responses
                     error_code       => ERR_UNSUPPORTED_PDU_TYPE(),
                     encapsulated_pdu => $pdu,
                 );
-            $socket->send($err_pdu->serialise_binary());
+            $self->_send($socket, $err_pdu->serialise_binary());
             $self->flush();
             die "client: got PDU of unexpected type";
         }
@@ -333,7 +372,7 @@ sub _process_eod
     if ($eod->type() != PDU_END_OF_DATA()) {
         my $err_pdu =
             APNIC::RPKI::RTR::PDU::ErrorReport->new(%defaults);
-        $socket->send($err_pdu->serialise_binary());
+        $self->_send($socket, $err_pdu->serialise_binary());
         $self->flush();
         die "client: PDU is not End of Data PDU";
     }
@@ -353,7 +392,7 @@ sub _process_eod
                         %defaults,
                         error_text => $msg,
                     );
-                $socket->send($err_pdu->serialise_binary());
+                $self->_send($socket, $err_pdu->serialise_binary());
                 $self->flush();
                 die "client: $msg";
             }
@@ -426,7 +465,7 @@ sub reset
         my $error_pdu = $state->apply_changeset($changeset, $version);
         if ($error_pdu and ref $error_pdu) {
             my $socket = $self->{'socket'};
-            $socket->send($error_pdu->serialise_binary());
+            $self->_send($socket, $error_pdu->serialise_binary());
             $self->flush();
             die "client: got error: ".
                 error_type_to_string($error_pdu->error_code());
@@ -563,7 +602,7 @@ sub refresh
         my $error_pdu = $self->{'state'}->apply_changeset($changeset, $version);
         if ($error_pdu and ref $error_pdu) {
             my $socket = $self->{'socket'};
-            $socket->send($error_pdu->serialise_binary());
+            $self->_send($socket, $error_pdu->serialise_binary());
             $self->flush();
             die "client: got error: ".
                 error_type_to_string($error_pdu->error_code());
@@ -604,7 +643,7 @@ sub exit_server
             session_id => 0,
         );
     my $data = $exit->serialise_binary();
-    my $res = $socket->send($data);
+    my $res = $self->_send($socket, $data);
     if ($res != length($data)) {
         die "Got unexpected send result for exit: '$res' ($!)";
     }
@@ -700,7 +739,8 @@ sub serialise_json
             $self->{$_} ? ($_ => $self->{$_}) : ()
         } qw(server port last_run last_failure supported_versions
              sv_lookup max_supported_version current_version
-             strict_send strict_receive tcp_md5_key)),
+             strict_send strict_receive tcp_md5_key timeout
+             tls ca_file)),
     };
     return encode_json($data);
 }
