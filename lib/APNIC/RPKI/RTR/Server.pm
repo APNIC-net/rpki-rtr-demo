@@ -6,9 +6,12 @@ use strict;
 use IO::Select;
 use IO::Socket qw(AF_INET SOCK_STREAM SHUT_WR);
 use IO::Socket::SSL;
-use File::Slurp qw(read_file);
+use File::Slurp qw(read_file write_file);
+use File::Temp;
 use JSON::XS qw(decode_json);
 use List::Util qw(max);
+use Net::SSLeay;
+use Socket qw(inet_ntoa);
 
 use APNIC::RPKI::RTR::Constants;
 use APNIC::RPKI::RTR::Changeset;
@@ -132,7 +135,36 @@ sub run
                 ($self->{'ca_file'}
                     ? (SSL_ca_file     => $self->{'ca_file'},
                        SSL_verify_mode => (SSL_VERIFY_PEER |
-                                           SSL_VERIFY_FAIL_IF_NO_PEER_CERT))
+                                           SSL_VERIFY_FAIL_IF_NO_PEER_CERT),
+                       SSL_verify_callback => sub {
+                           my ($openssl_status,
+                               $cert_store_addr,
+                               $attributes,
+                               $errors,
+                               $cert_addr,
+                               $depth) = @_;
+                           if (not $openssl_status) {
+                               return 0;
+                           }
+                           if ($depth > 0) {
+                               return 1;
+                           }
+                           my $pem =
+                               Net::SSLeay::PEM_get_string_X509($cert_addr);
+                           my $ft = File::Temp->new();
+                           my $fn = $ft->filename();
+                           write_file($fn, $pem);
+                           my @addrs =
+                               map  { s/^\s*//; s/\s*$//; s/IP Address://; $_ }
+                               grep { /IP Address/ }
+                                   `openssl x509 -in $fn -noout -ext subjectAltName`;
+                           dprint("server: client certificate addresses are ".
+                                  (join ', ', @addrs));
+                           unlink $fn;
+                           $self->{'last_addrs'} =
+                               { map { $_ => 1 } @addrs };
+                           return 1;
+                       })
                     : ())
             );
     } else {
@@ -174,10 +206,24 @@ sub run
                     dprint("server: failed to accept: ".
                            "$!, $SSL_ERROR");
                 } else {
-                    my $pp = $new_socket->peerport();
-                    $select->add($new_socket);
-                    dprint("server: adding new client to pool: $pp");
-                    $skip_update_check{$pp} = 1;
+                    my $pa = inet_ntoa($new_socket->peeraddr());
+                    if ($self->{'last_addrs'} and not $self->{'last_addrs'}->{$pa}) {
+                        dprint("server: client certificate address ".
+                               "verification failed ($pa; ".
+                               (join ', ', keys %{$self->{'last_addrs'}}).")");
+                        delete $self->{'last_addrs'};
+                    } else {
+                        if ($self->{'last_addrs'}) {
+                            dprint("server: client certificate address ".
+                                   "verification succeeded ($pa; ".
+                                   (join ', ', keys %{$self->{'last_addrs'}}).")");
+                            delete $self->{'last_addrs'};
+                        }
+                        my $pp = $new_socket->peerport();
+                        $select->add($new_socket);
+                        dprint("server: adding new client to pool: $pp");
+                        $skip_update_check{$pp} = 1;
+                    }
                 }
             } else {
                 my $pp = $socket->peerport() || "(N/A)";

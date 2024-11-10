@@ -12,7 +12,7 @@ use APNIC::RPKI::RTR::Changeset;
 use File::Slurp qw(read_file write_file);
 use File::Temp qw(tempdir);
 
-use Test::More tests => 2;
+use Test::More tests => 3;
 
 my $pid;
 
@@ -72,6 +72,25 @@ my $pid;
     }
     $client_cert_path = "$ca_root_dir/$client_cert_path";
     $client_key_path  = "$ca_root_dir/$client_key_path";
+
+    sleep(1);
+
+    $res = system("mkcert -client 127.0.0.2");
+    if ($res != 0) {
+        die "Unable to create new client certificate";
+    }
+    my $bad_client_cert_path = "127.0.0.2-client.pem";
+    my $bad_client_key_path  = "127.0.0.2-client-key.pem";
+    $res = system("mv $bad_client_cert_path $ca_root_dir/");
+    if ($res != 0) {
+        die "Unable to move client certificate";
+    }
+    $res = system("mv $bad_client_key_path $ca_root_dir/");
+    if ($res != 0) {
+        die "Unable to move client key";
+    }
+    $bad_client_cert_path = "$ca_root_dir/$bad_client_cert_path";
+    $bad_client_key_path  = "$ca_root_dir/$bad_client_key_path";
 
     my $server =
         APNIC::RPKI::RTR::Server->new(
@@ -136,6 +155,24 @@ my $pid;
     eval { $client->reset() };
     $error = $@;
     ok((not $error), 'Can connect with client certificate');
+
+    # Confirm that IP address verification is enabled.
+
+    my $bad_client =
+        APNIC::RPKI::RTR::Client->new(
+            server    => '127.0.0.1',
+            port      => $port,
+            timeout   => 1,
+            tls       => 1,
+            ca_file   => $ca_path_fn,
+            cert_file => $bad_client_cert_path,
+            key_file  => $bad_client_key_path,
+        );
+
+    eval { $bad_client->reset() };
+    $error = $@;
+    ok($error, 'Cannot connect with a certificate with an '.
+               'incorrect IP address');
 
     $client->exit_server();
 }
