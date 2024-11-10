@@ -129,7 +129,7 @@ sub run
                 LocalHost     => $self->{'server'},
                 LocalPort     => $port,
                 ReusePort     => 1,
-                Listen        => 1,
+                Listen        => 5,
                 SSL_cert_file => $self->{'cert_file'},
                 SSL_key_file  => $self->{'key_file'},
                 ($self->{'ca_file'}
@@ -176,7 +176,7 @@ sub run
                 LocalHost => $self->{'server'},
                 LocalPort => $port,
                 ReusePort => 1,
-                Listen    => 1,
+                Listen    => 5,
                 MD5Sig    => $self->{'tcp_md5_key'},
             );
     }
