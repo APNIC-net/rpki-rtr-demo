@@ -54,6 +54,8 @@ sub new
         strict_send           => $args{'strict_send'},
         strict_receive        => $args{'strict_receive'},
         state_path            => $args{'state_path'},
+        tcp_md5_key           => $args{'tcp_md5_key'},
+        timeout               => $args{'timeout'},
     };
     bless $self, $class;
     return $self;
@@ -73,6 +75,8 @@ sub _init_socket
         proto    => 'tcp',
         PeerHost => $server,
         PeerPort => $port,
+        MD5Sig   => $self->{'tcp_md5_key'},
+        Timeout  => $self->{'timeout'},
     );
     if (not $socket) {
         die "Unable to create socket ($server:$port): $!";
@@ -696,7 +700,7 @@ sub serialise_json
             $self->{$_} ? ($_ => $self->{$_}) : ()
         } qw(server port last_run last_failure supported_versions
              sv_lookup max_supported_version current_version
-             strict_send strict_receive)),
+             strict_send strict_receive tcp_md5_key)),
     };
     return encode_json($data);
 }

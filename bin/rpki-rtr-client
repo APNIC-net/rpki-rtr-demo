@@ -14,7 +14,9 @@ use APNIC::RPKI::Validator::ROA qw(ROV_INVALID ROV_UNKNOWN ROV_VALID);
 sub usage
 {
     print <<EOF;
-rpki-rtr-client {data-directory} init --server {server} --port {port} [--version {version}] [--strict]
+rpki-rtr-client {data-directory} init --server {server} --port {port}
+                                      [--version {version}] [--strict]
+                                      [--tcp-md5-key {key}]
 
   Initialise a new client instance against the specified server.
 
@@ -38,7 +40,8 @@ rpki-rtr-client {data-directory} route-origin-validation --asn {asn} --prefix {p
   Perform route origin validation on an announcement (ASN-prefix
   pair).
 
-rpki-rtr-client {data-directory} aspa-validation --announcement {announcement} --provider-asns {provider-asns}
+rpki-rtr-client {data-directory} aspa-validation --announcement {announcement}
+                                                 --provider-asns {provider-asns}
 
   Perform ASPA validation on an announcement (in bgpdump one-line
   format) as received by an ASN with the specified set of provider
@@ -77,6 +80,7 @@ sub main
     } elsif ($op_name eq 'init') {
         my $server;
         my $port;
+        my $tcp_md5_key;
         my @supported_versions;
         my $strict;
         while (@args) {
@@ -90,6 +94,8 @@ sub main
                 push @supported_versions, @versions;
             } elsif ($key eq '--strict') {
                 $strict = 1;
+            } elsif ($key eq '--tcp-md5-key') {
+                $tcp_md5_key = shift @args;
             } else {
                 error("Invalid argument '$key'");
             }
@@ -106,6 +112,7 @@ sub main
                 supported_versions => \@supported_versions,
                 server             => $server,
                 port               => $port,
+                tcp_md5_key        => $tcp_md5_key,
                 ($strict)
                     ? (strict_send    => 1,
                        strict_receive => 1)

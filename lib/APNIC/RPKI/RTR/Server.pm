@@ -79,6 +79,7 @@ sub new
         sv_lookup             => { map { $_ => 1 } @svs },
         max_supported_version => (max @svs),
         serial_notify_period  => $serial_notify_period,
+        tcp_md5_key           => $args{'tcp_md5_key'},
     };
 
     bless $self, $class;
@@ -108,6 +109,7 @@ sub run
             LocalPort => $port,
             ReusePort => 1,
             Listen    => 1,
+            MD5Sig    => $self->{'tcp_md5_key'},
         );
     if (not $server_socket) {
         die "Unable to start server socket: $!";
