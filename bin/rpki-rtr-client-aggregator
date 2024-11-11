@@ -1,0 +1,238 @@
+#!/usr/bin/perl
+
+use warnings;
+use strict;
+
+use DateTime;
+use File::Slurp qw(read_file write_file);
+
+use APNIC::RPKI::RTR::Constants;
+use APNIC::RPKI::RTR::Client;
+use APNIC::RPKI::Validator::ASPA;
+use APNIC::RPKI::Validator::ROA qw(ROV_INVALID ROV_UNKNOWN ROV_VALID);
+
+sub usage
+{
+    print <<EOF;
+rpki-rtr-client-aggregator {data-directory} init --clients {clients}
+
+  Initialise a new aggregator client instance.  The {clients} string
+  has the form:
+  
+      1,{path1},1,{path2},2,{path3},...
+
+  where each path is the path to the data directory for a client
+  instance that was set up previously.
+
+rpki-rtr-client-aggregator {data-directory} reset
+
+  Reset the client state as against the server, taking the server
+  priority setting into account.
+
+rpki-rtr-client-aggregator {data-directory} refresh [--force]
+
+  Retrieve any changes that have happened since the last
+  synchronisation attempt.
+
+rpki-rtr-client-aggregator {data-directory} print
+
+  Print the current state of the client.
+
+rpki-rtr-client-aggregator {data-directory} route-origin-validation --asn {asn} --prefix {prefix}
+
+  Perform route origin validation on an announcement (ASN-prefix
+  pair).
+
+rpki-rtr-client-aggregator {data-directory} aspa-validation --announcement {announcement}
+                                                 --provider-asns {provider-asns}
+
+  Perform ASPA validation on an announcement (in bgpdump one-line
+  format) as received by an ASN with the specified set of provider
+  ASNs.
+
+EOF
+}
+
+sub error
+{
+    my ($error) = @_;
+
+    print STDERR "$error\n";
+
+    usage();
+
+    exit(10);
+}
+
+sub main
+{
+    my ($dir, $op_name, @args) = @_;
+
+    if (not $dir) {
+        error("Data directory must be provided.");
+    }
+    if (not -d $dir) {
+        my $res = mkdir $dir;
+        if (not $res) {
+            error("Unable to make directory: $!");
+        }
+    }
+
+    if (not $op_name) {
+        error("Operation name not provided.");
+    } elsif ($op_name eq 'init') {
+        my @clients;
+        while (@args) {
+            my $key = shift @args;
+            if ($key eq '--clients') {
+                my $client_str = shift @args;
+                my @els = split /,/, $client_str;
+                for (my $i = 0; $i < @els; $i += 2) {
+                    my $index = $els[$i];
+                    my $dir   = $els[$i + 1];
+                    push @clients, [$index,
+                                    $dir.'/client.json'];
+                }
+            } else {
+                error("Invalid argument '$key'");
+            }
+        }
+
+        my $aggregator =
+            APNIC::RPKI::RTR::Client::Aggregator->new(
+                clients => \@clients
+            );
+
+        my $aggregator_json = $aggregator->serialise_json();
+        write_file("$dir/aggregator.json", $aggregator_json);
+
+        return 1;
+    } elsif ($op_name eq 'reset') {
+        my $aggregator_json = read_file("$dir/aggregator.json");
+        my $aggregator =
+            APNIC::RPKI::RTR::Client::Aggregator
+                ->deserialise_json($aggregator_json);
+        my $force = grep { $_ eq '--force' } @args;
+        $aggregator->reset($force);
+        $aggregator_json = $aggregator->serialise_json();
+        write_file("$dir/aggregator.json", $aggregator_json);
+        return 1;
+    } elsif ($op_name eq 'refresh') {
+        my $aggregator_json = read_file("$dir/aggregator.json");
+        my $aggregator =
+            APNIC::RPKI::RTR::Client::Aggregator
+                ->deserialise_json($aggregator_json);
+        my $force = grep { $_ eq '--force' } @args;
+        $aggregator->refresh($force);
+        $aggregator_json = $aggregator->serialise_json();
+        write_file("$dir/aggregator.json", $aggregator_json);
+        return 1;
+    } elsif ($op_name eq 'print') {
+        my $aggregator_json = read_file("$dir/aggregator.json");
+        my $aggregator =
+            APNIC::RPKI::RTR::Client::Aggregator
+                ->deserialise_json($aggregator_json);
+        if (my $state = $aggregator->state()) {
+            my @pdus = $state->pdus();
+            print "State:\n";
+            for my $pdu (@pdus) {
+                my $type_str = $pdu->type_str();
+                if (($pdu->type() == PDU_IPV4_PREFIX())
+                        or ($pdu->type() == PDU_IPV6_PREFIX())) {
+                    my $str = $pdu->address()."/".
+                              $pdu->prefix_length()."-".
+                              $pdu->max_length()." => ".
+                              "AS".$pdu->asn();
+                    print " - $type_str: $str\n";
+                } elsif ($pdu->type() == PDU_ASPA()) {
+                    my $customer_asn = $pdu->customer_asn();
+                    my @provider_asns = @{$pdu->provider_asns()};
+                    my $str = "AS$customer_asn => ".
+                              (join ', ',
+                               map { "AS$_" } @provider_asns);
+                    print " - $type_str: $str\n";
+                }
+            }
+        } else {
+            print "No state available\n";
+        }
+    } elsif ($op_name eq 'aspa-validation') {
+        my $aggregator_json = read_file("$dir/aggregator.json");
+        my $aggregator =
+            APNIC::RPKI::RTR::Client::Aggregator
+                ->deserialise_json($aggregator_json);
+
+        my $announcement;
+        my $provider_asn_str;
+        while (@args) {
+            my $key = shift @args;
+            if ($key eq '--announcement') {
+                $announcement = shift @args;
+            } elsif ($key eq '--provider-asns') {
+                $provider_asn_str = shift @args;
+            } else {
+                error("Invalid argument '$key'");
+            }
+        }
+        if (not $announcement or not $provider_asn_str) {
+            error("Announcement and provider ASNs must be provided.");
+        }
+
+        my %provider_asns =
+            map { $_ => 1 }
+                split /,/, $provider_asn_str;
+
+        my $state = $aggregator->state();
+        my $res = APNIC::RPKI::Validator::ASPA::validate(
+            $state, \%provider_asns, $announcement
+        );
+        if ($res == 2) {
+            print "Valid\n";
+        } elsif ($res == 1) {
+            print "Unknown\n";
+        } else {
+            print "Invalid\n";
+        }
+    } elsif ($op_name eq 'route-origin-validation') {
+        my $aggregator_json = read_file("$dir/aggregator.json");
+        my $aggregator =
+            APNIC::RPKI::RTR::Client::Aggregator
+                ->deserialise_json($aggregator_json);
+
+        my $asn;
+        my $prefix;
+
+        while (@args) {
+            my $key = shift @args;
+            if ($key eq '--asn') {
+                $asn = shift @args;
+            } elsif ($key eq '--prefix') {
+                $prefix = shift @args;
+            } else {
+                error("Invalid argument '$key'");
+            }
+        }
+        if (not $asn or not $prefix) {
+            error("ASN and prefix must be provided.");
+        }
+
+        my $state = $aggregator->state();
+        my $res =
+            APNIC::RPKI::Validator::ROA->validate($state, $asn, $prefix);
+
+        if ($res == ROV_UNKNOWN) {
+            print "Unknown\n";
+        } elsif ($res == ROV_INVALID) {
+            print "Invalid\n";
+        } else {
+            print "Valid\n";
+        }
+
+    } else {
+        error("Unknown operation name '$op_name'");
+    }
+}
+
+main(@ARGV);
+
+1;

@@ -60,7 +60,7 @@ sub session_id
 
 sub apply_changeset
 {
-    my ($self, $changeset, $version, $ignore_errors) = @_;
+    my ($self, $changeset, $version, $ignore_errors, $combine_aspas) = @_;
 
     my @pdus = @{$changeset->{'pdus'}};
     my $pdu_count = scalar @pdus;
@@ -185,7 +185,14 @@ sub apply_changeset
                         return $error_pdu;
                     }
                 }
-                $self->{'aspas'}->{$customer_asn} = \@provider_asns;
+                if ($combine_aspas) {
+                    $self->{'aspas'}->{$customer_asn} =
+                        [sort uniq(
+                            @{$self->{'aspas'}->{$customer_asn} || []},
+                            @provider_asns)];
+                } else {
+                    $self->{'aspas'}->{$customer_asn} = \@provider_asns;
+                }
             } else {
                 if (not $ignore_errors) {
                     if (not exists $self->{'aspas'}->{$customer_asn}) {
@@ -201,7 +208,12 @@ sub apply_changeset
                         dprint("state: withdrawal of known record");
                     }
                 }
-                delete $self->{'aspas'}->{$customer_asn};
+                # When combining ASPA records (only relevant when the
+                # router is connecting to multiple caches), an empty
+                # ASPA has no effect.
+                if (not $combine_aspas) {
+                    delete $self->{'aspas'}->{$customer_asn};
+                }
             }
         } else {
             warn "Unexpected PDU type ".$pdu->type().", skipping";
@@ -292,6 +304,21 @@ sub _pdus
     }
 
     return @pdus;
+}
+
+sub to_changeset
+{
+    my ($self) = @_;
+
+    my @pdus = $self->pdus();
+
+    my $data = {
+        pdus                => \@pdus,
+        first_serial_number => 1,
+        last_serial_number  => 1,
+    };
+    bless $data, "APNIC::RPKI::RTR::Changeset";
+    return $data;
 }
 
 sub serialise_json
