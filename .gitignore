@@ -6,3 +6,8 @@ blib
 cover_db
 MYMETA.json
 MYMETA.yml
+t/_sshd.conf
+t/hostkeys
+t/key
+t/key.pub
+t/known-hosts

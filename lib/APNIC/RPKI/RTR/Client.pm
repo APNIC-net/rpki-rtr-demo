@@ -16,6 +16,7 @@ use Net::IP::XS qw(ip_inttobin ip_bintoip ip_compress_address);
 use APNIC::RPKI::RTR::Constants;
 use APNIC::RPKI::RTR::Changeset;
 use APNIC::RPKI::RTR::State;
+use APNIC::RPKI::RTR::Socket::SSH;
 use APNIC::RPKI::RTR::PDU::Utils qw(parse_pdu
                                     error_type_to_string);
 use APNIC::RPKI::RTR::PDU::Exit;
@@ -69,6 +70,8 @@ sub new
         ca_file               => $args{'ca_file'},
         cert_file             => $args{'cert_file'},
         key_file              => $args{'key_file'},
+        known_hosts           => $args{'known_hosts'},
+        ssh_key               => $args{'ssh_key'},
     };
     bless $self, $class;
     return $self;
@@ -99,6 +102,13 @@ sub _init_socket
             die "Unable to create socket ($server:$port): ".
                 (join ', ', grep { $_ } ($!, $SSL_ERROR));
         }
+    } elsif ($self->{'ssh_key'}) {
+        $socket = APNIC::RPKI::RTR::Socket::SSH->new(
+            server      => $server,
+            port        => $port,
+            known_hosts => $self->{'known_hosts'},
+            ssh_key     => $self->{'ssh_key'},
+        ); 
     } else {
         $socket = socket_inet(
             Domain   => AF_INET,
