@@ -19,6 +19,8 @@ rpki-rtr-client {data-directory} init --server {server} --port {port}
                                       [--tcp-md5-key {key}]
                                       [--ca-file {path}]
                                       [--cert-file {path} --key-file {path}]
+                                      [--ssh-key {path}]
+                                      [--known-hosts {path}]
 
   Initialise a new client instance against the specified server.
 
@@ -86,6 +88,8 @@ sub main
         my $ca_file;
         my $cert_file;
         my $key_file;
+        my $ssh_key;
+        my $known_hosts;
         my @supported_versions;
         my $strict;
         while (@args) {
@@ -107,6 +111,10 @@ sub main
                 $cert_file = shift @args;
             } elsif ($key eq '--key-file') {
                 $key_file = shift @args;
+            } elsif ($key eq '--ssh-key') {
+                $ssh_key = shift @args;
+            } elsif ($key eq '--known-hosts') {
+                $known_hosts = shift @args;
             } else {
                 error("Invalid argument '$key'");
             }
@@ -127,6 +135,8 @@ sub main
                 ca_file            => $ca_file,
                 cert_file          => $cert_file,
                 key_file           => $key_file,
+                ssh_key            => $ssh_key,
+                known_hosts        => $known_hosts,
                 ($strict)
                     ? (strict_send    => 1,
                        strict_receive => 1)
