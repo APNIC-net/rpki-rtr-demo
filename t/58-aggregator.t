@@ -196,12 +196,12 @@ my @pids;
     $pdu = $pdus[0];
     is($pdu->type(), PDU_IPV4_PREFIX(),
         'PDU is IPv4 prefix PDU');
-    is($pdu->address(), '1.0.1.0',
+    is($pdu->address(), '1.0.2.0',
         'PDU has correct address');
     $pdu = $pdus[1];
     is($pdu->type(), PDU_IPV4_PREFIX(),
         'PDU is IPv4 prefix PDU');
-    is($pdu->address(), '1.0.2.0',
+    is($pdu->address(), '1.0.1.0',
         'PDU has correct address');
 
     $client2->exit_server();
