@@ -8,6 +8,7 @@ use File::Slurp qw(read_file write_file);
 
 use APNIC::RPKI::RTR::Constants;
 use APNIC::RPKI::RTR::Client;
+use APNIC::RPKI::RTR::Client::Aggregator;
 use APNIC::RPKI::Validator::ASPA;
 use APNIC::RPKI::Validator::ROA qw(ROV_INVALID ROV_UNKNOWN ROV_VALID);
 

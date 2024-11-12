@@ -14,7 +14,7 @@ A proof-of-concept for the RPKI-to-Router protocol, as at
 
     $ sudo make install
 
-### Usage
+### Single server usage
 
 #### Server
 
@@ -52,7 +52,35 @@ A proof-of-concept for the RPKI-to-Router protocol, as at
     $ rpki-rtr-client client-data-dir aspa-validation --announcement "TABLE_DUMP2|1698933600|B|64.71.137.241|6939|1.0.0.0/24|6939 13335|IGP|64.71.137.241|0|0||NAG|13335 10.34.0.16|" --provider-asns 6939
     Unknown
 
-#### Other
+### Multiple server usage
+
+    $ mkdir data-dir1
+    $ rpki-rtr-server data-dir1 init --server 127.0.0.1 --port 8282
+
+    $ rpki-rtr-server-mnt data-dir1 start-changeset
+    $ rpki-rtr-server-mnt data-dir1 add-vrp "192.0.2.0/24 => 64496"
+    $ rpki-rtr-server-mnt data-dir1 commit-changeset
+
+    $ mkdir data-dir2
+    $ rpki-rtr-server data-dir2 init --server 127.0.0.1 --port 8284
+
+    $ rpki-rtr-server-mnt data-dir2 start-changeset
+    $ rpki-rtr-server-mnt data-dir2 add-vrp "192.0.4.0/24 => 64496"
+    $ rpki-rtr-server-mnt data-dir2 commit-changeset
+
+    $ mkdir client-data-dir1
+    $ rpki-rtr-client client-data-dir1 init --server 127.0.0.1 --port 8282 --version 2
+    $ mkdir client-data-dir2
+    $ rpki-rtr-client client-data-dir2 init --server 127.0.0.1 --port 8284 --version 2
+    $ mkdir aggregator-data-dir
+    $ rpki-rtr-client-aggregator aggregator-data-dir init --clients 1,client-data-dir1,1,client-data-dir2
+    $ rpki-rtr-client-aggregator aggregator-data-dir reset
+    $ rpki-rtr-client-aggregator aggregator-data-dir print
+    State:
+     - IPv4 Prefix: 192.0.2.0/24-24 => AS64496
+     - IPv4 Prefix: 192.0.4.0/24-24 => AS64496
+
+### Other
 
 If the `APNIC_DEBUG` environment variable is set to a true value, then
 each command will print debug output to standard error.
@@ -64,4 +92,4 @@ each command will print debug output to standard error.
 
 ### License
 
-See [LICENSE](./LICENSE). 
+See [LICENSE](./LICENSE).

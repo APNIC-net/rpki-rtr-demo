@@ -8,6 +8,7 @@ use APNIC::RPKI::RTR::Utils qw(dprint);
 
 use Clone qw(clone);
 use File::Slurp qw(read_file write_file);
+use JSON::XS qw(encode_json decode_json);
 use List::Util qw(min);
 
 sub new
