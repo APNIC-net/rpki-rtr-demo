@@ -6,8 +6,8 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - run: |
-          mkdir /run/sshd
-          chmod 0755 /run/sshd
+          sudo mkdir /run/sshd
+          sudo chmod 0755 /run/sshd
           sudo apt-get update && sudo apt-get install gcc build-essential cpanminus cmake git libssh-dev rustc cargo stayrtr
           cargo install rtrtr
           export PATH=$PATH:/root/.cargo/bin
