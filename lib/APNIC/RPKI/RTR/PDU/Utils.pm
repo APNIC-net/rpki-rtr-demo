@@ -104,14 +104,29 @@ sub order_pdus
     my @ip_pdus =
         map  { $_->[0] }
         sort { ($a->[0]->type() <=> $b->[0]->type())
-                || ($a->[1] <=> $b->[1])
+            # Order from larger address to smaller address, so that
+            # subprefixes come first, and so that addresses are
+            # processed as close together as possible.
+                || ($b->[1] <=> $a->[1])
+            # Order from larger prefix length to smaller prefix
+            # length, so that subprefixes come first.
                 || ($b->[0]->prefix_length()
                     <=> $a->[0]->prefix_length())
+            # Order from larger max length to smaller max length, so
+            # that a PDU with a smaller max length doesn't
+            # inadvertently validate a route with a larger max length.
                 || ($b->[0]->max_length()
                     <=> $a->[0]->max_length()) }
         map  { [ $_, $_->address_as_number() ] }
-        grep { $_->type() == PDU_IPV4_PREFIX()
-            or $_->type() == PDU_IPV6_PREFIX() }
+        grep { ($_->type() == PDU_IPV4_PREFIX()
+             or $_->type() == PDU_IPV6_PREFIX())
+                and ($_->asn() != 0) }
+            @pdus;
+
+    my @ip_as0_pdus =
+        grep { ($_->type() == PDU_IPV4_PREFIX()
+             or $_->type() == PDU_IPV6_PREFIX())
+                and ($_->asn() == 0) }
             @pdus;
 
     my @non_ip_pdus =
@@ -119,7 +134,7 @@ sub order_pdus
            and $_->type() != PDU_IPV6_PREFIX() }
             @pdus;
 
-    return (@ip_pdus, @non_ip_pdus);
+    return (@ip_pdus, @ip_as0_pdus, @non_ip_pdus);
 }
 
 sub deserialise_json

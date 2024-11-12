@@ -88,6 +88,19 @@ my $pid;
     $changeset3->add_pdu($pdu3);
     $mnt->apply_changeset($changeset3);
 
+    my $changeset4 = APNIC::RPKI::RTR::Changeset->new();
+    my $pdu4 =
+        APNIC::RPKI::RTR::PDU::IPv4Prefix->new(
+            version       => 1,
+            flags         => 1,
+            asn           => 0,
+            address       => '1.0.0.0',
+            prefix_length => 23,
+            max_length    => 23
+        );
+    $changeset4->add_pdu($pdu4);
+    $mnt->apply_changeset($changeset4);
+
     my @pdus;
     $client->{'pdu_cb'} = sub { push @pdus, $_[0] };
     eval { $client->reset() };
@@ -97,15 +110,17 @@ my $pid;
     pop @pdus;
 
     my @data =
-        map  { $_->address().'/'.$_->prefix_length() }
+        map  { $_->address().'/'.$_->prefix_length().
+               '-'.$_->max_length().':'.$_->asn() }
         grep {    ($_->type() == PDU_IPV4_PREFIX())
                or ($_->type() == PDU_IPV6_PREFIX()) }
             @pdus;
     is_deeply(
         \@data,
-        [ '1.0.0.0/24',
-          '1.0.0.0/23',
-          '2.0.0.0/32' ],
+        [ '2.0.0.0/32-32:4608',
+          '1.0.0.0/24-24:4608',
+          '1.0.0.0/23-23:4608',
+          '1.0.0.0/23-23:0' ],
         'Got PDUs in expected order'
     );
 
