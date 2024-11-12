@@ -584,6 +584,10 @@ sub refresh
         }
     }
 
+    if (not $self->{'state'}) {
+        return $self->reset(1);
+    }
+
     $self->_init_socket_if_not_exists();
     $self->_send_serial_query();
     my $pdu = $self->_receive_cache_response();
