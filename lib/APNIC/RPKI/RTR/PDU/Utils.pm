@@ -25,7 +25,9 @@ use base qw(Exporter);
 
 our @EXPORT_OK = qw(parse_pdu
                     order_pdus
-                    error_type_to_string);
+                    error_type_to_string
+                    type_to_module
+                    is_data_pdu_type);
 
 my %TYPE_TO_MODULE = (
     PDU_SERIAL_NOTIFY()    => 'SerialNotify',
@@ -42,6 +44,13 @@ my %TYPE_TO_MODULE = (
     PDU_SUBSCRIBING_DATA() => 'SubscribingData',
     PDU_EXIT()             => 'Exit',
 );
+
+my %TYPE_TO_IS_DATA =
+    map { $_ => 1 }
+        (PDU_IPV4_PREFIX(),
+         PDU_IPV6_PREFIX(),
+         PDU_ROUTER_KEY(),
+         PDU_ASPA());
 
 my %ERROR_TYPE_TO_STRING = (
     ERR_CORRUPT_DATA()                    => 'Corrupt Data',
@@ -142,6 +151,13 @@ sub deserialise_json
     my $decoded_data = decode_json($data);
     my $module = type_to_module($decoded_data->{'type'});
     return $module->deserialise_json($data);
+}
+
+sub is_data_pdu_type
+{
+    my ($pdu_type) = @_;
+
+    return $TYPE_TO_IS_DATA{$pdu_type};
 }
 
 1;

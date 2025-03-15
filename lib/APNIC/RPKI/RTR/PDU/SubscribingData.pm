@@ -6,7 +6,8 @@ use strict;
 use JSON::XS qw(encode_json decode_json);
 
 use APNIC::RPKI::RTR::Constants;
-use APNIC::RPKI::RTR::Utils qw(get_zero);
+use APNIC::RPKI::RTR::Utils qw(get_zero
+                               recv_all);
 
 use base qw(APNIC::RPKI::RTR::PDU);
 
@@ -58,7 +59,8 @@ sub serialise_binary
                 $self->version(),
                 $self->type(),
                 get_zero(16),
-                8 + $dc);
+                8 + $dc,
+                @data_types);
 }
 
 sub deserialise_binary

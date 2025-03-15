@@ -12,7 +12,7 @@ use Scalar::Util qw(blessed);
 use lib 't/lib';
 use MockSocket;
 
-use Test::More tests => 91;
+use Test::More tests => 98;
 
 {
     my @pdus = (
@@ -95,6 +95,10 @@ use Test::More tests => 91;
             afi_flags     => 3,
             customer_asn  => 4608,
             provider_asns => [50, 60, 40]
+        ),
+        APNIC::RPKI::RTR::PDU::SubscribingData->new(
+            version    => 2,
+            data_types => [4, 6]
         ),
     );
 

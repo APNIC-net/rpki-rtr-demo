@@ -19,7 +19,9 @@ use APNIC::RPKI::RTR::State;
 use APNIC::RPKI::RTR::Utils qw(dprint
                                validate_intervals
                                socket_inet);
-use APNIC::RPKI::RTR::PDU::Utils qw(parse_pdu);
+use APNIC::RPKI::RTR::PDU::Utils qw(parse_pdu
+                                    type_to_module
+                                    is_data_pdu_type);
 
 sub new
 {
@@ -189,8 +191,9 @@ sub run
 
     my $select = IO::Select->new($server_socket);
     my $last_update = (stat("$data_dir/snapshot.json"))[7] || 0;
-    $self->{'versions'} = {};
-    $self->{'select'}   = $select;
+    $self->{'versions'}   = {};
+    $self->{'data_types'} = {};
+    $self->{'select'}     = $select;
     my $last_serial_notify = 0;
     my $serial_notify_period = $self->{'serial_notify_period'};
 
@@ -306,6 +309,7 @@ sub handle_client_connection
 
     my $version = $self->{'max_supported_version'};
     my $versions = $self->{'versions'};
+    my $data_types = $self->{'data_types'};
     my $res = 1;
     eval {
         my $peerhost = $client->peerhost();
@@ -316,6 +320,10 @@ sub handle_client_connection
         my $cv =
             ($peerport)
                 ? $versions->{$peerport}
+                : undef;
+        my $dts =
+            ($peerport)
+                ? $data_types->{$peerport}
                 : undef;
 
         # For testing.
@@ -407,13 +415,18 @@ sub handle_client_connection
 
                 for my $pdu ($state->pdus()) {
                     if ($pdu->supported_in_version($version)) {
-                        # For testing.
-                        if ($ENV{'APNIC_RESET_ANNOUNCE_ZERO'}) {
-                            $pdu->{'flags'} = 0;
+                        if (not $dts or $dts->{$pdu->type()}) {
+                            # For testing.
+                            if ($ENV{'APNIC_RESET_ANNOUNCE_ZERO'}) {
+                                $pdu->{'flags'} = 0;
+                            }
+                            $pdu->{'version'} = $version;
+                            dprint("server: sending PDU: ".$pdu->serialise_json());
+                            $self->_send($client, $pdu->serialise_binary());
+                        } else {
+                            dprint("server: not sending PDU, filtered ".
+                                   "by subscribing data call");
                         }
-                        $pdu->{'version'} = $version;
-                        dprint("server: sending PDU: ".$pdu->serialise_json());
-                        $self->_send($client, $pdu->serialise_binary());
                     } else {
                         dprint("server: not sending PDU, not supported in client version: ".
                             $pdu->serialise_json());
@@ -520,9 +533,14 @@ sub handle_client_connection
                         $first_changeset->{'last_serial_number'};
                     for my $pdu ($first_changeset->pdus()) {
                         if ($pdu->supported_in_version($version)) {
-                            $pdu->{'version'} = $version;
-                            dprint("server: sending PDU: ".$pdu->serialise_json());
-                            $self->_send($client, $pdu->serialise_binary());
+                            if (not $dts or $dts->{$pdu->type()}) {
+                                $pdu->{'version'} = $version;
+                                dprint("server: sending PDU: ".$pdu->serialise_json());
+                                $self->_send($client, $pdu->serialise_binary());
+                            } else {
+                                dprint("server: not sending PDU, filtered ".
+                                       "by subscribing data call");
+                            }
                         } else {
                             dprint("server: not sending PDU, not supported in client version: ".
                                 $pdu->serialise_json());
@@ -542,6 +560,55 @@ sub handle_client_connection
                 dprint("server: sending end of data PDU: ".$eod_pdu->serialise_json());
                 $self->_send($client, $eod_pdu->serialise_binary());
             }
+        } elsif ($pdu->type() == PDU_SUBSCRIBING_DATA()) {
+            my @new_data_types = @{$pdu->{'data_types'}};
+            for my $ndt (@new_data_types) {
+                if (not is_data_pdu_type($ndt)) {
+                    my $err_pdu =
+                        APNIC::RPKI::RTR::PDU::ErrorReport->new(
+                            version          => $version,
+                            error_code       => ERR_INVALID_REQUEST(),
+                            encapsulated_pdu => $pdu,
+                        );
+                    $self->_send($client, $err_pdu->serialise_binary());
+                    dprint("server: invalid request from client: ".
+                           "attempt to subscribe for non-data ".
+                           "PDU type");
+                    $self->flush($client);
+                    $res = 0;
+                    goto FINISHED;
+                }
+            }
+            my $ndt_str =
+                join ", ", sort map { type_to_module($_) }
+                    @new_data_types;
+
+            my $current_data_types = $data_types->{$peerport};
+            if ($current_data_types) {
+                my $cdt_str =
+                    join ", ", sort map { type_to_module($_) }
+                        keys %{$current_data_types};
+                if ($ndt_str ne $cdt_str) {
+                    my $err_pdu =
+                        APNIC::RPKI::RTR::PDU::ErrorReport->new(
+                            version          => $version,
+                            error_code       => ERR_INVALID_REQUEST(),
+                            encapsulated_pdu => $pdu,
+                        );
+                    $self->_send($client, $err_pdu->serialise_binary());
+                    dprint("server: invalid request from client: ".
+                           "attempt to resubscribe for different ".
+                           "data types");
+                    $self->flush($client);
+                    $res = 0;
+                    goto FINISHED;
+                }
+            }
+
+            dprint("server: client subscribing to: $ndt_str");
+            $data_types->{$peerport} =
+                { map { $_ => 1 } @new_data_types };
+            goto FINISHED;
         } elsif ($pdu->type() == PDU_EXIT()) {
             dprint("server: client triggered exit");
             exit(0);

@@ -21,6 +21,7 @@ rpki-rtr-client {data-directory} init --server {server} --port {port}
                                       [--cert-file {path} --key-file {path}]
                                       [--ssh-key {path}]
                                       [--known-hosts {path}]
+                                      [--data-types {data-types}]
 
   Initialise a new client instance against the specified server.
 
@@ -92,6 +93,7 @@ sub main
         my $known_hosts;
         my @supported_versions;
         my $strict;
+        my @data_types;
         while (@args) {
             my $key = shift @args;
             if ($key eq '--server') {
@@ -115,6 +117,9 @@ sub main
                 $ssh_key = shift @args;
             } elsif ($key eq '--known-hosts') {
                 $known_hosts = shift @args;
+            } elsif ($key eq '--data-types') {
+                my @current_data_types = split /,/, (shift @args);
+                push @data_types, @current_data_types;
             } else {
                 error("Invalid argument '$key'");
             }
@@ -137,6 +142,7 @@ sub main
                 key_file           => $key_file,
                 ssh_key            => $ssh_key,
                 known_hosts        => $known_hosts,
+                data_types         => \@data_types,
                 ($strict)
                     ? (strict_send    => 1,
                        strict_receive => 1)

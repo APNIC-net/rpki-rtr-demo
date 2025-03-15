@@ -4,16 +4,10 @@ use warnings;
 use strict;
 
 use APNIC::RPKI::RTR::Constants;
-use APNIC::RPKI::RTR::PDU::Utils qw(order_pdus);
+use APNIC::RPKI::RTR::PDU::Utils qw(order_pdus
+                                    is_data_pdu_type);
 
 use JSON::XS qw(decode_json encode_json);
-
-our %ADDABLE_PDU_TYPES =
-    map { $_ => 1 }
-        (PDU_IPV4_PREFIX(),
-         PDU_IPV6_PREFIX(),
-         PDU_ROUTER_KEY(),
-         PDU_ASPA());
 
 sub new
 {
@@ -32,8 +26,7 @@ sub can_add_pdu
     my ($self, $pdu) = @_;
 
     my $type = $pdu->type();
-
-    return $ADDABLE_PDU_TYPES{$type};
+    return is_data_pdu_type($type);
 }
 
 sub add_pdu

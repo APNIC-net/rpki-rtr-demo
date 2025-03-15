@@ -72,9 +72,36 @@ sub new
         key_file              => $args{'key_file'},
         known_hosts           => $args{'known_hosts'},
         ssh_key               => $args{'ssh_key'},
+        data_types            => $args{'data_types'},
+        dt_lookup             => ($args{'data_types'}
+                                     ? { map { $_ => 1 }
+                                             @{$args{'data_types'}} }
+                                     : {})
     };
     bless $self, $class;
     return $self;
+}
+
+sub _send_subscribing_data_pdu
+{
+    my ($self) = @_;
+
+    my $socket = $self->{'socket'};
+
+    my $sd_query =
+        APNIC::RPKI::RTR::PDU::SubscribingData->new(
+            version    => $self->{'max_supported_version'},
+            data_types => $self->{'data_types'}
+        );
+    my $data = $sd_query->serialise_binary();
+    my $res = $self->_send($socket, $data);
+    if ($res != length($data)) {
+        die "Got unexpected send result for ".
+            "subscribing data query: '$res' ($!)";
+    }
+    dprint("client: sent subscribing data query");
+
+    return 1;
 }
 
 sub _init_socket
@@ -108,7 +135,7 @@ sub _init_socket
             port        => $port,
             known_hosts => $self->{'known_hosts'},
             ssh_key     => $self->{'ssh_key'},
-        ); 
+        );
     } else {
         $socket = socket_inet(
             Domain   => AF_INET,
@@ -130,6 +157,10 @@ sub _init_socket
     }
 
     $self->{'socket'} = $socket;
+
+    if ($self->{'data_types'}) {
+        $self->_send_subscribing_data_pdu();
+    }
 
     return 1;
 }
@@ -337,6 +368,19 @@ sub _process_responses
         }
         dprint("client: processing response: got PDU: ".$pdu->serialise_json());
         if ($changeset->can_add_pdu($pdu)) {
+            if ($self->{'strict_receive'}
+                    and $self->{'data_types'}
+                    and not $self->{'dt_lookup'}->{$pdu->type()}) {
+                my $err_pdu =
+                    APNIC::RPKI::RTR::PDU::ErrorReport->new(
+                        version          => $self->_current_version(),
+                        error_code       => ERR_CORRUPT_DATA(),
+                        encapsulated_pdu => $pdu,
+                    );
+                $self->_send($socket, $err_pdu->serialise_binary());
+                $self->flush();
+                die "client: got PDU for unsubscribed type";
+            }
             # All addable PDUs will have a 'flags' method.
             if ($post_reset and ($pdu->flags() != 1)) {
                 my $err_pdu =
@@ -652,11 +696,11 @@ sub refresh
 sub exit_server
 {
     my ($self) = @_;
-    
+
     dprint("client: sending exit");
     $self->_init_socket_if_not_exists();
     my $socket = $self->{'socket'};
-    dprint("client: peerport is ".$socket->peerport()); 
+    dprint("client: peerport is ".$socket->peerport());
     my $cv = $self->{'current_version'} || 0;
     my $exit =
         APNIC::RPKI::RTR::PDU::Exit->new(
