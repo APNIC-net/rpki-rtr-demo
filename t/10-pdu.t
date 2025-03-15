@@ -108,8 +108,11 @@ use Test::More tests => 91;
         ok($new_pdu, "Deserialised $module PDU from existing PDU");
         ok($mock_socket->exhausted(), 'All data used');
 
-        ok($pdu->equals($new_pdu),
-            'PDUs are equal');
+        my $res = ok($pdu->equals($new_pdu),
+                        'PDUs are equal');
+        if (not $res) {
+            diag "Failed equality test for '".$module->type_str()."'";
+        }
 
         my $json = $pdu->serialise_json();
         ok($json, 'Got JSON serialisation of PDU');

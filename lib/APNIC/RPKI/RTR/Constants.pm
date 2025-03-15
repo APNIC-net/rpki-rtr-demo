@@ -4,18 +4,19 @@ use warnings;
 use strict;
 
 use constant {
-    PDU_SERIAL_NOTIFY  => 0,
-    PDU_SERIAL_QUERY   => 1,
-    PDU_RESET_QUERY    => 2,
-    PDU_CACHE_RESPONSE => 3,
-    PDU_IPV4_PREFIX    => 4,
-    PDU_IPV6_PREFIX    => 6,
-    PDU_END_OF_DATA    => 7,
-    PDU_CACHE_RESET    => 8,
-    PDU_ROUTER_KEY     => 9,
-    PDU_ERROR_REPORT   => 10,
-    PDU_ASPA           => 11,
-    PDU_EXIT           => 255,
+    PDU_SERIAL_NOTIFY    => 0,
+    PDU_SERIAL_QUERY     => 1,
+    PDU_RESET_QUERY      => 2,
+    PDU_CACHE_RESPONSE   => 3,
+    PDU_IPV4_PREFIX      => 4,
+    PDU_IPV6_PREFIX      => 6,
+    PDU_END_OF_DATA      => 7,
+    PDU_CACHE_RESET      => 8,
+    PDU_ROUTER_KEY       => 9,
+    PDU_ERROR_REPORT     => 10,
+    PDU_ASPA             => 11,
+    PDU_SUBSCRIBING_DATA => 12,
+    PDU_EXIT             => 255,
 
     ERR_CORRUPT_DATA                    => 0,
     ERR_INTERNAL_ERROR                  => 1,
@@ -43,6 +44,7 @@ our @EXPORT = qw(
     PDU_ROUTER_KEY
     PDU_ERROR_REPORT
     PDU_ASPA
+    PDU_SUBSCRIBING_DATA
     PDU_EXIT
 
     ERR_CORRUPT_DATA

@@ -15,6 +15,7 @@ use APNIC::RPKI::RTR::PDU::CacheReset;
 use APNIC::RPKI::RTR::PDU::RouterKey;
 use APNIC::RPKI::RTR::PDU::ErrorReport;
 use APNIC::RPKI::RTR::PDU::ASPA;
+use APNIC::RPKI::RTR::PDU::SubscribingData;
 use APNIC::RPKI::RTR::Utils qw(recv_all);
 
 use IO::Socket::SSL;
@@ -27,18 +28,19 @@ our @EXPORT_OK = qw(parse_pdu
                     error_type_to_string);
 
 my %TYPE_TO_MODULE = (
-    PDU_SERIAL_NOTIFY()  => 'SerialNotify',
-    PDU_SERIAL_QUERY()   => 'SerialQuery',
-    PDU_RESET_QUERY()    => 'ResetQuery',
-    PDU_CACHE_RESPONSE() => 'CacheResponse',
-    PDU_IPV4_PREFIX()    => 'IPv4Prefix',
-    PDU_IPV6_PREFIX()    => 'IPv6Prefix',
-    PDU_END_OF_DATA()    => 'EndOfData',
-    PDU_CACHE_RESET()    => 'CacheReset',
-    PDU_ROUTER_KEY()     => 'RouterKey',
-    PDU_ERROR_REPORT()   => 'ErrorReport',
-    PDU_ASPA()           => 'ASPA',
-    PDU_EXIT()           => 'Exit',
+    PDU_SERIAL_NOTIFY()    => 'SerialNotify',
+    PDU_SERIAL_QUERY()     => 'SerialQuery',
+    PDU_RESET_QUERY()      => 'ResetQuery',
+    PDU_CACHE_RESPONSE()   => 'CacheResponse',
+    PDU_IPV4_PREFIX()      => 'IPv4Prefix',
+    PDU_IPV6_PREFIX()      => 'IPv6Prefix',
+    PDU_END_OF_DATA()      => 'EndOfData',
+    PDU_CACHE_RESET()      => 'CacheReset',
+    PDU_ROUTER_KEY()       => 'RouterKey',
+    PDU_ERROR_REPORT()     => 'ErrorReport',
+    PDU_ASPA()             => 'ASPA',
+    PDU_SUBSCRIBING_DATA() => 'SubscribingData',
+    PDU_EXIT()             => 'Exit',
 );
 
 my %ERROR_TYPE_TO_STRING = (
