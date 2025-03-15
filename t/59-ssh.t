@@ -17,7 +17,12 @@ use List::MoreUtils qw(uniq);
 use IPC::Open2 qw(open2);
 use IO::File;
 
-use Test::More tests => 4;
+use Test::More;
+if ($ENV{'SKIP_RTR_SSH'}) {
+    plan skip_all => 'Skipping SSH tests';
+} else {
+    plan tests => 4;
+}
 
 my @pids;
 
