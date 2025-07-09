@@ -52,7 +52,8 @@ sub rationalise
             } elsif (($pdu->type() == PDU_ASPA())
                         and ($fp->type() == PDU_ASPA())
                         and ($pdu->flags() == 1)
-                        and ($fp->flags() == 1)) {
+                        and ($fp->flags() == 1)
+                        and ($pdu->customer_asn() == $fp->customer_asn())) {
                 my %provider_asns =
                     map { $_ => 1 }
                         (@{$fp->provider_asns()},

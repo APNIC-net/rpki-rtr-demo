@@ -273,7 +273,7 @@ sub main
 
         my %provider_asns =
             map { $_ => 1 }
-                split /,/, $provider_asn_str;
+                split /\s*,\s*/, $provider_asn_str;
 
         my $state = $client->{'state'};
         my $res = APNIC::RPKI::Validator::ASPA::validate(
