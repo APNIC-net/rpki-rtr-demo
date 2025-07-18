@@ -30,224 +30,93 @@ sub aspa_hop_check
 
 sub upstream
 {
-    my ($state, $prefix, $as_path_pre) = @_;
+    my ($state, $prefix, $as_path,
+        $max_up_ramp, $min_up_ramp, $max_down_ramp, $min_down_ramp) = @_;
 
-    dprint("validation-aspa: begin validation");
+    # 1.  If the AS_PATH is empty, then the procedure halts with the
+    #     outcome "Invalid".
 
-    my $aspas = $state->{'aspas'};
-    my $str = "$prefix (upstream): {".(join ', ', @{$as_path_pre})."}";
-
-    # 2.  Collapse prepends in the AS_SEQUENCE(s) in the AS_PATH (i.e.,
-    #     keep only the unique AS numbers).  Let the resulting ordered
-    #     sequence be represented by {AS(N), AS(N-1), ..., AS(2), AS(1)},
-    #     where AS(1) is the first-added (i.e., origin) AS and AS(N) is the
-    #     last-added AS and neighbor to the receiving/validating AS.
-
-    my @as_path;
-    for my $asn (reverse @{$as_path_pre}) {
-        if (@as_path and $as_path[$#as_path] == $asn) {
-            next;
-        } else {
-            push @as_path, $asn;
-        }
-    }
-    my $n = scalar @as_path;
-
-    # 3.  If N = 1, then the procedure halts with the outcome "Valid".
-    #     Else, continue.
-
-    if ($n == 1) {
-        dprint("validation-aspa: completed: $str: valid");
-        return 2;
+    if (@{$as_path} == 0) {
+        dprint("validation-aspa: empty AS path: invalid");
+        return 0;
     }
 
-    # 4.  At this step, N >= 2.  If there is an i such that 2 <= i <= N and
-    #     hop(AS(i-1), AS(i)) = "Not Provider+", then the procedure halts
-    #     with the outcome "Invalid".  Else, continue.
+    # 2.  If the receiving AS is not an RS-client and the most recently
+    #     added AS in the AS_PATH does not match the neighbor AS, then the
+    #     procedure halts with the outcome "Invalid".
 
-    dprint("validation-aspa: debug: $str: begin NP+ check");
-    for (my $i = 1; $i < $n; $i++) {
-        my $index = $i + 1;
-        my $f = $as_path[$i - 1];
-        my $s = $as_path[$i];
-        my $ahc = aspa_hop_check($aspas, $f, $s);
-        dprint("validation-aspa: debug: $str: NP+ check at $index: AS$f, AS$s -> $ahc");
-        if ($ahc eq "not-provider") {
-            dprint("validation-aspa: completed: $str: invalid (found non-provider hop)");
-            return 0;
-        }
-    }
-    dprint("validation-aspa: debug: $str: past NP+ check (none found)");
+    # 2 is not relevant to this validation function.
 
-    # 5.  If there is an i such that 2 <= i <= N and hop(AS(i-1), AS(i)) =
-    #     "No Attestation", then the procedure halts with the outcome
-    #     "Unknown".  Else, the procedure halts with the outcome "Valid".
+    # 3.  If the AS_PATH has an AS_SET, then the procedure halts with the
+    #     outcome "Invalid".
 
-    dprint("validation-aspa: debug: $str: begin NA check");
-    for (my $i = 1; $i < $n; $i++) {
-        my $index = $i + 1;
-        my $f = $as_path[$i - 1];
-        my $s = $as_path[$i];
-        my $ahc = aspa_hop_check($aspas, $f, $s);
-        dprint("validation-aspa: debug: $str: NA check at $index: AS$f, AS$s -> $ahc");
-        if ($ahc eq "no-attestation") {
-            dprint("validation-aspa: completed: $str: unknown (found no-attestation hop)");
-            return 1;
-        }
+    # 3 is not relevant to this validation function.
+
+    # 4.  If max_up_ramp < N, the procedure halts with the outcome
+    #     "Invalid".
+
+    if ($max_up_ramp < @{$as_path}) {
+        dprint("validation-aspa: max_up_ramp < N: invalid");
+        return 0;
     }
 
-    dprint("validation-aspa: debug: $str: past NA check (none found)");
-    dprint("validation-aspa: completed: $str: valid (each hop is customer to provider)");
+    # 5.  If min_up_ramp < N, the procedure halts with the outcome
+    #     "Unknown".
 
+    if ($min_up_ramp < @{$as_path}) {
+        dprint("validation-aspa: min_up_ramp < N: unknown");
+        return 1;
+    }
+
+    # 6.  Else, the procedure halts with the outcome "Valid". 
+
+    dprint("validation-aspa: valid");
     return 2;
 }
 
 sub downstream
 {
-    my ($state, $prefix, $as_path_pre) = @_;
+    my ($state, $prefix, $as_path,
+        $max_up_ramp, $min_up_ramp, $max_down_ramp, $min_down_ramp) = @_;
 
-    my $aspas = $state->{'aspas'};
-    my $str = "$prefix (downstream): {".(join ', ', @{$as_path_pre})."}";
+    # 1.  If the AS_PATH is empty, then the procedure halts with the
+    #     outcome "Invalid".
 
-    # 2.  Collapse prepends in the AS_SEQUENCE(s) in the AS_PATH (i.e.,
-    #     keep only the unique AS numbers).  Let the resulting ordered
-    #     sequence be represented by {AS(N), AS(N-1), ..., AS(2), AS(1)},
-    #     where AS(1) is the first-added (i.e., origin) AS and AS(N) is the
-    #     last-added AS and neighbor to the receiving/validating AS.
- 
-    my @as_path;
-    for my $asn (reverse @{$as_path_pre}) {
-        if (@as_path and $as_path[$#as_path] == $asn) {
-            next;
-        } else {
-            push @as_path, $asn;
-        }
-    }
-    my $n = scalar @as_path;
-
-    # 3.  If 1 <= N <= 2, then the procedure halts with the outcome
-    #     "Valid".  Else, continue.
-        
-    if (@as_path >= 1 and @as_path <= 2) {
-        dprint("validation-aspa: completed: $str: valid");
-        return 2;
-    }
-
-    # 4.  At this step, N >= 3.  Given the above-mentioned ordered
-    #     sequence, find the lowest value of u (2 <= u <= N) for which
-    #     hop(AS(u-1), AS(u)) = "Not Provider+".  Call it u_min.  If no
-    #     such u_min exists, set u_min = N+1.    
-
-    dprint("validation-aspa: debug: $str: begin u_min checks");
-    my $u_min;
-    for (my $i = 1; $i < $n; $i++) {
-        my $new_u_min = $i + 1;
-        my $f = $as_path[$i - 1];
-        my $s = $as_path[$i];
-        my $ahc = aspa_hop_check($aspas, $f, $s);
-        dprint("validation-aspa: debug: $str u_min check at $new_u_min: AS$f, AS$s -> $ahc");
-        if ($ahc eq "not-provider") {
-            $u_min = $new_u_min;
-            dprint("validation-aspa: debug: $str: found non-provider hop (start of first down-ramp): u_min is $u_min");
-            last;
-        }
-    }
-    if (not defined $u_min) {
-        $u_min = $n + 1;
-        dprint("validation-aspa: debug: $str: did not find non-provider hop (start of first down-ramp): u_min is $u_min");
-    }
-
-    #     Find the highest value of v (N-1 >= v >= 1) for which
-    #     hop(AS(v+1), AS(v)) = "Not Provider+".  Call it v_max.  If
-    #     no such v_max exists, then set v_max = 0.
-
-    dprint("validation-aspa: debug: $str: begin v_max checks");
-    my $v_max;
-    for (my $i = ($n - 2); $i >= 0; $i--) {
-        my $new_v_max = $i + 1;
-        my $f = $as_path[$i];
-        my $s = $as_path[$i + 1];
-        my $ahc = aspa_hop_check($aspas, $s, $f);
-        dprint("validation-aspa: debug: $str: v_max check at $new_v_max: AS$s, AS$f -> $ahc");
-        if ($ahc eq "not-provider") {
-            $v_max = $new_v_max;
-            dprint("validation-aspa: debug: $str: found non-provider hop (start of last up-ramp): v_max is now $v_max");
-            last;
-        }
-    }
-    if (not defined $v_max) {
-        $v_max = 0;
-        dprint("validation-aspa: debug: $str: did not find non-provider hop (start of last up-ramp): v_max is $v_max");
-    }
-
-    dprint("validation-aspa: debug: $str: u_min: $u_min, v_max: $v_max");
-
-    #     If u_min <= v_max, then the procedure halts with the outcome
-    #     "Invalid".  Else, continue.
-
-    if ($u_min <= $v_max) {
-        dprint("validation-aspa: completed: $str: invalid (u_min is less than or equal to v_max, i.e. first down-ramp is before or at last up-ramp)");
+    if (@{$as_path} == 0) {
+        dprint("validation-aspa: empty AS path: invalid");
         return 0;
-    } else {
-        dprint("validation-aspa: debug: $str: proceed: u_min is greater than v_max, i.e. first down-ramp is after last up-ramp");
     }
 
-    # 5.  Up-ramp: For 2 <= i <= N, determine the largest K such that
-    #     hop(AS(i-1), AS(i)) = "Provider+" for each i in the range 2 <= i
-    #     <= K.  If such a largest K does not exist, then set K = 1.
+    # 2.  If the most recently added AS in the AS_PATH does not match the
+    #     neighbor AS, then the procedure halts with the outcome "Invalid".
 
-    dprint("validation-aspa: debug: $str: begin up-ramp checks");
-    my $k;
-    for (my $i = 1; $i < $n; $i++) {
-        my $new_k = $i + 1;
-        my $f = $as_path[$i - 1] ;
-        my $s = $as_path[$i];
-        my $ahc = aspa_hop_check($aspas, $f, $s);
-        dprint("validation-aspa: debug: $str: up-ramp check at $new_k: AS$f, AS$s -> $ahc");
-        if ($ahc ne "provider") {
-            last;
-        } else {
-            $k = $new_k;
-        }
+    # 2 is not relevant to this validation function.
+
+    # 3.  If the AS_PATH has an AS_SET, then the procedure halts with the
+    #     outcome "Invalid".
+
+    # 3 is not relevant to this validation function.
+
+    # 4.  If max_up_ramp + max_down_ramp < N, the procedure halts with the
+    #     outcome "Invalid".
+
+    if (($max_up_ramp + $max_down_ramp) < @{$as_path}) {
+        dprint("validation-aspa: max_up_ramp + max_down_ramp < N: invalid");
+        return 0;
     }
-    if (not defined $k) {
-        $k = 1;
-    }
-    dprint("validation-aspa: debug: $str: K is $k");
 
-    # 6.  Down-ramp: For N-1 >= j >= 1, determine the smallest L such that
-    #     hop(AS(j+1), AS(j)) = "Provider+" for each j in the range N-1 >=
-    #     j >= L.  If such smallest L does not exist, then set L = N.
+    # 5.  If min_up_ramp + min_down_ramp < N, the procedure halts with the
+    #     outcome "Unknown".
 
-    dprint("validation-aspa: debug: $str: begin down-ramp checks");
-    my $l;
-    for (my $j = $n - 2; $j >= 0; $j--) {
-        my $new_l = $j + 1;
-        my $f = $as_path[$j + 1];
-        my $s = $as_path[$j];
-        my $ahc = aspa_hop_check($aspas, $f, $s);
-        dprint("validation-aspa: debug: $str: down-ramp check at $new_l: AS$f, AS$s -> $ahc");
-        if ($ahc ne "provider") {
-            last;
-        } else {
-            $l = $new_l;
-        }
-    }
-    if (not defined $l) {
-        $l = $n;
-    }
-    dprint("validation-aspa: debug: $str: L is $l");
-
-    # 7.  If L-K <= 1, then the procedure halts with the outcome "Valid".
-    #     Else, the procedure halts with the outcome "Unknown".
-
-    if ($l - $k <= 1) {
-        dprint("validation-aspa: completed: $str: valid (L - K <= 1)");
-        return 2;
-    } else {
-        dprint("validation-aspa: completed: $str: unknown (L - K > 1)");
+    if (($min_up_ramp + $min_down_ramp) < @{$as_path}) {
+        dprint("validation-aspa: min_up_ramp + min_down_ramp < N: unknown");
         return 1;
     }
+
+    # 6.  Else, the procedure halts with the outcome "Valid".
+
+    dprint("validation-aspa: valid");
+    return 2;
 }
 
 sub validate
@@ -260,10 +129,104 @@ sub validate
     my $path_str = $elements[6];
     my @path = split /\s+/, $path_str;
 
+    # Calculate the inputs to the upstream/downstream functions.
+
+    # Let the sequence {AS(N), AS(N-1),..., AS(2), AS(1)} represent
+    # the AS_PATH in terms of unique ASNs, where AS(1) is the origin
+    # AS and AS(N) is the most recently added AS and neighbor of the
+    # receiving/ verifying AS.
+
+    my @as_path;
+    for my $asn (reverse @{$as_path_pre}) {
+        if (@as_path and $as_path[$#as_path] == $asn) {
+            next;
+        } else {
+            push @as_path, $asn;
+        }
+    }
+    my $n = scalar @as_path;
+
+    my $aspas = $state->{'aspas'};
+
+    # Determine the maximum up-ramp length as I, where I is the
+    # minimum index for which authorized(A(I), A(I+1)) returns "Not
+    # Provider+".  If there is no such I, the maximum up-ramp length
+    # is set equal to the AS_PATH length N.  This parameter is
+    # abbreviated as max_up_ramp.
+
+    my $max_up_ramp = $n;
+    for (my $i = 0; $i < ($n - 1); $i++) {
+        my $first = $as_path[$i];
+        my $second = $as_path[$i + 1];
+        my $hc = aspa_hop_check($aspas, $first, $second);
+        if ($hc eq "not-provider") {
+            $max_up_ramp = $i + 1;
+            last;
+        }
+    }
+
+    # The minimum up-ramp length can be determined as I, where I is
+    # the minimum index for which authorized(A(I), A(I+1)) returns "No
+    # Attestation" or "Not Provider+".  If there is no such I, the
+    # AS_PATH consists of only "Provider+" pairs; so the minimum
+    # up-ramp length is set equal to the AS_PATH length N.  This
+    # parameter is abbreviated as min_up_ramp.
+
+    my $min_up_ramp = $n;
+    for (my $i = 0; $i < ($n - 1); $i++) {
+        my $first = $as_path[$i];
+        my $second = $as_path[$i + 1];
+        my $hc = aspa_hop_check($aspas, $first, $second);
+        if ($hc eq "not-provider" or $hc eq "no-attestation") {
+            $min_up_ramp = $i + 1;
+            last;
+        }
+    }
+
+    # Similarly, the maximum down-ramp length can be determined as N -
+    # J + 1 where J is the maximum index for which authorized(A(J),
+    # A(J-1)) returns "Not Provider+".  If there is no such J, the
+    # maximum down- ramp length is set equal to the AS_PATH length N.
+    # This parameter is abbreviated as max_down_ramp.
+
+    my $max_down_ramp = $n;
+    for (my $i = ($n - 1); $i > 0; $i--) {
+        my $first = $as_path[$i];
+        my $second = $as_path[$i - 1];
+        my $hc = aspa_hop_check($aspas, $first, $second);
+        if ($hc eq "not-provider") {
+            my $j = $i + 1;
+            $max_down_ramp = $n - $j + 1;
+            last;
+        }
+    }
+
+    # The minimum down-ramp length can be determined as N - J + 1
+    # where J is the maximum index for which authorized(A(J), A(J-1))
+    # returns "No Attestation" or "Not Provider+".  If there is no
+    # such J, the minimum down-ramp length is set equal to the AS_PATH
+    # length N.  This parameter is abbreviated as min_down_ramp.  
+
+    my $min_down_ramp = $n;
+    for (my $i = ($n - 1); $i > 0; $i--) {
+        my $first = $as_path[$i];
+        my $second = $as_path[$i - 1];
+        my $hc = aspa_hop_check($aspas, $first, $second);
+        if ($hc eq "not-provider" or $hc eq "no-attestation") {
+            my $j = $i + 1;
+            $min_down_ramp = $n - $j + 1;
+            last;
+        }
+    }
+
     if ($provider_asns->{$source}) {
-        return downstream($state, $prefix, \@path);
+        return downstream($state, $prefix, \@as_path,
+                          $max_up_ramp, $min_up_ramp,
+                          $max_down_ramp, $min_down_ramp);
     } else {
-        return upstream($state, $prefix, \@path);
+        return upstream($state, $prefix, \@as_path,
+                        $max_up_ramp, $min_up_ramp,
+                        $max_down_ramp, $min_down_ramp);
     }
 }
 
