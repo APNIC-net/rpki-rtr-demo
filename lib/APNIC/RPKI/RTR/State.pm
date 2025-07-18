@@ -35,9 +35,9 @@ sub new
     my $self = {
         session_id      => $session_id,
         serial_number   => $serial_number,
-        vrps            => $args{vrps},
-        rks             => {},
-        aspas           => {},
+        vrps            => $args{'vrps'},
+        aspas           => $args{'aspas'} || {},
+        rks             => $args{'rks'}   || {},
     };
     bless $self, $class;
 

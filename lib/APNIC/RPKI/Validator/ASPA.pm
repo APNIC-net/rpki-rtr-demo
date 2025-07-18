@@ -33,6 +33,12 @@ sub upstream
     my ($state, $prefix, $as_path,
         $max_up_ramp, $min_up_ramp, $max_down_ramp, $min_down_ramp) = @_;
 
+    dprint("validation-aspa: upstream");
+    dprint("validation-aspa: max_up_ramp: $max_up_ramp");
+    dprint("validation-aspa: min_up_ramp: $min_up_ramp");
+    dprint("validation-aspa: max_down_ramp: $max_down_ramp");
+    dprint("validation-aspa: min_down_ramp: $min_down_ramp");
+
     # 1.  If the AS_PATH is empty, then the procedure halts with the
     #     outcome "Invalid".
 
@@ -78,6 +84,12 @@ sub downstream
 {
     my ($state, $prefix, $as_path,
         $max_up_ramp, $min_up_ramp, $max_down_ramp, $min_down_ramp) = @_;
+
+    dprint("validation-aspa: downstream");
+    dprint("validation-aspa: max_up_ramp: $max_up_ramp");
+    dprint("validation-aspa: min_up_ramp: $min_up_ramp");
+    dprint("validation-aspa: max_down_ramp: $max_down_ramp");
+    dprint("validation-aspa: min_down_ramp: $min_down_ramp");
 
     # 1.  If the AS_PATH is empty, then the procedure halts with the
     #     outcome "Invalid".
@@ -137,7 +149,7 @@ sub validate
     # receiving/ verifying AS.
 
     my @as_path;
-    for my $asn (reverse @{$as_path_pre}) {
+    for my $asn (reverse @path) {
         if (@as_path and $as_path[$#as_path] == $asn) {
             next;
         } else {
@@ -161,6 +173,8 @@ sub validate
         my $hc = aspa_hop_check($aspas, $first, $second);
         if ($hc eq "not-provider") {
             $max_up_ramp = $i + 1;
+            dprint("validation-aspa: reached max_up_ramp ".
+                   "at $first -> $second ($max_up_ramp)");
             last;
         }
     }
@@ -179,6 +193,8 @@ sub validate
         my $hc = aspa_hop_check($aspas, $first, $second);
         if ($hc eq "not-provider" or $hc eq "no-attestation") {
             $min_up_ramp = $i + 1;
+            dprint("validation-aspa: reached min_up_ramp ".
+                   "at $first -> $second ($min_up_ramp)");
             last;
         }
     }
@@ -197,6 +213,8 @@ sub validate
         if ($hc eq "not-provider") {
             my $j = $i + 1;
             $max_down_ramp = $n - $j + 1;
+            dprint("validation-aspa: reached max_down_ramp ".
+                   "at $first -> $second ($max_down_ramp)");
             last;
         }
     }
@@ -215,6 +233,8 @@ sub validate
         if ($hc eq "not-provider" or $hc eq "no-attestation") {
             my $j = $i + 1;
             $min_down_ramp = $n - $j + 1;
+            dprint("validation-aspa: reached min_down_ramp ".
+                   "at $first -> $second ($min_down_ramp)");
             last;
         }
     }
