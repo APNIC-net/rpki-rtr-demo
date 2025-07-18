@@ -15,6 +15,7 @@ use APNIC::RPKI::RTR::PDU::CacheReset;
 use APNIC::RPKI::RTR::PDU::RouterKey;
 use APNIC::RPKI::RTR::PDU::ErrorReport;
 use APNIC::RPKI::RTR::PDU::ASPA;
+use APNIC::RPKI::RTR::PDU::Exit;
 use APNIC::RPKI::RTR::Utils qw(recv_all);
 
 use IO::Socket::SSL;
