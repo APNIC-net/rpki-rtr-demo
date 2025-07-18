@@ -7,6 +7,7 @@ use Time::HiRes qw(sleep);
 
 use IO::Socket qw(IPPROTO_TCP TCP_MD5SIG);
 use IO::Socket::INET;
+use JSON::XS;
 use Net::IP::XS qw(ip_bintoip
                    ip_inttobin
                    ip_iptobin
@@ -22,7 +23,8 @@ our @EXPORT_OK = qw(inet_ntop
                     recv_all
                     get_zero
                     validate_intervals
-                    socket_inet);
+                    socket_inet
+                    encode_json_rtr);
 
 sub inet_ntop
 {
@@ -253,6 +255,15 @@ sub socket_inet
     }
 
     $sock;
+}
+
+sub encode_json_rtr
+{
+    my ($data) = @_;
+
+    my $json = JSON::XS->new();
+    $json->canonical(1);
+    return $json->encode($data);
 }
 
 1;

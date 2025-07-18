@@ -3,9 +3,10 @@ package APNIC::RPKI::RTR::PDU::CacheResponse;
 use warnings;
 use strict;
 
-use JSON::XS qw(encode_json decode_json);
+use JSON::XS qw(decode_json);
 
 use APNIC::RPKI::RTR::Constants;
+use APNIC::RPKI::RTR::Utils qw(encode_json_rtr);
 
 use base qw(APNIC::RPKI::RTR::PDU);
 
@@ -77,7 +78,7 @@ sub serialise_json
 {
     my ($self) = @_;
 
-    return encode_json({%{$self}, type => $self->type()});
+    return encode_json_rtr({%{$self}, type => $self->type()});
 }
 
 sub deserialise_json

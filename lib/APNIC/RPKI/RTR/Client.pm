@@ -18,7 +18,8 @@ use APNIC::RPKI::RTR::Changeset;
 use APNIC::RPKI::RTR::State;
 use APNIC::RPKI::RTR::Socket::SSH;
 use APNIC::RPKI::RTR::PDU::Utils qw(parse_pdu
-                                    error_type_to_string);
+                                    error_type_to_string
+                                    pdus_are_ordered);
 use APNIC::RPKI::RTR::PDU::Exit;
 use APNIC::RPKI::RTR::PDU::ResetQuery;
 use APNIC::RPKI::RTR::Utils qw(inet_ntop
@@ -327,10 +328,12 @@ sub _process_responses
 
     my $socket  = $self->{'socket'};
     my $changeset = APNIC::RPKI::RTR::Changeset->new();
+    my $res;
+    my $pdu;
 
     for (;;) {
         dprint("client: processing response");
-        my $pdu = $self->_parse_pdu();
+        $pdu = $self->_parse_pdu();
         # For tests only.
         if ($self->{'pdu_cb'}) {
             $self->{'pdu_cb'}->($pdu);
@@ -351,14 +354,17 @@ sub _process_responses
             }
             $changeset->add_pdu($pdu);
         } elsif ($pdu->type() == PDU_END_OF_DATA()) {
-            return (1, $changeset, $pdu);
+            $res = 1;
+            last;
         } elsif ($pdu->type() == PDU_ERROR_REPORT()) {
-            return (0, $changeset, $pdu);
+            $res = 0;
+            last;
         } elsif ($pdu->type() == PDU_SERIAL_NOTIFY()) {
             dprint("client: received serial notify, ignore");
         } elsif ($pdu->type() == PDU_CACHE_RESET()) {
             dprint("client: got cache reset PDU");
-            return (0, $changeset, $pdu);
+            $res = 0;
+            last;
         } else {
             my $err_pdu =
                 APNIC::RPKI::RTR::PDU::ErrorReport->new(
@@ -372,7 +378,13 @@ sub _process_responses
         }
     }
 
-    return 0;
+    if ($res
+            and $self->{'strict_receive'}
+            and not pdus_are_ordered($changeset->_pdus())) {
+        die "client: got unordered PDUs from server";
+    }
+
+    return ($res, $changeset, $pdu);
 }
 
 sub _process_eod

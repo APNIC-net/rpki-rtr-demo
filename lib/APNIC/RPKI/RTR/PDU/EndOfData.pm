@@ -3,10 +3,11 @@ package APNIC::RPKI::RTR::PDU::EndOfData;
 use warnings;
 use strict;
 
-use JSON::XS qw(encode_json decode_json);
+use JSON::XS qw(decode_json);
 
 use APNIC::RPKI::RTR::Constants;
-use APNIC::RPKI::RTR::Utils qw(recv_all);
+use APNIC::RPKI::RTR::Utils qw(recv_all
+                               encode_json_rtr);
 
 use base qw(APNIC::RPKI::RTR::PDU);
 
@@ -158,9 +159,9 @@ sub serialise_json
         delete $data{qw(refresh_interval
                         retry_interval
                         expire_interval)};
-        return encode_json({%data, type => $self->type()});
+        return encode_json_rtr({%data, type => $self->type()});
     } else {
-        return encode_json({%{$self}, type => $self->type()});
+        return encode_json_rtr({%{$self}, type => $self->type()});
     }
 }
 

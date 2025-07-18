@@ -3,12 +3,13 @@ package APNIC::RPKI::RTR::PDU::ErrorReport;
 use warnings;
 use strict;
 
-use JSON::XS qw(encode_json decode_json);
+use JSON::XS qw(decode_json);
 
 use APNIC::RPKI::RTR::Constants;
 use APNIC::RPKI::RTR::Utils qw(dprint);
 use APNIC::RPKI::RTR::PDU::Utils qw(parse_pdu);
-use APNIC::RPKI::RTR::Utils qw(recv_all);
+use APNIC::RPKI::RTR::Utils qw(recv_all
+                               encode_json_rtr);
 
 use base qw(APNIC::RPKI::RTR::PDU);
 
@@ -163,7 +164,7 @@ sub serialise_json
             ? $encap_pdu->serialise_json()
             : undef;
 
-    return encode_json({
+    return encode_json_rtr({
         version          => $self->version(),
         type             => $self->type(),
         error_code       => $self->error_code(),
