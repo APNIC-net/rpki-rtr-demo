@@ -23,7 +23,7 @@ curl -JLO "https://dl.filippo.io/mkcert/latest?for=linux/amd64"
 chmod +x mkcert-v*-linux-amd64
 cp mkcert-v*-linux-amd64 /usr/local/bin/mkcert
 
-sudo cpanm -v --installdeps .
+cpanm -v --installdeps .
 export HAS_RTRCLIENT=1
 export HAS_ASPA_RTRCLIENT=1
 export HAS_RTRTR=1
