@@ -4,7 +4,8 @@
 
 sudo mkdir /run/sshd
 sudo chmod 0755 /run/sshd
-sudo apt-get update && sudo apt-get install gcc build-essential cpanminus cmake git libssh-dev rustc cargo stayrtr
+sudo apt-get update -y && sudo apt-get install -y gcc build-essential cpanminus cmake git libssh-dev rustc cargo stayrtr rustup vim
+rustup default stable
 cargo install rtrtr
 export PATH=$PATH:/root/.cargo/bin
 
@@ -25,9 +26,4 @@ cp mkcert-v*-linux-amd64 /usr/local/bin/mkcert
 
 sudo cpanm -v --installdeps .
 sudo make clean || true
-export HAS_RTRCLIENT=1
-export HAS_ASPA_RTRCLIENT=1
-export HAS_RTRTR=1
-export HAS_STAYRTR=1
-export APNIC_DEBUG=1
 perl Makefile.PL && make

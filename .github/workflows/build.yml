@@ -7,6 +7,12 @@ jobs:
       - uses: actions/checkout@v1
       - run: |
           ./docker-prep.sh
+          export HAS_RTRCLIENT=1
+          export HAS_ASPA_RTRCLIENT=1
+          export HAS_RTRTR=1
+          export HAS_STAYRTR=1
+          export APNIC_DEBUG=1
+          export PATH=$PATH:/root/.cargo/bin
           make test
           export APNIC_RANDOMISE_ZERO=1
           make test
