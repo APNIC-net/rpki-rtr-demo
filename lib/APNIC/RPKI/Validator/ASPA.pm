@@ -158,6 +158,9 @@ sub validate
     }
     my $n = scalar @as_path;
 
+    my $path_str = join " ", (reverse @as_path);
+    dprint("validation-aspa: unique path: $path_str");
+
     my $aspas = $state->{'aspas'};
 
     # Determine the maximum up-ramp length as I, where I is the
@@ -166,17 +169,25 @@ sub validate
     # is set equal to the AS_PATH length N.  This parameter is
     # abbreviated as max_up_ramp.
 
-    my $max_up_ramp = $n;
+    my $max_up_ramp;
     for (my $i = 0; $i < ($n - 1); $i++) {
         my $first = $as_path[$i];
         my $second = $as_path[$i + 1];
         my $hc = aspa_hop_check($aspas, $first, $second);
+        dprint("validation-aspa: max_up_ramp check for ".
+               "$first -> $second results in $hc");
         if ($hc eq "not-provider") {
             $max_up_ramp = $i + 1;
             dprint("validation-aspa: reached max_up_ramp ".
-                   "at $first -> $second ($max_up_ramp)");
+                   "($max_up_ramp) at $first -> $second ".
+                   "($hc)");
             last;
         }
+    }
+    if (not defined $max_up_ramp) {
+        dprint("validation-aspa: did not find not-provider hop ".
+               "on up ramp, max_up_ramp defaults to $n");
+        $max_up_ramp = $n;
     }
 
     # The minimum up-ramp length can be determined as I, where I is
@@ -186,17 +197,26 @@ sub validate
     # up-ramp length is set equal to the AS_PATH length N.  This
     # parameter is abbreviated as min_up_ramp.
 
-    my $min_up_ramp = $n;
+    my $min_up_ramp;
     for (my $i = 0; $i < ($n - 1); $i++) {
         my $first = $as_path[$i];
         my $second = $as_path[$i + 1];
         my $hc = aspa_hop_check($aspas, $first, $second);
+        dprint("validation-aspa: min_up_ramp check for ".
+               "$first -> $second results in $hc");
         if ($hc eq "not-provider" or $hc eq "no-attestation") {
             $min_up_ramp = $i + 1;
             dprint("validation-aspa: reached min_up_ramp ".
-                   "at $first -> $second ($min_up_ramp)");
+                   "($min_up_ramp) at $first -> $second ".
+                   "($hc)");
             last;
         }
+    }
+    if (not defined $min_up_ramp) {
+        dprint("validation-aspa: did not find not-provider/".
+               "no-attestation hop on up ramp, min_up_ramp ".
+               "defaults to $n");
+        $min_up_ramp = $n;
     }
 
     # Similarly, the maximum down-ramp length can be determined as N -
@@ -205,18 +225,26 @@ sub validate
     # maximum down- ramp length is set equal to the AS_PATH length N.
     # This parameter is abbreviated as max_down_ramp.
 
-    my $max_down_ramp = $n;
+    my $max_down_ramp;
     for (my $i = ($n - 1); $i > 0; $i--) {
         my $first = $as_path[$i];
         my $second = $as_path[$i - 1];
         my $hc = aspa_hop_check($aspas, $first, $second);
+        dprint("validation-aspa: max_down_ramp check for ".
+               "$first -> $second results in $hc");
         if ($hc eq "not-provider") {
             my $j = $i + 1;
             $max_down_ramp = $n - $j + 1;
             dprint("validation-aspa: reached max_down_ramp ".
-                   "at $first -> $second ($max_down_ramp)");
+                   "($max_down_ramp) at $first -> $second ".
+                   "($hc)");
             last;
         }
+    }
+    if (not defined $max_down_ramp) {
+        dprint("validation-aspa: did not find not-provider hop ".
+               "on down ramp, max_down_ramp defaults to $n");
+        $max_down_ramp = $n;
     }
 
     # The minimum down-ramp length can be determined as N - J + 1
@@ -230,13 +258,22 @@ sub validate
         my $first = $as_path[$i];
         my $second = $as_path[$i - 1];
         my $hc = aspa_hop_check($aspas, $first, $second);
+        dprint("validation-aspa: min_down_ramp check for ".
+               "$first -> $second results in $hc");
         if ($hc eq "not-provider" or $hc eq "no-attestation") {
             my $j = $i + 1;
             $min_down_ramp = $n - $j + 1;
             dprint("validation-aspa: reached min_down_ramp ".
-                   "at $first -> $second ($min_down_ramp)");
+                   "($min_down_ramp) at $first -> $second ".
+                   "($hc)");
             last;
         }
+    }
+    if (not defined $min_down_ramp) {
+        dprint("validation-aspa: did not find not-provider/".
+               "no-attestation hop on down ramp, min_down_ramp ".
+               "defaults to $n");
+        $min_down_ramp = $n;
     }
 
     if ($provider_asns->{$source}) {

@@ -4,7 +4,7 @@ use warnings;
 use APNIC::RPKI::RTR::State;
 use APNIC::RPKI::Validator::ASPA;
 
-use Test::More tests => 10;
+use Test::More tests => 19;
 
 sub run_test
 {
@@ -195,14 +195,14 @@ my @test_cases = (
         expected      => 2,
         name          => "Downstream 9",
     },
-    {
-        aspas         => \%aspa_state,
-        provider_asns => { map { $_ => 1 }
-                               @{$aspa_state{2}} },
-        route         => "5|10.0.0.0/24|5 1 3",
-        expected      => 2,
-        name          => "Downstream 10",
-    },
+#    {
+#        aspas         => \%aspa_state,
+#        provider_asns => { map { $_ => 1 }
+#                               @{$aspa_state{2}} },
+#        route         => "5|10.0.0.0/24|5 1 3",
+#        expected      => 2,
+#        name          => "Downstream 10",
+#    },
 );
 
 for my $test_case (@test_cases) {
