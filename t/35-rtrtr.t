@@ -97,7 +97,8 @@ EOF
     if (my $pid = fork()) {
         push @pids, $pid;
     } else {
-        system("rtrtr -c $fn");
+        my $rtr_path = $ENV{'RTRTR_PATH'} || 'rtrtr';
+        system("$rtr_path -c $fn");
         exit(0);
     }
     sleep(1);

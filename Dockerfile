@@ -14,4 +14,4 @@ WORKDIR /root/rpki-rtr-demo
 RUN sudo cpanm -v --installdeps .
 RUN sudo make clean || true
 RUN perl Makefile.PL && make
-ENTRYPOINT ["/bin/bash"]
+CMD /bin/bash
