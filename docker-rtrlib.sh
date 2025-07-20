@@ -1,7 +1,7 @@
 #!/bin/sh
-git clone https://github.com/tanneberger/rtrlib
+git clone https://github.com/rtrlib/rtrlib
 cd rtrlib
-git checkout aspa-fixes
+git checkout hackathon-ietf-123-aspa-and-rpki-upgrade
 sed -i 's/case EOD:/case EOD:\n;/' rtrlib/rtr/packets.c
 rm doxygen/examples/rtr_mgr.c
 cat doxygen/examples/CMakeLists.txt | grep -v rtr_mgr > asdf; mv asdf doxygen/examples/CMakeLists.txt

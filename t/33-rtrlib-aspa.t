@@ -13,12 +13,10 @@ use File::Temp qw(tempdir);
 use List::MoreUtils qw(before);
 use Test::More;
 
-plan skip_all => 'ASPA rtrlib not yet updated for 16';
-
-# Per https://github.com/tanneberger/rtrlib
-# at ba4bef884dbb638548e8c17679f9a5595da741fd.
+# Per the hackathon-ietf-123-aspa-and-rpki-upgrade branch at
+# https://github.com/rtrlib/rtrlib.
 if ($ENV{'HAS_ASPA_RTRCLIENT'}) {
-    plan tests => 4;
+    plan tests => 3;
 } else {
     plan skip_all => 'ASPA rtrclient not available';
 }
@@ -90,13 +88,11 @@ my $pid;
         use Data::Dumper;
         diag Dumper(\@res);
     }
-    is(@res, 3, 'Got three lines in rtrclient output');
+    is(@res, 2, 'Got two lines in rtrclient output');
     is($res[0], '+ 1.0.0.0 24 - 32 4608',
         'Got correct VRP line in rtrclient output');
-    is($res[1], 'Customer ASN: 4608',
-        'Got correct first ASPA line in rtrclient output');
-    is($res[2], 'Provider ASNs: 1, 2, 3, 4',
-        'Got correct second ASPA line in rtrclient output');
+    is($res[1], '+ ASPA 4608 => [ 1, 2, 3, 4 ]',
+        'Got correct ASPA line in rtrclient output');
 
     my $res = kill('TERM', $pid);
 }
