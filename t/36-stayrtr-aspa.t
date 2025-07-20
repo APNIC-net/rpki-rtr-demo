@@ -14,7 +14,7 @@ use File::Temp qw(tempdir);
 use File::Slurp qw(read_file write_file);
 use Test::More;
 
-plan skip_all => 'stayrtr not yet updated for 16';
+plan skip_all => 'stayrtr not yet updated for ASPAs';
 
 if ($ENV{'HAS_STAYRTR'}) {
     plan tests => 3;

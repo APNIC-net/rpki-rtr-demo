@@ -6,6 +6,7 @@ blib
 cover_db
 MYMETA.json
 MYMETA.yml
+Makefile.old
 t/_sshd.conf
 t/hostkeys
 t/key
