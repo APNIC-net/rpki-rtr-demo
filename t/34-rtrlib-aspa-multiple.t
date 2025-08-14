@@ -114,8 +114,7 @@ my @pids;
     $changeset2->add_pdu($pdu2_2);
     $mnt2->apply_changeset($changeset2);
 
-    # Run rtrclient.  (The branch that supports ASPA records doesn't
-    # print them when -e is set, so rely on the '+' lines instead.)
+    # Run rtrclient.
 
     my $error_output =
         $ENV{'APNIC_DEBUG'}

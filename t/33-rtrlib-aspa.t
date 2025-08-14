@@ -70,8 +70,7 @@ my $pid;
     $changeset->add_pdu($pdu2);
     $mnt->apply_changeset($changeset);
 
-    # Run rtrclient.  (The branch that supports ASPA records doesn't
-    # print them when -e is set, so rely on the '+' lines instead.)
+    # Run rtrclient.
 
     my $error_output =
         $ENV{'APNIC_DEBUG'}
@@ -93,6 +92,11 @@ my $pid;
         'Got correct VRP line in rtrclient output');
     is($res[1], '+ ASPA 4608 => [ 1, 2, 3, 4 ]',
         'Got correct ASPA line in rtrclient output');
+
+    @raw_res =
+        `rtrclient -e -a -p tcp 127.0.0.1 $port $error_output`;
+    use Data::Dumper;
+    print Dumper(\@raw_res);
 
     my $res = kill('TERM', $pid);
 }
