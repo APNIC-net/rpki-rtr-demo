@@ -4,41 +4,46 @@ use warnings;
 use APNIC::RPKI::RTR::State;
 use APNIC::RPKI::Validator::ASPA;
 
-use Test::More tests => 25;
+use Test::More tests => 24;
 
 sub run_test
 {
     my ($test_case) = @_;
 
+    my $mapping = $test_case->{'mapping'};
+
+    my $aspas = $test_case->{'aspas'};
+    my %aspas_mapped =
+        map { my $key = $_;
+              my $num = $mapping->{$key};
+              my @nums =
+                  map { $mapping->{$_} }
+                      @{$aspas->{$key}};
+              $num => \@nums }
+            keys %{$aspas};
+
     my $state = APNIC::RPKI::RTR::State->new(
         session_id    => 1,
         serial_number => 1,
-        aspas         => $test_case->{'aspas'},
+        aspas         => \%aspas_mapped
     );
 
-    my $mapping = $test_case->{'mapping'};
+    my @route =
+        map { $mapping->{$_} }
+            @{$test_case->{'route'}};
+    my $peer = $route[0];
+    my $route_str = join " ", @route;
 
-    my $route = $test_case->{'route'};
-    my @route_parts = split /\|/, $route;
-    $route_parts[0] = $mapping->{$route_parts[0]};
-    my @path = split /\s+/, $route_parts[2];
-    @path = map { $mapping->{$_} } @path;
-    $route_parts[2] = join " ", @path;
-    $route = join "|", @route_parts;
-
-    my $provider_asns = $test_case->{'provider_asns'};
-    my %provider_asns_mapped;
-    for my $key (keys %{$provider_asns}) {
-        my $num = $mapping->{$key};
-        my $value = $provider_asns->{$key};
-        $provider_asns_mapped{$num} = $value;
-    }
+    my $recipient = $test_case->{'recipient'};
+    my %provider_asns =
+        map { $mapping->{$_} => 1 }
+            @{$aspas->{$recipient}};
 
     my $rov_result =
         APNIC::RPKI::Validator::ASPA::validate(
             $state,
-            \%provider_asns_mapped,
-            "||||$route",
+            \%provider_asns,
+            "||||$peer|10.0.0.0/24|$route_str",
         );
 
     is($rov_result,
@@ -46,10 +51,12 @@ sub run_test
        $test_case->{'name'});
 }
 
-# Except for the first test case, these tests are taken from
+# These tests are taken from
 # https://github.com/ksriram25/IETF/blob/main/ASPA_path_verification_examples.pdf.
+# The first two variables are for the upstream/downstream tests, while
+# the last two variables are for the complex peering tests.
 
-my %aspa_ltn = (
+my %aspa_mapping = (
     A => 1,
     B => 2,
     C => 3,
@@ -68,16 +75,7 @@ my %aspa_state = (
     G => [0]
 );
 
-my %aspa_state_mapped =
-    map { my $key = $_;
-          my $num = $aspa_ltn{$key};
-          my @nums =
-              map { $aspa_ltn{$_} }
-                  @{$aspa_state{$key}};
-          $num => \@nums }
-        keys %aspa_state;
-
-my %c_aspa_ltn = (
+my %c_aspa_mapping = (
     H => 1,
     J => 2,
     K => 3,
@@ -99,242 +97,202 @@ my %c_aspa_state = (
     S => [qw(R)],
 );
 
-my %c_aspa_state_mapped =
-    map { my $key = $_;
-          my $num = $c_aspa_ltn{$key};
-          my @nums =
-              map { $c_aspa_ltn{$_} }
-                  @{$c_aspa_state{$key}};
-          $num => \@nums }
-        keys %c_aspa_state;
-
 my @test_cases = (
     {
-        aspas         => {},
-        provider_asns => {},
-        mapping       => \%aspa_ltn,
-        route         => "A|10.0.0.0/24|A B C",
-        expected      => 1,
-        name          => "No ASPAs, so path is unknown",
-    },
-
-    {
-        aspas         => \%aspa_state_mapped,
-        provider_asns => { map { $_ => 1 }
-                               @{$aspa_state{'G'}} },
-        mapping       => \%aspa_ltn,
-        route         => "F|10.0.0.0/24|F C A",
+        mapping       => \%aspa_mapping,
+        aspas         => \%aspa_state,
+        recipient     => 'G',
+        route         => [qw(F C A)],
         expected      => 2,
         name          => "Upstream 1",
     },
     {
-        aspas         => \%aspa_state_mapped,
-        provider_asns => { map { $_ => 1 }
-                               @{$aspa_state{'G'}} },
-        mapping       => \%aspa_ltn,
-        route         => "D|10.0.0.0/24|D C A",
+        mapping       => \%aspa_mapping,
+        aspas         => \%aspa_state,
+        recipient     => 'G',
+        route         => [qw(D C A)],
         expected      => 0,
         name          => "Upstream 2",
     },
     {
-        aspas         => \%aspa_state_mapped,
-        provider_asns => { map { $_ => 1 }
-                               @{$aspa_state{'G'}} },
-        mapping       => \%aspa_ltn,
-        route         => "D|10.0.0.0/24|D F C A",
+        mapping       => \%aspa_mapping,
+        aspas         => \%aspa_state,
+        recipient     => 'G',
+        route         => [qw(D F C A)],
         expected      => 1,
         name          => "Upstream 3",
     },
     {
-        aspas         => \%aspa_state_mapped,
-        provider_asns => { map { $_ => 1 }
-                               @{$aspa_state{'C'}} },
-        mapping       => \%aspa_ltn,
-        route         => "D|10.0.0.0/24|D E B",
+        mapping       => \%aspa_mapping,
+        aspas         => \%aspa_state,
+        recipient     => 'C',
+        route         => [qw(D E B)],
         expected      => 1,
         name          => "Upstream 4",
     },
     {
-        aspas         => \%aspa_state_mapped,
-        provider_asns => { map { $_ => 1 }
-                               @{$aspa_state{'C'}} },
-        mapping       => \%aspa_ltn,
-        route         => "A|10.0.0.0/24|A D E B",
+        mapping       => \%aspa_mapping,
+        aspas         => \%aspa_state,
+        recipient     => 'C',
+        route         => [qw(A D E B)],
         expected      => 0,
         name          => "Upstream 5",
     },
     {
-        aspas         => \%aspa_state_mapped,
-        provider_asns => { map { $_ => 1 }
-                               @{$aspa_state{'C'}} },
-        mapping       => \%aspa_ltn,
-        route         => "A|10.0.0.0/24|A D G E B",
+        mapping       => \%aspa_mapping,
+        aspas         => \%aspa_state,
+        recipient     => 'C',
+        route         => [qw(A D G E B)],
         expected      => 0,
         name          => "Upstream 6",
     },
     {
-        aspas         => \%aspa_state_mapped,
-        provider_asns => { map { $_ => 1 }
-                               @{$aspa_state{'D'}} },
-        mapping       => \%aspa_ltn,
-        route         => "A|10.0.0.0/24|A C F",
+        mapping       => \%aspa_mapping,
+        aspas         => \%aspa_state,
+        recipient     => 'D',
+        route         => [qw(A C F)],
         expected      => 0,
         name          => "Upstream 7",
     },
     {
-        aspas         => \%aspa_state_mapped,
-        provider_asns => { map { $_ => 1 }
-                               @{$aspa_state{'D'}} },
-        mapping       => \%aspa_ltn,
-        route         => "A|10.0.0.0/24|A C F G",
+        mapping       => \%aspa_mapping,
+        aspas         => \%aspa_state,
+        recipient     => 'D',
+        route         => [qw(A C F G)],
         expected      => 0,
         name          => "Upstream 8",
     },
     {
-        aspas         => \%aspa_state_mapped,
-        provider_asns => { map { $_ => 1 }
-                               @{$aspa_state{'D'}} },
-        mapping       => \%aspa_ltn,
-        route         => "E|10.0.0.0/24|E B",
+        mapping       => \%aspa_mapping,
+        aspas         => \%aspa_state,
+        recipient     => 'D',
+        route         => [qw(E B)],
         expected      => 2,
         name          => "Upstream 9",
     },
 
     {
-        aspas         => \%aspa_state_mapped,
-        provider_asns => { map { $_ => 1 }
-                               @{$aspa_state{'B'}} },
-        mapping       => \%aspa_ltn,
-        route         => "E|10.0.0.0/24|E G F C A",
+        mapping       => \%aspa_mapping,
+        aspas         => \%aspa_state,
+        recipient     => 'B',
+        route         => [qw(E G F C A)],
         expected      => 1,
         name          => "Downstream 1",
     },
     {
-        aspas         => \%aspa_state_mapped,
-        provider_asns => { map { $_ => 1 }
-                               @{$aspa_state{'B'}} },
-        mapping       => \%aspa_ltn,
-        route         => "E|10.0.0.0/24|E G D A",
+        mapping       => \%aspa_mapping,
+        aspas         => \%aspa_state,
+        recipient     => 'B',
+        route         => [qw(E G D A)],
         expected      => 2,
         name          => "Downstream 2",
     },
     {
-        aspas         => \%aspa_state_mapped,
-        provider_asns => { map { $_ => 1 }
-                               @{$aspa_state{'B'}} },
-        mapping       => \%aspa_ltn,
-        route         => "E|10.0.0.0/24|E D C A",
+        mapping       => \%aspa_mapping,
+        aspas         => \%aspa_state,
+        recipient     => 'B',
+        route         => [qw(E D C A)],
         expected      => 1,
         name          => "Downstream 3",
     },
     {
-        aspas         => \%aspa_state_mapped,
-        provider_asns => { map { $_ => 1 }
-                               @{$aspa_state{'B'}} },
-        mapping       => \%aspa_ltn,
-        route         => "E|10.0.0.0/24|E G D C A",
+        mapping       => \%aspa_mapping,
+        aspas         => \%aspa_state,
+        recipient     => 'B',
+        route         => [qw(E G D C A)],
         expected      => 0,
         name          => "Downstream 4",
     },
     {
-        aspas         => \%aspa_state_mapped,
-        provider_asns => { map { $_ => 1 }
-                               @{$aspa_state{'A'}} },
-        mapping       => \%aspa_ltn,
-        route         => "C|10.0.0.0/24|C F D G",
+        mapping       => \%aspa_mapping,
+        aspas         => \%aspa_state,
+        recipient     => 'A',
+        route         => [qw(C F D G)],
         expected      => 1,
         name          => "Downstream 5",
     },
     {
-        aspas         => \%aspa_state_mapped,
-        provider_asns => { map { $_ => 1 }
-                               @{$aspa_state{'A'}} },
-        mapping       => \%aspa_ltn,
-        route         => "D|10.0.0.0/24|D G E B",
+        mapping       => \%aspa_mapping,
+        aspas         => \%aspa_state,
+        recipient     => 'A',
+        route         => [qw(D G E B)],
         expected      => 2,
         name          => "Downstream 6",
     },
     {
-        aspas         => \%aspa_state_mapped,
-        provider_asns => { map { $_ => 1 }
-                               @{$aspa_state{'A'}} },
-        mapping       => \%aspa_ltn,
-        route         => "C|10.0.0.0/24|C D G E B",
+        mapping       => \%aspa_mapping,
+        aspas         => \%aspa_state,
+        recipient     => 'A',
+        route         => [qw(C D G E B)],
         expected      => 0,
         name          => "Downstream 7",
     },
     {
-        aspas         => \%aspa_state_mapped,
-        provider_asns => { map { $_ => 1 }
-                               @{$aspa_state{'D'}} },
-        mapping       => \%aspa_ltn,
-        route         => "F|10.0.0.0/24|F C A",
+        mapping       => \%aspa_mapping,
+        aspas         => \%aspa_state,
+        recipient     => 'D',
+        route         => [qw(F C A)],
         expected      => 2,
         name          => "Downstream 8",
     },
     {
-        aspas         => \%aspa_state_mapped,
-        provider_asns => { map { $_ => 1 }
-                               @{$aspa_state{'B'}} },
-        mapping       => \%aspa_ltn,
-        route         => "E|10.0.0.0/24|E A",
+        mapping       => \%aspa_mapping,
+        aspas         => \%aspa_state,
+        recipient     => 'B',
+        route         => [qw(E A)],
         expected      => 2,
         name          => "Downstream 9",
     },
     {
-        aspas         => \%aspa_state_mapped,
-        provider_asns => { map { $_ => 1 }
-                               @{$aspa_state{'B'}} },
-        mapping       => \%aspa_ltn,
-        route         => "E|10.0.0.0/24|E C A",
+        mapping       => \%aspa_mapping,
+        aspas         => \%aspa_state,
+        recipient     => 'B',
+        route         => [qw(E C A)],
         expected      => 2,
         name          => "Downstream 10",
     },
 
     {
-        aspas         => \%c_aspa_state_mapped,
-        provider_asns => { map { $_ => 1 }
-                               @{$c_aspa_state{'K'}} },
-        mapping       => \%c_aspa_ltn,
-        route         => "J|10.0.0.0/24|J H",
+        mapping       => \%c_aspa_mapping,
+        aspas         => \%c_aspa_state,
+        recipient     => 'K',
+        route         => [qw(J H)],
         expected      => 0,
         name          => "Complex 1",
     },
     # 'Complex 2' is omitted, because for the purposes of this
     # validation logic it's a duplicate of 'Complex 1'.
     {
-        aspas         => \%c_aspa_state_mapped,
-        provider_asns => { map { $_ => 1 }
-                               @{$c_aspa_state{'L'}} },
-        mapping       => \%c_aspa_ltn,
-        route         => "K|10.0.0.0/24|K J H",
+        mapping       => \%c_aspa_mapping,
+        aspas         => \%c_aspa_state,
+        recipient     => 'L',
+        route         => [qw(K J H)],
         expected      => 0,
         name          => "Complex 3",
     },
     {
-        aspas         => \%c_aspa_state_mapped,
-        # Force upstream.
-        provider_asns => {},
-        mapping       => \%c_aspa_ltn,
-        route         => "Q|10.0.0.0/24|Q P",
+        mapping       => \%c_aspa_mapping,
+        aspas         => \%c_aspa_state,
+        # Recipient is L in the test from the PDF, but change to H to
+        # force use of the upstream algorithm.
+        recipient     => 'H',
+        route         => [qw(Q P)],
         expected      => 0,
         name          => "Complex 4",
     },
     {
-        aspas         => \%c_aspa_state_mapped,
-        provider_asns => { map { $_ => 1 }
-                               @{$c_aspa_state{'R'}} },
-        mapping       => \%c_aspa_ltn,
-        route         => "Q|10.0.0.0/24|Q P",
+        mapping       => \%c_aspa_mapping,
+        aspas         => \%c_aspa_state,
+        recipient     => 'R',
+        route         => [qw(Q P)],
         expected      => 2,
         name          => "Complex 5",
     },
     {
-        aspas         => \%c_aspa_state_mapped,
-        provider_asns => { map { $_ => 1 }
-                               @{$c_aspa_state{'S'}} },
-        mapping       => \%c_aspa_ltn,
-        route         => "R|10.0.0.0/24|R Q P",
+        mapping       => \%c_aspa_mapping,
+        aspas         => \%c_aspa_state,
+        recipient     => 'S',
+        route         => [qw(R Q P)],
         expected      => 2,
         name          => "Complex 6",
     },

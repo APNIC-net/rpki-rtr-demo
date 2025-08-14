@@ -158,8 +158,8 @@ sub validate
     }
     my $n = scalar @as_path;
 
-    my $path_str = join " ", (reverse @as_path);
-    dprint("validation-aspa: unique path: $path_str");
+    my $path_str_real = join " ", (reverse @as_path);
+    dprint("validation-aspa: unique path: $path_str_real");
 
     my $aspas = $state->{'aspas'};
 
