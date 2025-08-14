@@ -4,7 +4,7 @@ use warnings;
 use APNIC::RPKI::RTR::State;
 use APNIC::RPKI::Validator::ASPA;
 
-use Test::More tests => 20;
+use Test::More tests => 25;
 
 sub run_test
 {
@@ -76,6 +76,37 @@ my %aspa_state_mapped =
                   @{$aspa_state{$key}};
           $num => \@nums }
         keys %aspa_state;
+
+my %c_aspa_ltn = (
+    H => 1,
+    J => 2,
+    K => 3,
+    L => 4,
+    P => 5,
+    Q => 6,
+    R => 7,
+    S => 8,
+    0 => 0,
+);
+
+my %c_aspa_state = (
+    H => [qw(0)],
+    K => [qw(0)],
+    L => [qw(K)],
+    P => [qw(0)],
+    Q => [qw(0)],
+    R => [qw(Q)],
+    S => [qw(R)],
+);
+
+my %c_aspa_state_mapped =
+    map { my $key = $_;
+          my $num = $c_aspa_ltn{$key};
+          my @nums =
+              map { $c_aspa_ltn{$_} }
+                  @{$c_aspa_state{$key}};
+          $num => \@nums }
+        keys %c_aspa_state;
 
 my @test_cases = (
     {
@@ -260,6 +291,53 @@ my @test_cases = (
         name          => "Downstream 10",
     },
 
+    {
+        aspas         => \%c_aspa_state_mapped,
+        provider_asns => { map { $_ => 1 }
+                               @{$c_aspa_state{'K'}} },
+        mapping       => \%c_aspa_ltn,
+        route         => "J|10.0.0.0/24|J H",
+        expected      => 0,
+        name          => "Complex 1",
+    },
+    # 'Complex 2' is omitted, because for the purposes of this
+    # validation logic it's a duplicate of 'Complex 1'.
+    {
+        aspas         => \%c_aspa_state_mapped,
+        provider_asns => { map { $_ => 1 }
+                               @{$c_aspa_state{'L'}} },
+        mapping       => \%c_aspa_ltn,
+        route         => "K|10.0.0.0/24|K J H",
+        expected      => 0,
+        name          => "Complex 3",
+    },
+    {
+        aspas         => \%c_aspa_state_mapped,
+        # Force upstream.
+        provider_asns => {},
+        mapping       => \%c_aspa_ltn,
+        route         => "Q|10.0.0.0/24|Q P",
+        expected      => 0,
+        name          => "Complex 4",
+    },
+    {
+        aspas         => \%c_aspa_state_mapped,
+        provider_asns => { map { $_ => 1 }
+                               @{$c_aspa_state{'R'}} },
+        mapping       => \%c_aspa_ltn,
+        route         => "Q|10.0.0.0/24|Q P",
+        expected      => 2,
+        name          => "Complex 5",
+    },
+    {
+        aspas         => \%c_aspa_state_mapped,
+        provider_asns => { map { $_ => 1 }
+                               @{$c_aspa_state{'S'}} },
+        mapping       => \%c_aspa_ltn,
+        route         => "R|10.0.0.0/24|R Q P",
+        expected      => 2,
+        name          => "Complex 6",
+    },
 );
 
 for my $test_case (@test_cases) {
