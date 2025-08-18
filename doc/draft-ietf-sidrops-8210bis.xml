@@ -1763,14 +1763,15 @@ Cache                         Router
 
             <t>
 
-                If an IP prefix has two BGP announcements for two
-                different origin ASNs, then two IP PDUs must be issued
-                by a cache for those BGP announcements to be
-                considered valid under route origin validation (ROV)
-                <xref target="RFC6483" />.  If a client has only one
-                of those PDUs, then the BGP announcement that is
-                validated by the other PDU will be considered invalid
-                until that other PDU is received.
+                If two BGP announcements exist for a given IP prefix
+                destination, each with a different origin ASN, then
+                two IP  PDUs must be issued by a cache for those BGP
+                announcements to be considered valid under route
+                origin validation (ROV) <xref target="RFC6483" />.  If
+                a client has only one of those PDUs, then the BGP
+                announcement that is validated by the other PDU will
+                be considered invalid until that other PDU is
+                received.
 
             </t>
 
@@ -1857,6 +1858,14 @@ Cache                         Router
 
         <t>
 
+            The ordering definitions in this section have been
+            modelled on those from <xref target="RFC9582"
+            section="4.3.3"/>.
+
+        </t>
+
+        <t>
+
             The ordering defined in this section is a total ordering.
             While a partial ordering could be defined that had the
             same benefits as far as race conditions are concerned, a
@@ -1906,7 +1915,7 @@ Cache                         Router
             <dd>The origin ASN appearing in the PDU, as an integer
             value.</dd>
             
-            <dt>annt</dt>
+            <dt>updt</dt>
 
             <dd>The integer 1, if the PDU is an announcement, and the
             integer 0, if the PDU is a withdrawal.</dd>
@@ -1920,16 +1929,16 @@ Cache                         Router
 
           <t>
 
-            The first order comparison is based on the annt value.
-            Data elements with an annt value of 1 precede data
-            elements with an annt value of 0.  This addresses the
+            The first order comparison is based on the updt value.
+            Data elements with an updt value of 1 precede data
+            elements with an updt value of 0.  This addresses the
             problem described in <xref target="withdrawals" />.
 
           </t>
 
           <section numbered="true">
             <t>
-                The order of two IP PDUs with annt values of 1 is
+                The order of two IP PDUs with updt values of 1 is
                 determined by the first non-equal comparison in the
                 following list.
             </t>
@@ -1951,7 +1960,7 @@ Cache                         Router
               </li>
               <li>
                   Data elements with a higher plen value precede data
-                  elements with a lower plen value.  See
+                  elements with a lower plen value.
               </li>
             </ol>
 
@@ -1959,7 +1968,7 @@ Cache                         Router
 
           <section numbered="true">
             <t>
-                The order of two IP PDUs with annt values of 0 is
+                The order of two IP PDUs with updt values of 0 is
                 determined by the first non-equal comparison in the
                 following list.
             </t>
@@ -2021,7 +2030,7 @@ Cache                         Router
 
             <dd>The number of octets in spkinfo.</dd>
 
-            <dt>annt</dt>
+            <dt>updt</dt>
 
             <dd>The integer 1, if the PDU is an announcement, and the
             integer 0, if the PDU is a withdrawal.</dd>
@@ -2038,8 +2047,8 @@ Cache                         Router
           <section numbered="true">
             <ol indent="adaptive">
               <li>
-                  Data elements with an annt value of 1 precede data
-                  elements with an annt value of 0.  This addresses
+                  Data elements with an updt value of 1 precede data
+                  elements with an updt value of 0.  This addresses
                   the problem described in <xref target="withdrawals"
                   />.
               </li>
@@ -2083,12 +2092,12 @@ Cache                         Router
           </t>
   
           <dl>
-            <dt>asn</dt>
+            <dt>casn</dt>
             
             <dd>The customer ASN appearing in the PDU, as an integer
             value.</dd>
 
-            <dt>annt</dt>
+            <dt>updt</dt>
 
             <dd>The integer 1, if the PDU is an announcement, and the
             integer 0, if the PDU is a withdrawal.</dd>
@@ -2103,14 +2112,14 @@ Cache                         Router
           <section numbered="true">
             <ol indent="adaptive">
               <li>
-                  Data elements with an annt value of 1 precede data
-                  elements with an annt value of 0.  This addresses
+                  Data elements with an updt value of 1 precede data
+                  elements with an updt value of 0.  This addresses
                   the problem described in <xref target="withdrawals"
                   />.
               </li>
               <li>
-                  Data elements with a lower asn value precede data
-                  elements with a higher asn value.
+                  Data elements with a lower casn value precede data
+                  elements with a higher casn value.
               </li>
             </ol>
           </section>
@@ -2386,7 +2395,7 @@ Cache                         Router
           </t>
           <t hangText="10: Transport Error (fatal):">
 	    An error such as a stall (see <xref target="Transport"/>) or
-	    tother transport layer failure occurred.
+	    other transport layer failure occurred.
           </t>
           <t hangText="11: Ordering Error (fatal):">
             The received PDU does not conform with the ordering
@@ -2590,6 +2599,7 @@ Cache                         Router
       <?rfc include="reference.RFC.6481.xml"?>
       <?rfc include="reference.RFC.8654.xml"?>
       <?rfc include="reference.RFC.9293.xml"?>
+      <?rfc include="reference.RFC.9582.xml"?>
    </references>
 
     <section anchor="Acknowledgements" title="Acknowledgements" numbered="no">
