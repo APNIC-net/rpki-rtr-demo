@@ -2011,15 +2011,15 @@ Cache                         Router
   
               In order to semantically compare and sort Router Key PDUs,
               each PDU is mapped to an abstract data element
-              comprising four values:
+              comprising five values:
 
           </t>
   
           <dl>
-            <dt>asn</dt>
-            
-            <dd>The ASN appearing in the PDU, as an integer
-            value.</dd>
+            <dt>ski</dt>
+
+            <dd>The Subject Key Identifier appearing in the PDU, as
+            binary data (20 octets in length).</dd>
 
             <dt>spkinfo</dt>
 
@@ -2029,6 +2029,11 @@ Cache                         Router
             <dt>spkinfolen</dt>
 
             <dd>The number of octets in spkinfo.</dd>
+
+            <dt>asn</dt>
+            
+            <dd>The ASN appearing in the PDU, as an integer
+            value.</dd>
 
             <dt>updt</dt>
 
@@ -2055,8 +2060,11 @@ Cache                         Router
 
               <li>
 
-                  Data elements with a lower asn value precede data
-                  elements with a higher asn value.
+                  Data elements are then ordered based on their
+                  ski values.  This ordering is lexicographical:
+                  each octet of binary data is treated as a symbol to
+                  compare, with the symbols ordered by their numerical
+                  value.
 
               </li>
 
@@ -2070,10 +2078,15 @@ Cache                         Router
               <li>
 
                   Data elements are then ordered based on their
-                  spkinfo values.  This ordering is lexicographical:
-                  each octet of binary data is treated as a symbol to
-                  compare, with the symbols ordered by their numerical
-                  value.
+                  spkinfo values.  This ordering is the same as for
+                  the ski values.
+
+              </li>
+
+              <li>
+
+                  Data elements with a lower asn value precede data
+                  elements with a higher asn value.
 
               </li>
 
