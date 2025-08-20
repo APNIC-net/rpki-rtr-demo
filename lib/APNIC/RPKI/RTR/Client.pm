@@ -384,6 +384,14 @@ sub _process_responses
     if ($res
             and $self->{'strict_receive'}
             and not pdus_are_ordered($changeset->_pdus())) {
+        my $err_pdu =
+            APNIC::RPKI::RTR::PDU::ErrorReport->new(
+                version          => $self->_current_version(),
+                error_code       => ERR_UNORDERED_PDUS(),
+                encapsulated_pdu => $pdu,
+            );
+        $self->_send($socket, $err_pdu->serialise_binary());
+        $self->flush();
         die "client: got unordered PDUs from server";
     }
 

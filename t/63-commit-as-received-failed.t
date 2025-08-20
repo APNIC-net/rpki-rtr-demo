@@ -12,7 +12,7 @@ use APNIC::RPKI::Validator::ROA;
 
 use File::Temp qw(tempdir);
 
-use Test::More tests => 2;
+use Test::More tests => 4;
 
 my $pid;
 
@@ -101,6 +101,23 @@ my $pid;
 
     is_deeply(\@results, [0, 2, 2],
               'Got expected validation result');
+
+    # Create a new client, and set it to operate in strict mode.
+    # Confirm reset fails due to the ordering problem.
+
+    $client =
+        APNIC::RPKI::RTR::Client->new(
+            server             => '127.0.0.1',
+            port               => $port,
+            supported_versions => [2],
+            strict_receive     => 1,
+        );
+
+    eval { $client->reset() };
+    $error = $@;
+    ok($error, 'Got failed response from server');
+    like($error, qr/got unordered PDUs from server/,
+        'Got expected error message');
 
     $client->exit_server();
 }
