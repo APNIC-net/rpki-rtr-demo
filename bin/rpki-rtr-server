@@ -16,6 +16,7 @@ rpki-rtr-server {data-directory}
     [--tcp-md5-key {key}]
     [--cert-file {path} --key-file {path}]
     [--ca-file {path}]
+    [--reverse-order]
 
   Starts a new server, using the specified data directory.  If
   "--ca-file" is specified, all clients must connect using client
@@ -58,6 +59,7 @@ sub main
         my $key_file;
         my $ca_file;
         my $strict;
+        my $reverse_order;
         while (@args) {
             my $key = shift @args;
             if ($key eq '--server') {
@@ -74,6 +76,8 @@ sub main
                 $key_file = shift @args;
             } elsif ($key eq '--ca-file') {
                 $ca_file = shift @args;
+            } elsif ($key eq '--reverse-order') {
+                $reverse_order = 1;
             } else {
                 error("Invalid argument '$key'");
             }
@@ -84,13 +88,14 @@ sub main
 
         my $server_obj =
             APNIC::RPKI::RTR::Server->new(
-                data_dir    => $dir,
-                server      => $server,
-                port        => $port,
-                tcp_md5_key => $tcp_md5_key,
-                cert_file   => $cert_file,
-                key_file    => $key_file,
-                ca_file     => $ca_file,
+                data_dir      => $dir,
+                server        => $server,
+                port          => $port,
+                tcp_md5_key   => $tcp_md5_key,
+                cert_file     => $cert_file,
+                key_file      => $key_file,
+                ca_file       => $ca_file,
+                reverse_order => 1,
                 (($strict)
                     ? (strict_send    => 1,
                        strict_receive => 1)

@@ -87,6 +87,7 @@ sub new
         ca_file               => $args{'ca_file'},
         cert_file             => $args{'cert_file'},
         key_file              => $args{'key_file'},
+        reverse_order         => $args{'reverse_order'},
     };
 
     bless $self, $class;
@@ -405,7 +406,11 @@ sub handle_client_connection
                     APNIC::RPKI::RTR::State->deserialise_json($data);
                 $state->{'session_id'} = $self->session_id();
 
-                for my $pdu ($state->pdus()) {
+                my @pdus = $state->pdus();
+                if ($self->{'reverse_order'}) {
+                    @pdus = reverse @pdus;
+                }
+                for my $pdu (@pdus) {
                     if ($pdu->supported_in_version($version)) {
                         # For testing.
                         if ($ENV{'APNIC_RESET_ANNOUNCE_ZERO'}) {
@@ -518,7 +523,11 @@ sub handle_client_connection
                     }
                     $serial_number =
                         $first_changeset->{'last_serial_number'};
-                    for my $pdu ($first_changeset->pdus()) {
+                    my @pdus = $first_changeset->pdus();
+                    if ($self->{'reverse_order'}) {
+                        @pdus = reverse @pdus;
+                    }
+                    for my $pdu (@pdus) {
                         if ($pdu->supported_in_version($version)) {
                             $pdu->{'version'} = $version;
                             dprint("server: sending PDU: ".$pdu->serialise_json());
