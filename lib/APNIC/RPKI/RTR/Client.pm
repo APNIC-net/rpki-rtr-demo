@@ -353,6 +353,9 @@ sub _process_responses
                 die "client: got PDU with announce not set to 1";
             }
             $changeset->add_pdu($pdu);
+            if ($self->{'commit_as_received'}) {
+                return (1, $changeset, $pdu, 1);
+            }
         } elsif ($pdu->type() == PDU_END_OF_DATA()) {
             $res = 1;
             last;
@@ -484,34 +487,45 @@ sub reset
         );
     $self->{'state'} = $state;
 
-    my ($res, $changeset, $other_pdu) = $self->_process_responses(1);
-    if (not $res) {
-        if ($other_pdu) {
-            dprint($other_pdu->serialise_json());
+    for (;;) {
+        my ($res, $changeset, $other_pdu, $continue) =
+            $self->_process_responses(1);
+        if (not $res) {
+            if ($other_pdu) {
+                dprint($other_pdu->serialise_json());
+            }
+            die "Failed to process cache responses";
+        } else {
+            my $error_pdu = $state->apply_changeset($changeset, $version);
+            if ($error_pdu and ref $error_pdu) {
+                my $socket = $self->{'socket'};
+                $self->_send($socket, $error_pdu->serialise_binary());
+                $self->flush();
+                die "client: got error: ".
+                    error_type_to_string($error_pdu->error_code());
+            }
+            if ($self->{'post_commit_cb'}) {
+                $self->{'post_commit_cb'}->();
+            }
+            if ($continue) {
+                next;
+            }
+            $self->_process_eod($other_pdu);
+            $self->{'last_run'} = time();
+            $state->{'serial_number'} = $other_pdu->serial_number();
         }
-        die "Failed to process cache responses";
-    } else {
-        my $error_pdu = $state->apply_changeset($changeset, $version);
-        if ($error_pdu and ref $error_pdu) {
-            my $socket = $self->{'socket'};
-            $self->_send($socket, $error_pdu->serialise_binary());
-            $self->flush();
-            die "client: got error: ".
-                error_type_to_string($error_pdu->error_code());
-        }
-        $self->_process_eod($other_pdu);
-        $self->{'last_run'} = time();
-        $state->{'serial_number'} = $other_pdu->serial_number();
-    }
 
-    if ($persist) {
-        if (my $sp = $self->{'state_path'}) {
-            my $data = $self->serialise_json();
-            write_file($sp, $data);
+        if ($persist) {
+            if (my $sp = $self->{'state_path'}) {
+                my $data = $self->serialise_json();
+                write_file($sp, $data);
+            }
+            return $self->refresh(0, $persist);
+        } else {
+            $self->_close_socket();
         }
-        return $self->refresh(0, $persist);
-    } else {
-        $self->_close_socket();
+
+        last;
     }
 
     return 1;
@@ -617,45 +631,56 @@ sub refresh
     $self->{'current_version'} = $version_override || $version;
     # todo: negotiation checks needed here.
 
-    my ($res, $changeset, $other_pdu) = $self->_process_responses();
-    if (not $res) {
-        if ($other_pdu) {
-            if ($other_pdu->type() == PDU_CACHE_RESET()) {
-                # Cache reset PDU: call reset.
-                $self->{'state'}    = undef;
-                $self->{'eod'}      = undef;
-                $self->{'last_run'} = undef;
-                $self->{'socket'}   = undef;
-                return $self->reset(1);
+    for (;;) {
+        my ($res, $changeset, $other_pdu, $continue) =
+            $self->_process_responses();
+        if (not $res) {
+            if ($other_pdu) {
+                if ($other_pdu->type() == PDU_CACHE_RESET()) {
+                    # Cache reset PDU: call reset.
+                    $self->{'state'}    = undef;
+                    $self->{'eod'}      = undef;
+                    $self->{'last_run'} = undef;
+                    $self->{'socket'}   = undef;
+                    return $self->reset(1);
+                }
+                dprint($other_pdu->serialise_json());
             }
-            dprint($other_pdu->serialise_json());
+            die "Failed to process cache responses";
+        } else {
+            my $error_pdu = $self->{'state'}->apply_changeset($changeset, $version);
+            if ($error_pdu and ref $error_pdu) {
+                my $socket = $self->{'socket'};
+                $self->_send($socket, $error_pdu->serialise_binary());
+                $self->flush();
+                die "client: got error: ".
+                    error_type_to_string($error_pdu->error_code());
+            }
+            if ($self->{'post_commit_cb'}) {
+                $self->{'post_commit_cb'}->();
+            }
+            if ($continue) {
+                next;
+            }
+            $self->_process_eod($other_pdu);
+            $self->{'last_run'} = time();
+            $self->{'state'}->{'serial_number'} = $other_pdu->serial_number();
         }
-        die "Failed to process cache responses";
-    } else {
-        my $error_pdu = $self->{'state'}->apply_changeset($changeset, $version);
-        if ($error_pdu and ref $error_pdu) {
-            my $socket = $self->{'socket'};
-            $self->_send($socket, $error_pdu->serialise_binary());
-            $self->flush();
-            die "client: got error: ".
-                error_type_to_string($error_pdu->error_code());
+    
+        if ($persist) {
+            if (my $sp = $self->{'state_path'}) {
+                my $data = $self->serialise_json();
+                write_file($sp, $data);
+            }
+            if ($success_cb) {
+                $success_cb->();
+            }
+            return $self->refresh(0, $persist, $version_override, $success_cb);
+        } else {
+            $self->_close_socket();
         }
-        $self->_process_eod($other_pdu);
-        $self->{'last_run'} = time();
-        $self->{'state'}->{'serial_number'} = $other_pdu->serial_number();
-    }
 
-    if ($persist) {
-        if (my $sp = $self->{'state_path'}) {
-            my $data = $self->serialise_json();
-            write_file($sp, $data);
-        }
-        if ($success_cb) {
-            $success_cb->();
-        }
-        return $self->refresh(0, $persist, $version_override, $success_cb);
-    } else {
-        $self->_close_socket();
+        last;
     }
 
     return 1;
