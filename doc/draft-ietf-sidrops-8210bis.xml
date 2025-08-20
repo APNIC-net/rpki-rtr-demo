@@ -1745,11 +1745,11 @@ Cache                         Router
         If a client applies individual PDUs as they are received from
         the cache, such that the PDUs are taken into account
         immediately for the purposes of BGP announcement validation,
-        it is possible for a BGP announcement to be classified
-        incorrectly.  This is because subsequent PDUs received as part
-        of the same cache response would lead to the BGP announcement
-        being classified in some other way.  See <xref target="races"
-        /> for examples of when this might occur, <xref
+        it is possible for a BGP announcement to be classified as
+        invalid incorrectly.  This is because subsequent PDUs received
+        as part of the same cache response would lead to the BGP
+        announcement being classified in some other way.  See <xref
+        target="races" /> for examples of when this might occur, <xref
         target="ordering" /> for a mandatory PDU ordering algorithm
         that acts to mitigate the effect of these race conditions on
         clients, and <xref target="transactions" /> for client
@@ -2161,20 +2161,16 @@ Cache                         Router
 
             <list style="hanging">
 
-                <t hangText="Application of non-intersecting IPv4/IPv6 PDUs:">
+                <t hangText="Application of IPv4/IPv6 PDUs with the same prefix:">
 
                     For IPv4 and IPv6 PDUs, the mandatory ordering
-                    from <xref target="ordering" /> is such that if a
-                    PDU is received with a prefix that does not
-                    intersect any prefix from a PDU received at an
-                    earlier point of the synchronisation attempt,
-                    application of the previously-received PDUs is
-                    safe with respect to the problems described in
-                    <xref target="races" />.  Additionally, when this
-                    occurs, no subsequent IP PDUs will intersect any
-                    previously-received PDU, which allows for reducing
-                    the size of the IP set that needs to be checked
-                    for intersections.
+                    from <xref target="ordering" /> is such that if
+                    two PDUs are received in order, and their prefixes
+                    are not equal, then application of the previous
+                    PDU is safe with respect to the problems described
+                    in <xref target="races" />.  In other words, IP
+                    PDUs for the same prefix must be applied at the
+                    same time.
 
                 </t>
 
@@ -2202,17 +2198,17 @@ Cache                         Router
         <t>
 
             A client that is unable to apply PDUs only on receipt of
-            an End of Data PDU, and also unable to implement either or
-            both of the alternative implementation approaches
-            described in this section, will be at risk of encountering
-            the problems described in <xref target="races" />.  While
-            such problems will generally be transient, because a
-            subsequent PDU received during the same synchronisation
-            attempt should act to rectify the problem, there is a risk
-            that those PDUs are not received due to an error during
-            the synchronisation attempt.  In that scenario, clients
-            SHOULD revert the application of any PDUs received during
-            the failed synchronisation attempt.
+            an End of Data PDU, and also unable to implement the
+            alternative implementation approaches described in this
+            section, will be at risk of encountering the problems
+            described in <xref target="races" />.  While such problems
+            will generally be transient, because a subsequent PDU
+            received during the same synchronisation attempt should
+            act to rectify the problem, there is a risk that those
+            PDUs are not received due to an error during the
+            synchronisation attempt.  In that scenario, clients SHOULD
+            revert the application of any PDUs received during the
+            failed synchronisation attempt.
 
         </t>
 

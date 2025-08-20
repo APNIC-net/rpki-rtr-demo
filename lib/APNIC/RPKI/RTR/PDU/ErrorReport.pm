@@ -42,6 +42,11 @@ sub type_str
     return 'Error Report';
 }
 
+sub is_ip_type
+{
+    return 0;
+}
+
 sub version
 {
     my ($self) = @_;

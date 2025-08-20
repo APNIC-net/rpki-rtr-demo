@@ -36,6 +36,11 @@ sub type_str
     return 'Exit';
 }
 
+sub is_ip_type
+{
+    return 0;
+}
+
 sub version
 {
     my ($self) = @_;

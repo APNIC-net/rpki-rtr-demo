@@ -47,6 +47,11 @@ sub type_str
     return 'IPv4 Prefix';
 }
 
+sub is_ip_type
+{
+    return 1;
+}
+
 sub version
 {
     my ($self) = @_;
@@ -80,6 +85,13 @@ sub address
     my ($self) = @_;
 
     return $self->{'address'};
+}
+
+sub prefix
+{
+    my ($self) = @_;
+
+    return $self->address()."/".$self->prefix_length();
 }
 
 sub asn
@@ -159,6 +171,16 @@ sub is_reversal_of
             and ($self->address() eq $other->address())
             and ($self->asn() == $other->asn())
             and ($self->flags() xor $other->flags()));
+}
+
+sub prefix_equals
+{
+    my ($self, $other) = @_;
+
+    return ($other->type() == $self->type()
+            and ($self->version() eq $other->version())
+            and ($self->prefix_length() == $other->prefix_length())
+            and ($self->address() eq $other->address()));
 }
 
 sub equals

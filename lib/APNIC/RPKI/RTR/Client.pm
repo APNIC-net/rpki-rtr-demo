@@ -328,6 +328,10 @@ sub _process_responses
 
     my $socket  = $self->{'socket'};
     my $changeset = APNIC::RPKI::RTR::Changeset->new();
+    for my $pdu (@{$self->{'pr_pdus'}}) {
+        $changeset->add_pdu($pdu);
+    }
+    $self->{'pr_pdus'} = [];
     my $res;
     my $pdu;
 
@@ -352,9 +356,67 @@ sub _process_responses
                 $self->flush();
                 die "client: got PDU with announce not set to 1";
             }
-            $changeset->add_pdu($pdu);
+
+            my $using_alt_commit_strategy =
+                ($self->{'commit_as_received'}
+                    || $self->{'commit_same_prefixes'}
+                    || $self->{'commit_aspas'});
+
             if ($self->{'commit_as_received'}) {
+                $changeset->add_pdu($pdu);
                 return (1, $changeset, $pdu, 1);
+            }
+
+            if ($self->{'commit_same_prefixes'}) {
+                if ($changeset->pdus()) {
+                    my @pdus = $changeset->pdus();
+                    my $previous_pdu = $pdus[$#pdus];
+                    my $previous_pdu_type = $previous_pdu->type();
+                    my $pdu_type = $pdu->type();
+                    if ($previous_pdu->is_ip_type()) {
+                        if (($previous_pdu_type == $pdu_type)
+                            and ($previous_pdu->prefix_equals($pdu))) {
+                            $changeset->add_pdu($pdu);
+                            next;
+                        } else {
+                            $self->{'pr_pdus'} = [$pdu];
+                            return (1, $changeset, undef, 1);
+                        }
+                    }
+                } elsif ($pdu->is_ip_type()) {
+                    $changeset->add_pdu($pdu);
+                    next;
+                }
+            }
+
+            if ($self->{'commit_aspas'}) {
+                my $pdu_type = $pdu->type();
+                if ($changeset->pdus()) {
+                    my @pdus = $changeset->pdus();
+                    my $previous_pdu = $pdus[$#pdus];
+                    my $previous_pdu_type = $previous_pdu->type();
+                    if ($previous_pdu_type == PDU_ASPA()) {
+                        if ($previous_pdu_type == $pdu_type) {
+                            $changeset->add_pdu($pdu);
+                            next;
+                        } else {
+                            $self->{'pr_pdus'} = [$pdu];
+                            return (1, $changeset, undef, 1);
+                        }
+                    }
+                } elsif ($pdu_type == PDU_ASPA()) {
+                    $changeset->add_pdu($pdu);
+                    next;
+                }
+            }
+
+            if ($using_alt_commit_strategy) {
+                # Implicit that the PDU is added and returned
+                # immediately if this point is reached.
+                $changeset->add_pdu($pdu);
+                return (1, $changeset, $pdu, 1);
+            } else {
+                $changeset->add_pdu($pdu);
             }
         } elsif ($pdu->type() == PDU_END_OF_DATA()) {
             $res = 1;
@@ -495,6 +557,7 @@ sub reset
         );
     $self->{'state'} = $state;
 
+    $self->{'pr_pdus'} = [];
     for (;;) {
         my ($res, $changeset, $other_pdu, $continue) =
             $self->_process_responses(1);
@@ -639,6 +702,7 @@ sub refresh
     $self->{'current_version'} = $version_override || $version;
     # todo: negotiation checks needed here.
 
+    $self->{'pr_pdus'} = [];
     for (;;) {
         my ($res, $changeset, $other_pdu, $continue) =
             $self->_process_responses();

@@ -33,6 +33,11 @@ sub type_str
     return 'Reset Query';
 }
 
+sub is_ip_type
+{
+    return 0;
+}
+
 sub version
 {
     my ($self) = @_;

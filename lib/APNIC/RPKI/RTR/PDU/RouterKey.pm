@@ -39,6 +39,11 @@ sub type_str
     return 'Router Key';
 }
 
+sub is_ip_type
+{
+    return 0;
+}
+
 sub version
 {
     my ($self) = @_;

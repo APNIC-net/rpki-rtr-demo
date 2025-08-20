@@ -43,6 +43,11 @@ sub type_str
     return 'IPv6 Prefix';
 }
 
+sub is_ip_type
+{
+    return 1;
+}
+
 sub version
 {
     my ($self) = @_;
