@@ -10,7 +10,7 @@ use APNIC::RPKI::RTR::PDU::ASPA;
 use APNIC::RPKI::RTR::PDU::Utils qw(order_pdus
                                     pdus_are_ordered);
 
-use Test::More tests => 20;
+use Test::More tests => 34;
 
 sub make_v4_add
 {
@@ -66,55 +66,129 @@ sub make_v6_add
     );
 }
 
+sub make_rk_add
+{
+    my ($ski, $spki, $asn) = @_;
+
+    return APNIC::RPKI::RTR::PDU::RouterKey->new(
+        version => 1,
+        flags   => 1,
+        ski     => $ski,
+        spki    => $spki,
+        asn     => $asn,
+    );
+}
+
 my @tests = (
+    # Basic tests.
+
     [ "Single PDU, no ordering difference", 
       [ make_v4_add("10.0.0.0", 24, 24, 1) ],
       [ make_v4_add("10.0.0.0", 24, 24, 1) ], ],
-    [ "Larger address comes first",
-      [ make_v4_add("10.0.0.0", 24, 24, 1),
-        make_v4_add("11.0.0.0", 24, 24, 1) ],
-      [ make_v4_add("11.0.0.0", 24, 24, 1),
-        make_v4_add("10.0.0.0", 24, 24, 1) ], ],
-    [ "Larger max-length comes first",
-      [ make_v4_add("10.0.0.0", 24, 24, 1),
-        make_v4_add("10.0.0.0", 24, 25, 1) ],
-      [ make_v4_add("10.0.0.0", 24, 25, 1),
-        make_v4_add("10.0.0.0", 24, 24, 1) ], ],
-    [ "Larger prefix length comes first",
-      [ make_v4_add("10.0.0.0", 24, 24, 1),
-        make_v4_add("10.0.0.0", 25, 25, 1) ],
-      [ make_v4_add("10.0.0.0", 25, 25, 1),
-        make_v4_add("10.0.0.0", 24, 24, 1) ], ],
-    [ "AS0 comes last",
-      [ make_v4_add("10.0.0.0", 24, 24, 1),
-        make_v4_add("10.0.0.0", 24, 24, 0) ],
-      [ make_v4_add("10.0.0.0", 24, 24, 1),
-        make_v4_add("10.0.0.0", 24, 24, 0) ], ],
-    [ "Withdrawal comes last",
-      [ make_v4_del("11.0.0.0", 24, 24, 1),
-        make_v4_add("10.0.0.0", 24, 24, 1) ],
-      [ make_v4_add("10.0.0.0", 24, 24, 1),
-        make_v4_del("11.0.0.0", 24, 24, 1) ], ],
-    [ "Larger address comes last with withdrawal",
-      [ make_v4_del("11.0.0.0", 24, 24, 1),
-        make_v4_del("10.0.0.0", 24, 24, 1) ],
-      [ make_v4_del("10.0.0.0", 24, 24, 1),
-        make_v4_del("11.0.0.0", 24, 24, 1) ], ],
+
     [ "Smaller PDU type comes first",
       [ make_aspa_add(1, [2, 3, 4]),
         make_v4_del("11.0.0.0", 24, 24, 1), ],
       [ make_v4_del("11.0.0.0", 24, 24, 1),
         make_aspa_add(1, [2, 3, 4]) ] ],
+
+    # IP add tests.
+
+    [ "AS0 comes last",
+      [ make_v4_add("10.0.0.0", 24, 24, 1),
+        make_v4_add("10.0.0.0", 24, 24, 0) ],
+      [ make_v4_add("10.0.0.0", 24, 24, 1),
+        make_v4_add("10.0.0.0", 24, 24, 0) ], ],
+
+    [ "Larger address comes first",
+      [ make_v4_add("10.0.0.0", 24, 24, 1),
+        make_v4_add("11.0.0.0", 24, 24, 1) ],
+      [ make_v4_add("11.0.0.0", 24, 24, 1),
+        make_v4_add("10.0.0.0", 24, 24, 1) ], ],
+
+    [ "Larger max-length comes first",
+      [ make_v4_add("10.0.0.0", 24, 24, 1),
+        make_v4_add("10.0.0.0", 24, 25, 1) ],
+      [ make_v4_add("10.0.0.0", 24, 25, 1),
+        make_v4_add("10.0.0.0", 24, 24, 1) ], ],
+
+    [ "Larger prefix length comes first",
+      [ make_v4_add("10.0.0.0", 24, 24, 1),
+        make_v4_add("10.0.0.0", 25, 25, 1) ],
+      [ make_v4_add("10.0.0.0", 25, 25, 1),
+        make_v4_add("10.0.0.0", 24, 24, 1) ], ],
+
     [ "IPv4 comes first",
       [ make_v6_add("::", 24, 24, 1),
         make_v4_add("11.0.0.0", 24, 24, 1) ],
       [ make_v4_add("11.0.0.0", 24, 24, 1),
         make_v6_add("::", 24, 24, 1) ], ],
+
     [ "ASNs are ordered",
       [ make_v4_add("10.0.0.0", 24, 24, 2),
         make_v4_add("11.0.0.0", 24, 24, 1) ],
       [ make_v4_add("11.0.0.0", 24, 24, 1),
         make_v4_add("10.0.0.0", 24, 24, 2) ], ],
+
+    # IP withdraw tests.
+
+    [ "Withdrawal comes last",
+      [ make_v4_del("11.0.0.0", 24, 24, 1),
+        make_v4_add("10.0.0.0", 24, 24, 1) ],
+      [ make_v4_add("10.0.0.0", 24, 24, 1),
+        make_v4_del("11.0.0.0", 24, 24, 1) ], ],
+
+    [ "AS0 comes first",
+      [ make_v4_del("10.0.0.0", 24, 24, 1),
+        make_v4_del("10.0.0.0", 24, 24, 0) ],
+      [ make_v4_del("10.0.0.0", 24, 24, 0),
+        make_v4_del("10.0.0.0", 24, 24, 1) ], ],
+
+    [ "Larger address comes last with withdrawal",
+      [ make_v4_del("11.0.0.0", 24, 24, 1),
+        make_v4_del("10.0.0.0", 24, 24, 1) ],
+      [ make_v4_del("10.0.0.0", 24, 24, 1),
+        make_v4_del("11.0.0.0", 24, 24, 1) ], ],
+
+    [ "Larger max-length comes last with withdrawal",
+      [ make_v4_del("10.0.0.0", 24, 25, 1),
+        make_v4_del("10.0.0.0", 24, 24, 1) ],
+      [ make_v4_del("10.0.0.0", 24, 24, 1),
+        make_v4_del("10.0.0.0", 24, 25, 1) ], ],
+
+    [ "Larger prefix length comes last with withdrawal",
+      [ make_v4_del("10.0.0.0", 25, 25, 1),
+        make_v4_del("10.0.0.0", 24, 24, 1) ],
+      [ make_v4_del("10.0.0.0", 24, 24, 1),
+        make_v4_del("10.0.0.0", 25, 25, 1) ], ],
+
+    # Router key tests.
+
+    [ "Smaller SKI comes first",
+      [ make_rk_add("5", "asdf", "1"),
+        make_rk_add("1", "qwer", "5") ],
+      [ make_rk_add("1", "qwer", "5"),
+        make_rk_add("5", "asdf", "1") ] ],
+
+    [ "Smaller SPKI comes first",
+      [ make_rk_add("1", "qwer", "1"),
+        make_rk_add("1", "asdf", "5") ],
+      [ make_rk_add("1", "asdf", "5"),
+        make_rk_add("1", "qwer", "1") ] ],
+
+    [ "Smaller ASN comes first",
+      [ make_rk_add("1", "asdf", "5"),
+        make_rk_add("1", "asdf", "1") ],
+      [ make_rk_add("1", "asdf", "1"),
+        make_rk_add("1", "asdf", "5") ] ],
+
+    # ASPA tests.
+
+    [ "Smaller customer ASN comes first",
+      [ make_aspa_add(2, [3, 4, 5]),
+        make_aspa_add(1, [4, 5, 6]) ],
+      [ make_aspa_add(1, [4, 5, 6]),
+        make_aspa_add(2, [3, 4, 5]) ] ]
 );
 
 for my $test (@tests) {

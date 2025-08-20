@@ -169,18 +169,39 @@ sub order_pdus
             @ip_pdus;
 
     my @router_key_pdus =
-        sort { ($a->asn() <=> $b->asn())
-                || ($a->spki() cmp $b->spki()) }
+        sort { # This is a numeric comparison, but has the same
+               # outcome as the lexicographical comparison from the
+               # text.
+                  ($a->ski_bigint() <=> $b->ski_bigint())
+               || ($a->spki_len() <=> $b->spki_len())
+               || ($a->spki() cmp $b->spki())
+               || ($a->asn() <=> $b->asn()) }
         grep { $_->type() == PDU_ROUTER_KEY() }
             @pdus;
+
+    my @add_router_key_pdus =
+        grep { $_->flags() == 1 }
+            @router_key_pdus;
+
+    my @remove_router_key_pdus =
+        grep { $_->flags() == 0 }
+            @router_key_pdus;
 
     my @aspa_pdus =
         sort { $a->customer_asn() <=> $b->customer_asn() }
         grep { $_->type() == PDU_ASPA() }
             @pdus;
 
+    my @add_aspa_pdus =
+        grep { $_->flags() == 1 }
+            @aspa_pdus;
+
+    my @remove_aspa_pdus =
+        grep { $_->flags() == 0 }
+            @aspa_pdus;
+
     my @other_pdus =
-        grep { $_->type() != PDU_IPV4_PREFIX()
+        grep {      $_->type() != PDU_IPV4_PREFIX()
                 and $_->type() != PDU_IPV6_PREFIX()
                 and $_->type() != PDU_ROUTER_KEY()
                 and $_->type() != PDU_ASPA() }
@@ -193,8 +214,10 @@ sub order_pdus
             @remove_ipv4_pdus,
             @add_ipv6_pdus,
             @remove_ipv6_pdus,
-            @router_key_pdus,
-            @aspa_pdus);
+            @add_router_key_pdus,
+            @remove_router_key_pdus,
+            @add_aspa_pdus,
+            @remove_aspa_pdus);
 }
 
 sub pdus_are_ordered
