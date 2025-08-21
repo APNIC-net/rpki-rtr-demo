@@ -11,6 +11,7 @@ use APNIC::RPKI::RTR::Changeset;
 
 use File::Slurp qw(read_file write_file);
 use File::Temp qw(tempdir);
+use Net::EmptyPort qw(empty_port);
 
 use Test::More tests => 3;
 
@@ -22,8 +23,7 @@ my $pid;
         APNIC::RPKI::RTR::Server::Maintainer->new(
             data_dir => $data_dir
         );
-    my $port =
-        ($$ + int(rand(1024))) % (65535 - 1024) + 1024;
+    my $port = empty_port();
 
     my $ca_root_dir = tempdir();
     $ENV{'CAROOT'} = $ca_root_dir;

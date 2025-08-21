@@ -24,7 +24,8 @@ my $output = WriteMakefile(
                         'JSON::XS'        => 0,
                         'Net::IP::XS'     => 0,
                         'IO::Select'      => 0,
-                        'IO::Socket::SSL' => 0, }
+                        'IO::Socket::SSL' => 0,
+                        'Net::EmptyPort'  => 0, }
 );
 
 1;

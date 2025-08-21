@@ -9,6 +9,7 @@ use APNIC::RPKI::RTR::Changeset;
 
 use File::Temp qw(tempdir);
 use File::Slurp qw(read_file write_file);
+use Net::EmptyPort qw(empty_port);
 use Time::HiRes qw(time);
 
 use Test::More tests => 31;
@@ -35,8 +36,7 @@ my $server_pid;
     $changeset->add_pdu($pdu);
     $mnt->apply_changeset($changeset);
 
-    my $port =
-        ($$ + int(rand(1024))) % (65535 - 1024) + 1024;
+    my $port = empty_port();
     my $server =
         APNIC::RPKI::RTR::Server->new(
             server   => '127.0.0.1',
