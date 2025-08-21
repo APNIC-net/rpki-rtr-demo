@@ -123,11 +123,13 @@ Internet-Draft            RPKI-Router Protocol               August 2025
    12. Error Codes . . . . . . . . . . . . . . . . . . . . . . . . .  37
    13. Security Considerations . . . . . . . . . . . . . . . . . . .  39
    14. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  40
-   15. References  . . . . . . . . . . . . . . . . . . . . . . . . .  41
-     15.1.  Normative References . . . . . . . . . . . . . . . . . .  41
-     15.2.  Informative References . . . . . . . . . . . . . . . . .  44
-   Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . .  45
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  45
+   15. Implementation status . . . . . . . . . . . . . . . . . . . .  41
+     15.1.  rpki-rtr-demo  . . . . . . . . . . . . . . . . . . . . .  42
+   16. References  . . . . . . . . . . . . . . . . . . . . . . . . .  42
+     16.1.  Normative References . . . . . . . . . . . . . . . . . .  42
+     16.2.  Informative References . . . . . . . . . . . . . . . . .  45
+   Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . .  46
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  46
 
 1.  Introduction
 
@@ -158,8 +160,6 @@ Internet-Draft            RPKI-Router Protocol               August 2025
    The protocol is extensible in order to support new PDUs with new
    semantics, if deployment experience indicates that they are needed.
    PDUs are versioned should deployment experience call for change.
-
-
 
 
 
@@ -2280,16 +2280,16 @@ Internet-Draft            RPKI-Router Protocol               August 2025
                   2       11   ASPA
                  0-2     255   Reserved
 
-15.  References
+15.  Implementation status
 
-15.1.  Normative References
+   This section is to be removed before publishing as an RFC.
 
-   [BCP195]   Moriarty, K. and S. Farrell, "Deprecating TLS 1.0 and TLS
-              1.1", BCP 195, RFC 8996, March 2021.
-
-
-
-
+   This section records the status of known implementations of the
+   protocol defined by this specification at the time of posting of this
+   Internet-Draft, and is based on a proposal described in [RFC7942].
+   The description of implementations in this section is intended to
+   assist the IETF in its decision processes in progressing drafts to
+   RFCs.  Please note that the listing of any individual implementation
 
 
 
@@ -2297,6 +2297,38 @@ Bush & Austein          Expires 22 February 2026               [Page 41]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
+
+   here does not imply endorsement by the IETF.  Furthermore, no effort
+   has been spent to verify the information presented here that was
+   supplied by IETF contributors.  This is not intended as, and must not
+   be construed to be, a catalog of available implementations or their
+   features.  Readers are advised to note that other implementations may
+   exist.
+
+   According to [RFC7942], "this will allow reviewers and working groups
+   to assign due consideration to documents that have the benefit of
+   running code, which may serve as evidence of valuable experimentation
+   and feedback that have made the implemented protocols more mature.
+   It is up to the individual working groups to use this information as
+   they see fit".
+
+15.1.  rpki-rtr-demo
+
+   *  Responsible Organization: APNIC
+   *  Location: https://github.com/APNIC-net/rpki-rtr-demo
+   *  Description: This implementation supports the behaviour described
+      in this document.
+   *  Level of Maturity: This is a proof-of-concept implementation.
+   *  Coverage: This implementation includes all of the features
+      described in this specification, except for TCP-AO.
+   *  Contact Information: Tom Harrison, tomh@apnic.net
+
+16.  References
+
+16.1.  Normative References
+
+   [BCP195]   Moriarty, K. and S. Farrell, "Deprecating TLS 1.0 and TLS
+              1.1", BCP 195, RFC 8996, March 2021.
 
               Sheffer, Y., Saint-Andre, P., and T. Fossati,
               "Recommendations for Secure Use of Transport Layer
@@ -2312,6 +2344,15 @@ Internet-Draft            RPKI-Router Protocol               August 2025
               draft-ietf-sidrops-aspa-profile-20, 18 August 2025,
               <https://datatracker.ietf.org/doc/html/draft-ietf-sidrops-
               aspa-profile-20>.
+
+
+
+
+
+Bush & Austein          Expires 22 February 2026               [Page 42]
+
+Internet-Draft            RPKI-Router Protocol               August 2025
+
 
    [iana-err] IANA, "rpki-rtr-error",
               <https://www.iana.org/assignments/rpki#rpki-rtr-error>.
@@ -2344,16 +2385,6 @@ Internet-Draft            RPKI-Router Protocol               August 2025
               Internet Protocol", RFC 4301, DOI 10.17487/RFC4301,
               December 2005, <https://www.rfc-editor.org/info/rfc4301>.
 
-
-
-
-
-
-Bush & Austein          Expires 22 February 2026               [Page 42]
-
-Internet-Draft            RPKI-Router Protocol               August 2025
-
-
    [RFC5280]  Cooper, D., Santesson, S., Farrell, S., Boeyen, S.,
               Housley, R., and W. Polk, "Internet X.509 Public Key
               Infrastructure Certificate and Certificate Revocation List
@@ -2368,6 +2399,16 @@ Internet-Draft            RPKI-Router Protocol               August 2025
               for the TCP Authentication Option (TCP-AO)", RFC 5926,
               DOI 10.17487/RFC5926, June 2010,
               <https://www.rfc-editor.org/info/rfc5926>.
+
+
+
+
+
+
+Bush & Austein          Expires 22 February 2026               [Page 43]
+
+Internet-Draft            RPKI-Router Protocol               August 2025
+
 
    [RFC6125]  Saint-Andre, P. and J. Hodges, "Representation and
               Verification of Domain-Based Application Service Identity
@@ -2401,15 +2442,6 @@ Internet-Draft            RPKI-Router Protocol               August 2025
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
               May 2017, <https://www.rfc-editor.org/info/rfc8174>.
 
-
-
-
-
-Bush & Austein          Expires 22 February 2026               [Page 43]
-
-Internet-Draft            RPKI-Router Protocol               August 2025
-
-
    [RFC8210]  Bush, R. and R. Austein, "The Resource Public Key
               Infrastructure (RPKI) to Router Protocol, Version 1",
               RFC 8210, DOI 10.17487/RFC8210, September 2017,
@@ -2424,11 +2456,21 @@ Internet-Draft            RPKI-Router Protocol               August 2025
               DOI 10.17487/RFC8608, June 2019,
               <https://www.rfc-editor.org/info/rfc8608>.
 
+
+
+
+
+
+Bush & Austein          Expires 22 February 2026               [Page 44]
+
+Internet-Draft            RPKI-Router Protocol               August 2025
+
+
    [RFC8635]  Bush, R., Turner, S., and K. Patel, "Router Keying for
               BGPsec", RFC 8635, DOI 10.17487/RFC8635, August 2019,
               <https://www.rfc-editor.org/info/rfc8635>.
 
-15.2.  Informative References
+16.2.  Informative References
 
    [RFC1996]  Vixie, P., "A Mechanism for Prompt Notification of Zone
               Changes (DNS NOTIFY)", RFC 1996, DOI 10.17487/RFC1996,
@@ -2455,16 +2497,14 @@ Internet-Draft            RPKI-Router Protocol               August 2025
               DOI 10.17487/RFC0793, September 1981,
               <https://www.rfc-editor.org/info/rfc793>.
 
+   [RFC7942]  Sheffer, Y. and A. Farrel, "Improving Awareness of Running
+              Code: The Implementation Status Section", BCP 205,
+              RFC 7942, DOI 10.17487/RFC7942, July 2016,
+              <https://www.rfc-editor.org/info/rfc7942>.
+
    [RFC8654]  Bush, R., Patel, K., and D. Ward, "Extended Message
               Support for BGP", RFC 8654, DOI 10.17487/RFC8654, October
               2019, <https://www.rfc-editor.org/info/rfc8654>.
-
-
-
-Bush & Austein          Expires 22 February 2026               [Page 44]
-
-Internet-Draft            RPKI-Router Protocol               August 2025
-
 
    [RFC9293]  Eddy, W., Ed., "Transmission Control Protocol (TCP)",
               STD 7, RFC 9293, DOI 10.17487/RFC9293, August 2022,
@@ -2474,6 +2514,13 @@ Internet-Draft            RPKI-Router Protocol               August 2025
               Kent, "A Profile for Route Origin Authorizations (ROAs)",
               RFC 9582, DOI 10.17487/RFC9582, May 2024,
               <https://www.rfc-editor.org/info/rfc9582>.
+
+
+
+Bush & Austein          Expires 22 February 2026               [Page 45]
+
+Internet-Draft            RPKI-Router Protocol               August 2025
+
 
 Acknowledgements
 
@@ -2517,4 +2564,13 @@ Authors' Addresses
 
 
 
-Bush & Austein          Expires 22 February 2026               [Page 45]
+
+
+
+
+
+
+
+
+
+Bush & Austein          Expires 22 February 2026               [Page 46]
