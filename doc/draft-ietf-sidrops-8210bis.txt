@@ -114,21 +114,20 @@ Bush & Austein          Expires 22 February 2026                [Page 2]
 Internet-Draft            RPKI-Router Protocol               August 2025
 
 
-       11.1.4.  ASPA PDUs  . . . . . . . . . . . . . . . . . . . . .  33
      11.2.  Ordering . . . . . . . . . . . . . . . . . . . . . . . .  33
-       11.2.1.  IP PDUs  . . . . . . . . . . . . . . . . . . . . . .  34
+       11.2.1.  IP PDUs  . . . . . . . . . . . . . . . . . . . . . .  33
        11.2.2.  Router Key PDUs  . . . . . . . . . . . . . . . . . .  35
-       11.2.3.  ASPA PDUs  . . . . . . . . . . . . . . . . . . . . .  36
+       11.2.3.  ASPA PDUs  . . . . . . . . . . . . . . . . . . . . .  35
      11.3.  Transactions . . . . . . . . . . . . . . . . . . . . . .  36
-     11.4.  Other Considerations . . . . . . . . . . . . . . . . . .  37
-   12. Error Codes . . . . . . . . . . . . . . . . . . . . . . . . .  38
+     11.4.  Other Considerations . . . . . . . . . . . . . . . . . .  36
+   12. Error Codes . . . . . . . . . . . . . . . . . . . . . . . . .  37
    13. Security Considerations . . . . . . . . . . . . . . . . . . .  39
-   14. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  41
-   15. References  . . . . . . . . . . . . . . . . . . . . . . . . .  42
-     15.1.  Normative References . . . . . . . . . . . . . . . . . .  42
-     15.2.  Informative References . . . . . . . . . . . . . . . . .  45
-   Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . .  46
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  46
+   14. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  40
+   15. References  . . . . . . . . . . . . . . . . . . . . . . . . .  41
+     15.1.  Normative References . . . . . . . . . . . . . . . . . .  41
+     15.2.  Informative References . . . . . . . . . . . . . . . . .  44
+   Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . .  45
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  45
 
 1.  Introduction
 
@@ -159,6 +158,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
    The protocol is extensible in order to support new PDUs with new
    semantics, if deployment experience indicates that they are needed.
    PDUs are versioned should deployment experience call for change.
+
 
 
 
@@ -1808,18 +1808,6 @@ Internet-Draft            RPKI-Router Protocol               August 2025
    as invalid under ROV in the time between PDU withdrawal and PDU
    announcement.
 
-11.1.4.  ASPA PDUs
-
-   There are various ways in which the ordering of ASPA PDUs can lead to
-   BGP announcements being incorrectly classified as invalid under ASPA
-   verification [I-D.ietf-sidrops-aspa-verification].  For example,
-   there could be a BGP announcement with a path containing three ASNs
-   in sequence, where both the first and third ASNs have ASPAs, with
-   neither listing the second ASN as a provider.  In the absence of one
-   or both of the corresponding ASPA PDUs, the BGP announcement will be
-   treated as unknown under ASPA verification, while with both, it will
-   be treated as invalid.
-
 11.2.  Ordering
 
    For a protocol version 2 session, caches MUST use the ordering
@@ -1842,14 +1830,6 @@ Internet-Draft            RPKI-Router Protocol               August 2025
    PDU type.  The sections that follow describe ordering as among PDUs
    of the same type.
 
-
-
-
-Bush & Austein          Expires 22 February 2026               [Page 33]
-
-Internet-Draft            RPKI-Router Protocol               August 2025
-
-
 11.2.1.  IP PDUs
 
    In order to semantically compare and sort IP PDUs, each PDU is mapped
@@ -1862,6 +1842,13 @@ Internet-Draft            RPKI-Router Protocol               August 2025
       value.
 
    mlen  The max length appearing in the PDU, as an integer value.
+
+
+
+Bush & Austein          Expires 22 February 2026               [Page 33]
+
+Internet-Draft            RPKI-Router Protocol               August 2025
+
 
    asn  The origin ASN appearing in the PDU, as an integer value.
 
@@ -1899,13 +1886,6 @@ Internet-Draft            RPKI-Router Protocol               August 2025
        higher asn value.  This ensures that AS0 PDU withdrawals always
        appear before all other PDU withdrawals.
 
-
-
-Bush & Austein          Expires 22 February 2026               [Page 34]
-
-Internet-Draft            RPKI-Router Protocol               August 2025
-
-
    2.  Data elements with a lower addr value precede data elements with
        a higher addr value.
 
@@ -1918,6 +1898,13 @@ Internet-Draft            RPKI-Router Protocol               August 2025
    For both announcement and withdrawal PDUs, the last three comparisons
    are included so as to address the problem described in
    Section 11.1.2.
+
+
+
+Bush & Austein          Expires 22 February 2026               [Page 34]
+
+Internet-Draft            RPKI-Router Protocol               August 2025
+
 
 11.2.2.  Router Key PDUs
 
@@ -1955,13 +1942,6 @@ Internet-Draft            RPKI-Router Protocol               August 2025
    4.  Data elements are then ordered based on their spkinfo values.
        This ordering is the same as for the ski values.
 
-
-
-Bush & Austein          Expires 22 February 2026               [Page 35]
-
-Internet-Draft            RPKI-Router Protocol               August 2025
-
-
    5.  Data elements with a lower asn value precede data elements with a
        higher asn value.
 
@@ -1974,6 +1954,13 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
    updt  The integer 1, if the PDU is an announcement, and the integer
       0, if the PDU is a withdrawal.
+
+
+
+Bush & Austein          Expires 22 February 2026               [Page 35]
+
+Internet-Draft            RPKI-Router Protocol               August 2025
+
 
    The equality or relative order of two ASPA PDUs can be tested by
    comparing their abstract representations.
@@ -1992,39 +1979,17 @@ Internet-Draft            RPKI-Router Protocol               August 2025
    is unaffected by the problems described in Section 11.1.
 
    A client may be unable to apply PDUs only on receipt of an End of
-   Data PDU, due e.g. to memory limitations.  The following alternative
-   implementation approaches will help to mitigate some of the problems
-   described in Section 11.1:
-
-   Application of IPv4/IPv6 PDUs with the same prefix:  For IPv4 and
-      IPv6 PDUs, the mandatory ordering from Section 11.2 is such that
-      if two PDUs are received in order, and their prefixes are not
-      equal, then application of the previous PDU is safe with respect
-      to the problems described in Section 11.1.  In other words, IP
-      PDUs for the same prefix must be applied at the same time.
-
-   Application of ASPA PDUs:  For ASPA PDUs, the mandatory ordering from
-      Section 11.2 does not mitigate the problems that may arise from
-      immediate application.  However, if a client applies all ASPA PDUs
-      received from the cache as a single group, then that operation
-      will be safe with respect to the problems described in
-      Section 11.1.
-
-
-
-
-Bush & Austein          Expires 22 February 2026               [Page 36]
-
-Internet-Draft            RPKI-Router Protocol               August 2025
-
-
-   A client that implements both of the approaches described above will
-   be safe with respect to all of the problems described in
-   Section 11.1.
+   Data PDU, due e.g. to memory limitations.  An alternative
+   implementation approach that a client can use is to apply IP PDUs as
+   a single group if their prefixes are equal.  Since the mandatory
+   ordering is such that those PDUs will appear in sequence, and such
+   groups will generally be small, this should be easier for clients to
+   support.  A client that implements this approach is safe with respect
+   to all of the problems described in Section 11.1.
 
    A client that is unable to apply PDUs only on receipt of an End of
    Data PDU, and also unable to implement the alternative implementation
-   approaches described in this section, will be at risk of encountering
+   approach described in this section, will be at risk of encountering
    the problems described in Section 11.1.  While such problems will
    generally be transient, because a subsequent PDU received during the
    same synchronisation attempt should act to rectify the problem, there
@@ -2044,6 +2009,15 @@ Internet-Draft            RPKI-Router Protocol               August 2025
    here, but how should that be determined?  Can it be based on the
    expiry interval, or something like that?]
 
+
+
+
+
+Bush & Austein          Expires 22 February 2026               [Page 36]
+
+Internet-Draft            RPKI-Router Protocol               August 2025
+
+
    A client MAY verify the ordering of PDUs, and when an ordering error
    is encountered, send an Ordering Error PDU to the server and
    terminate the session.  However, given that ordering issues lead only
@@ -2052,27 +2026,6 @@ Internet-Draft            RPKI-Router Protocol               August 2025
    whether terminating the session is worthwhile.  For example, if
    another cache is available, that may weigh in favour of terminating
    the current session and switching to that other cache.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Bush & Austein          Expires 22 February 2026               [Page 37]
-
-Internet-Draft            RPKI-Router Protocol               August 2025
-
 
    Section 11.1 describes various scenarios where immediate application
    of PDUs can cause problems, depending on the order in which they are
@@ -2113,6 +2066,14 @@ Internet-Draft            RPKI-Router Protocol               August 2025
    dropped, and the router MUST flush all data learned from that cache.
 
    0: Corrupt Data (fatal):  The receiver believes the received PDU to
+
+
+
+Bush & Austein          Expires 22 February 2026               [Page 37]
+
+Internet-Draft            RPKI-Router Protocol               August 2025
+
+
       be corrupt in a manner not specified by another error code.
 
    1: Internal Error (fatal):  The party reporting the error experienced
@@ -2120,16 +2081,6 @@ Internet-Draft            RPKI-Router Protocol               August 2025
       out of memory, a coding assertion failed, et cetera).
 
    2: No Data Available (non-fatal):  The cache believes itself to be in
-
-
-
-
-
-Bush & Austein          Expires 22 February 2026               [Page 38]
-
-Internet-Draft            RPKI-Router Protocol               August 2025
-
-
       good working order but is unable to answer either a Serial Query
       or a Reset Query because it has no useful data available at this
       time.  This is likely to be a temporary error and most likely
@@ -2171,6 +2122,14 @@ Internet-Draft            RPKI-Router Protocol               August 2025
       Section 9) or other transport layer failure occurred.
 
    11: Ordering Error (fatal):  The received PDU does not conform with
+
+
+
+Bush & Austein          Expires 22 February 2026               [Page 38]
+
+Internet-Draft            RPKI-Router Protocol               August 2025
+
+
       the ordering defined in Section 11.2.
 
 13.  Security Considerations
@@ -2178,13 +2137,6 @@ Internet-Draft            RPKI-Router Protocol               August 2025
    As this document describes a security protocol, many aspects of
    security interest are described in the relevant sections.  This
    section points out issues which may not be obvious in other sections.
-
-
-
-Bush & Austein          Expires 22 February 2026               [Page 39]
-
-Internet-Draft            RPKI-Router Protocol               August 2025
-
 
    Cache Peer Identification:  The router initiates a transport
       connection to a cache, which it identifies by either IP address or
@@ -2221,6 +2173,19 @@ Internet-Draft            RPKI-Router Protocol               August 2025
       betting your routing on this.
 
       While we cannot say the cache must be on the same LAN, if only due
+
+
+
+
+
+
+
+
+Bush & Austein          Expires 22 February 2026               [Page 39]
+
+Internet-Draft            RPKI-Router Protocol               August 2025
+
+
       to the issue of an enterprise wanting to offload the cache task to
       their upstream ISP(s), locality, trust, and control are very
       critical issues here.  The cache(s) really SHOULD be as close, in
@@ -2234,14 +2199,6 @@ Internet-Draft            RPKI-Router Protocol               August 2025
       client, and vice versa, before any data are exchanged.
 
       Transports which cannot provide the necessary authentication and
-
-
-
-Bush & Austein          Expires 22 February 2026               [Page 40]
-
-Internet-Draft            RPKI-Router Protocol               August 2025
-
-
       integrity (see Section 9) must rely on network design and
       operational controls to provide protection against spoofing/
       corruption attacks.  As pointed out in Section 9, TCP-AO is the
@@ -2265,6 +2222,26 @@ Internet-Draft            RPKI-Router Protocol               August 2025
    follows:
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Bush & Austein          Expires 22 February 2026               [Page 40]
+
+Internet-Draft            RPKI-Router Protocol               August 2025
+
+
              Error
              Code    Description
              -----   ----------------
@@ -2279,24 +2256,11 @@ Internet-Draft            RPKI-Router Protocol               August 2025
                  8   Unexpected Protocol Version
                  9   ASPA Provider List Error
                 10   Transport Failure
+                11   Ordering Error
             11-254   Unassigned
                255   Reserved
 
    The "rpki-rtr-pdu" registry [iana-pdu] has been updated as follows:
-
-
-
-
-
-
-
-
-
-
-Bush & Austein          Expires 22 February 2026               [Page 41]
-
-Internet-Draft            RPKI-Router Protocol               August 2025
-
 
               Protocol   PDU
               Version    Type  Description
@@ -2323,6 +2287,17 @@ Internet-Draft            RPKI-Router Protocol               August 2025
    [BCP195]   Moriarty, K. and S. Farrell, "Deprecating TLS 1.0 and TLS
               1.1", BCP 195, RFC 8996, March 2021.
 
+
+
+
+
+
+
+Bush & Austein          Expires 22 February 2026               [Page 41]
+
+Internet-Draft            RPKI-Router Protocol               August 2025
+
+
               Sheffer, Y., Saint-Andre, P., and T. Fossati,
               "Recommendations for Secure Use of Transport Layer
               Security (TLS) and Datagram Transport Layer Security
@@ -2337,22 +2312,6 @@ Internet-Draft            RPKI-Router Protocol               August 2025
               draft-ietf-sidrops-aspa-profile-20, 18 August 2025,
               <https://datatracker.ietf.org/doc/html/draft-ietf-sidrops-
               aspa-profile-20>.
-
-   [I-D.ietf-sidrops-aspa-verification]
-              Azimov, A., Bogomazov, E., Bush, R., Patel, K., Snijders,
-              J., and K. Sriram, "BGP AS_PATH Verification Based on
-              Autonomous System Provider Authorization (ASPA) Objects",
-              Work in Progress, Internet-Draft, draft-ietf-sidrops-aspa-
-              verification-22, 23 March 2025,
-              <https://datatracker.ietf.org/doc/html/draft-ietf-sidrops-
-              aspa-verification-22>.
-
-
-
-Bush & Austein          Expires 22 February 2026               [Page 42]
-
-Internet-Draft            RPKI-Router Protocol               August 2025
-
 
    [iana-err] IANA, "rpki-rtr-error",
               <https://www.iana.org/assignments/rpki#rpki-rtr-error>.
@@ -2385,6 +2344,16 @@ Internet-Draft            RPKI-Router Protocol               August 2025
               Internet Protocol", RFC 4301, DOI 10.17487/RFC4301,
               December 2005, <https://www.rfc-editor.org/info/rfc4301>.
 
+
+
+
+
+
+Bush & Austein          Expires 22 February 2026               [Page 42]
+
+Internet-Draft            RPKI-Router Protocol               August 2025
+
+
    [RFC5280]  Cooper, D., Santesson, S., Farrell, S., Boeyen, S.,
               Housley, R., and W. Polk, "Internet X.509 Public Key
               Infrastructure Certificate and Certificate Revocation List
@@ -2399,16 +2368,6 @@ Internet-Draft            RPKI-Router Protocol               August 2025
               for the TCP Authentication Option (TCP-AO)", RFC 5926,
               DOI 10.17487/RFC5926, June 2010,
               <https://www.rfc-editor.org/info/rfc5926>.
-
-
-
-
-
-
-Bush & Austein          Expires 22 February 2026               [Page 43]
-
-Internet-Draft            RPKI-Router Protocol               August 2025
-
 
    [RFC6125]  Saint-Andre, P. and J. Hodges, "Representation and
               Verification of Domain-Based Application Service Identity
@@ -2442,6 +2401,15 @@ Internet-Draft            RPKI-Router Protocol               August 2025
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
               May 2017, <https://www.rfc-editor.org/info/rfc8174>.
 
+
+
+
+
+Bush & Austein          Expires 22 February 2026               [Page 43]
+
+Internet-Draft            RPKI-Router Protocol               August 2025
+
+
    [RFC8210]  Bush, R. and R. Austein, "The Resource Public Key
               Infrastructure (RPKI) to Router Protocol, Version 1",
               RFC 8210, DOI 10.17487/RFC8210, September 2017,
@@ -2455,16 +2423,6 @@ Internet-Draft            RPKI-Router Protocol               August 2025
               Formats, and Signature Formats", RFC 8608,
               DOI 10.17487/RFC8608, June 2019,
               <https://www.rfc-editor.org/info/rfc8608>.
-
-
-
-
-
-
-Bush & Austein          Expires 22 February 2026               [Page 44]
-
-Internet-Draft            RPKI-Router Protocol               August 2025
-
 
    [RFC8635]  Bush, R., Turner, S., and K. Patel, "Router Keying for
               BGPsec", RFC 8635, DOI 10.17487/RFC8635, August 2019,
@@ -2501,6 +2459,13 @@ Internet-Draft            RPKI-Router Protocol               August 2025
               Support for BGP", RFC 8654, DOI 10.17487/RFC8654, October
               2019, <https://www.rfc-editor.org/info/rfc8654>.
 
+
+
+Bush & Austein          Expires 22 February 2026               [Page 44]
+
+Internet-Draft            RPKI-Router Protocol               August 2025
+
+
    [RFC9293]  Eddy, W., Ed., "Transmission Control Protocol (TCP)",
               STD 7, RFC 9293, DOI 10.17487/RFC9293, August 2022,
               <https://www.rfc-editor.org/info/rfc9293>.
@@ -2509,18 +2474,6 @@ Internet-Draft            RPKI-Router Protocol               August 2025
               Kent, "A Profile for Route Origin Authorizations (ROAs)",
               RFC 9582, DOI 10.17487/RFC9582, May 2024,
               <https://www.rfc-editor.org/info/rfc9582>.
-
-
-
-
-
-
-
-
-Bush & Austein          Expires 22 February 2026               [Page 45]
-
-Internet-Draft            RPKI-Router Protocol               August 2025
-
 
 Acknowledgements
 
@@ -2564,13 +2517,4 @@ Authors' Addresses
 
 
 
-
-
-
-
-
-
-
-
-
-Bush & Austein          Expires 22 February 2026               [Page 46]
+Bush & Austein          Expires 22 February 2026               [Page 45]

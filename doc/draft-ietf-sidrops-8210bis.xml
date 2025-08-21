@@ -1819,27 +1819,6 @@ Cache                         Router
 
         </section>
 
-        <section title="ASPA PDUs">
-
-            <t>
-
-                There are various ways in which the ordering of ASPA
-                PDUs can lead to BGP announcements being incorrectly
-                classified as invalid under ASPA verification <xref
-                target="I-D.ietf-sidrops-aspa-verification" />.  For
-                example, there could be a BGP announcement with a path
-                containing three ASNs in sequence, where both the
-                first and third ASNs have ASPAs, with neither listing
-                the second ASN as a provider.  In the absence of one
-                or both of the corresponding ASPA PDUs, the BGP
-                announcement will be treated as unknown under
-                ASPA verification, while with both, it will be treated
-                as invalid.
-
-            </t>
-
-        </section>
-
       </section>
 
       <section anchor="ordering" title="Ordering">
@@ -2154,44 +2133,15 @@ Cache                         Router
         <t>
 
             A client may be unable to apply PDUs only on receipt of an
-            End of Data PDU, due e.g. to memory limitations.  The
-            following alternative implementation approaches will help
-            to mitigate some of the problems described in <xref
-            target="races" />:
-
-            <list style="hanging">
-
-                <t hangText="Application of IPv4/IPv6 PDUs with the same prefix:">
-
-                    For IPv4 and IPv6 PDUs, the mandatory ordering
-                    from <xref target="ordering" /> is such that if
-                    two PDUs are received in order, and their prefixes
-                    are not equal, then application of the previous
-                    PDU is safe with respect to the problems described
-                    in <xref target="races" />.  In other words, IP
-                    PDUs for the same prefix must be applied at the
-                    same time.
-
-                </t>
-
-                <t hangText="Application of ASPA PDUs:">
-
-                    For ASPA PDUs, the mandatory ordering from <xref
-                    target="ordering" /> does not mitigate the
-                    problems that may arise from immediate
-                    application.  However, if a client applies all
-                    ASPA PDUs received from the cache as a single
-                    group, then that operation will be safe with
-                    respect to the problems described in <xref
-                    target="races" />.
-
-                </t>
-
-            </list>
-
-            A client that implements both of the approaches described
-            above will be safe with respect to all of the problems
-            described in <xref target="races" />.
+            End of Data PDU, due e.g. to memory limitations.  An
+            alternative implementation approach that a client can use
+            is to apply IP PDUs as a single group if their prefixes
+            are equal.  Since the mandatory ordering is such that
+            those PDUs will appear in sequence, and such groups will
+            generally be small, this should be easier for clients to
+            support.  A client that implements this approach is safe
+            with respect to all of the problems described in <xref
+            target="races" />.
 
         </t>
 
@@ -2199,7 +2149,7 @@ Cache                         Router
 
             A client that is unable to apply PDUs only on receipt of
             an End of Data PDU, and also unable to implement the
-            alternative implementation approaches described in this
+            alternative implementation approach described in this
             section, will be at risk of encountering the problems
             described in <xref target="races" />.  While such problems
             will generally be transient, because a subsequent PDU
@@ -2525,6 +2475,7 @@ Cache                         Router
 	      8   Unexpected Protocol Version
 	      9   ASPA Provider List Error
 	     10   Transport Failure
+	     11   Ordering Error
 	 11-254   Unassigned
 	    255   Reserved
         </artwork>
@@ -2564,7 +2515,6 @@ Cache                         Router
     <references title="Normative References">
 
       <?rfc include="reference.I-D.ietf-sidrops-aspa-profile.xml"?>
-      <?rfc include="reference.I-D.ietf-sidrops-aspa-verification.xml"?>
       <reference anchor="iana-pdu" target="https://www.iana.org/assignments/rpki#rpki-rtr-pdu">
 	  <front>
 	    <title>rpki-rtr-pdu</title>

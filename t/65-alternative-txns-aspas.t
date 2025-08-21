@@ -8,7 +8,7 @@ use APNIC::RPKI::RTR::Server::Maintainer;
 use APNIC::RPKI::RTR::Client;
 use APNIC::RPKI::RTR::PDU::IPv4Prefix;
 use APNIC::RPKI::RTR::Changeset;
-use APNIC::RPKI::Validator::ROA;
+use APNIC::RPKI::Validator::ASPA;
 
 use File::Temp qw(tempdir);
 
@@ -44,10 +44,15 @@ my $pid;
     my $validator = sub {
         my ($client, $results) = @_;
 
+        # Using these AS numbers so that they are more visually
+        # distinct in the route string, and also so that the default
+        # ordering on the server side doesn't indirectly lead to valid
+        # results.
         my $res =
-            APNIC::RPKI::Validator::ROA::validate(
+            APNIC::RPKI::Validator::ASPA::validate(
                 $client->{'state'},
-                "4609",
+                { 22 => 1 },
+                "||||33|10.0.0.0/24|33 22 44",
                 "1.0.0.0/24"
             );
         push @{$results}, $res;
@@ -90,43 +95,40 @@ my $pid;
             supported_versions => [2],
         );
     my @client_alt_results;
-    $client_alt->{'commit_same_prefixes'} = 1;
+    $client_alt->{'commit_aspas'} = 1;
     $client_alt->{'post_commit_cb'} = sub {
         $validator->($client_alt, \@client_alt_results);
     };
 
-    # Add three IPv4 PDUs to the server, to test the same-prefix
+    # Add three ASPA PDUs to the server, to test the ASPA batching
     # behaviour.
 
     my $changeset = APNIC::RPKI::RTR::Changeset->new();
     my $pdu1 =
-        APNIC::RPKI::RTR::PDU::IPv4Prefix->new(
-            version       => 1,
+        APNIC::RPKI::RTR::PDU::ASPA->new(
+            version       => 2,
             flags         => 1,
-            asn           => 4608,
-            address       => '1.0.0.0',
-            prefix_length => 24,
-            max_length    => 24,
+            afi_flags     => 3,
+            customer_asn  => 33,
+            provider_asns => [22],
         );
     $changeset->add_pdu($pdu1);
     my $pdu2 =
-        APNIC::RPKI::RTR::PDU::IPv4Prefix->new(
-            version       => 1,
+        APNIC::RPKI::RTR::PDU::ASPA->new(
+            version       => 2,
             flags         => 1,
-            asn           => 4609,
-            address       => '1.0.0.0',
-            prefix_length => 24,
-            max_length    => 24,
+            afi_flags     => 3,
+            customer_asn  => 22,
+            provider_asns => [33, 44],
         );
     $changeset->add_pdu($pdu2);
     my $pdu3 =
-        APNIC::RPKI::RTR::PDU::IPv4Prefix->new(
-            version       => 1,
+        APNIC::RPKI::RTR::PDU::ASPA->new(
+            version       => 2,
             flags         => 1,
-            asn           => 4609,
-            address       => '2.0.0.0',
-            prefix_length => 24,
-            max_length    => 24,
+            afi_flags     => 3,
+            customer_asn  => 44,
+            provider_asns => [22],
         );
     $changeset->add_pdu($pdu3);
     $mnt->apply_changeset($changeset);
@@ -147,8 +149,11 @@ my $pid;
               'Got expected validation results');
 
     # Committing as received leads to four results: unknown (after the
-    # 2.0.0.0/24 PDU), invalid (after the 4608 PDU), valid (after the
-    # 4609 PDU), and valid (after the EOD PDU).
+    # 33 ASPA, which indicates a valley, but not sufficiently to lead
+    # to invalidity), unknown (after the 22 ASPA, which partially
+    # rectifies the apparent valley), valid (after the 44 ASPA, which
+    # removes the possibility of a valley), and valid (after the EOD
+    # PDU).
 
     eval { $client_asr->reset() };
     $error = $@;
@@ -158,13 +163,11 @@ my $pid;
         diag Dumper($error);
     }
 
-    is_deeply(\@client_asr_results, [1, 0, 2, 2],
+    is_deeply(\@client_asr_results, [1, 1, 2, 2],
               'Got expected validation results');
 
-    # Committing with the alternative approaches leads to three
-    # results: unknown (after the 2.0.0.0/24 PDU), and valid (after
-    # the two 1.0.0.0/24 PDUs and EOD PDU, which are processed as a
-    # single unit).
+    # Committing with the alternative approaches leads to one valid
+    # result, since all of the ASPAs are processed as a single unit.
 
     eval { $client_alt->reset() };
     $error = $@;
@@ -174,7 +177,7 @@ my $pid;
         diag Dumper($error);
     }
 
-    is_deeply(\@client_alt_results, [1, 2],
+    is_deeply(\@client_alt_results, [2],
               'Got expected validation results');
 
     $client_eod->exit_server();
