@@ -51,8 +51,8 @@ my $pid;
         my $res =
             APNIC::RPKI::Validator::ASPA::validate(
                 $client->{'state'},
-                { 33 => 1 },
-                "||||33|10.0.0.0/24|33 22 44",
+                {},
+                "||||44|10.0.0.0/24|44 22 33",
                 "1.0.0.0/24"
             );
         push @{$results}, $res;
@@ -100,8 +100,8 @@ my $pid;
         $validator->($client_alt, \@client_alt_results);
     };
 
-    # Add three ASPA PDUs to the server, to test the ASPA batching
-    # behaviour.
+    # Add two ASPA PDUs to the server, to test the ASPA batching
+    # behaviour (upstream logic).
 
     my $changeset = APNIC::RPKI::RTR::Changeset->new();
     my $pdu1 =
@@ -109,8 +109,8 @@ my $pid;
             version       => 2,
             flags         => 1,
             afi_flags     => 3,
-            customer_asn  => 33,
-            provider_asns => [22],
+            customer_asn  => 22,
+            provider_asns => [33, 44],
         );
     $changeset->add_pdu($pdu1);
     my $pdu2 =
@@ -118,19 +118,10 @@ my $pid;
             version       => 2,
             flags         => 1,
             afi_flags     => 3,
-            customer_asn  => 22,
-            provider_asns => [33, 44],
-        );
-    $changeset->add_pdu($pdu2);
-    my $pdu3 =
-        APNIC::RPKI::RTR::PDU::ASPA->new(
-            version       => 2,
-            flags         => 1,
-            afi_flags     => 3,
             customer_asn  => 44,
             provider_asns => [22],
         );
-    $changeset->add_pdu($pdu3);
+    $changeset->add_pdu($pdu2);
     $mnt->apply_changeset($changeset);
 
     # Test each client.
@@ -145,14 +136,13 @@ my $pid;
         diag Dumper($error);
     }
 
-    is_deeply(\@client_eod_results, [2],
+    is_deeply(\@client_eod_results, [1],
               'Got expected validation results');
 
-    # Committing as received leads to four results: unknown (after the
-    # 22 ASPA, which indicates a valley, but not sufficiently to lead
-    # to invalidity), valid (after the 33 ASPA, which puts out the
-    # possibility of a valley), valid (after the 44 ASPA, which has no
-    # effect), and valid (after the EOD PDU).
+    # Committing as received leads to three results: unknown (after
+    # the 22 ASPA, which indicates a valley, but not sufficiently to
+    # lead to invalidity), unknown (after the 33 ASPA, which is not
+    # sufficient for validity), and unknown (after the EOD PDU).
 
     eval { $client_asr->reset() };
     $error = $@;
@@ -162,10 +152,10 @@ my $pid;
         diag Dumper($error);
     }
 
-    is_deeply(\@client_asr_results, [1, 2, 2, 2],
+    is_deeply(\@client_asr_results, [1, 1, 1],
               'Got expected validation results');
 
-    # Committing with the alternative approaches leads to one valid
+    # Committing with the alternative approaches leads to one unknown
     # result, since all of the ASPAs are processed as a single unit.
 
     eval { $client_alt->reset() };
@@ -176,7 +166,7 @@ my $pid;
         diag Dumper($error);
     }
 
-    is_deeply(\@client_alt_results, [2],
+    is_deeply(\@client_alt_results, [1],
               'Got expected validation results');
 
     $client_eod->exit_server();
