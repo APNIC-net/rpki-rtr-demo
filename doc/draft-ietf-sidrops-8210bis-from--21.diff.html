@@ -179,8 +179,8 @@ document.onkeydown = function(e) {
       <tr><td class="lineno"></td><td class="lblock"><span class="delete">     15.1.</span>  Normative References . . . . . . . . . . . . . . . . . .  <span class="delete">37</span></td><td> </td><td class="rblock">       <span class="insert">11.2.2.  Router Key PDUs  . . . . . . . . . . . . . . . . . .  35</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"><span class="delete">     15.2.</span>  Informative References . . . . . . . . . . . . . . . . .  <span class="delete">39</span></td><td> </td><td class="rblock"><span class="insert">       11.2.3.  ASPA PDUs  . . . . . . . . . . . . . . . . . . . . .  35</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock">   Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . .  <span class="delete">40</span></td><td> </td><td class="rblock"><span class="insert">     11.3.  Transactions . . . . . . . . . . . . . . . . . . . . . .  36</span></td><td class="lineno"></td></tr>
-      <tr><td class="lineno"></td><td class="lblock">   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  <span class="delete">40</span></td><td> </td><td class="rblock"><span class="insert">     11.4.  Other Considerations . . . . . . . . . . . . . . . . . .  36</span></td><td class="lineno"></td></tr>
-      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock">   12. Error Codes . . . . . . . . . . . . . . . . . . . . . . . . .  <span class="insert">37</span></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="lblock">   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  <span class="delete">40</span></td><td> </td><td class="rblock"><span class="insert">     11.4.  Other Considerations . . . . . . . . . . . . . . . . . .  37</span></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock">   12. Error Codes . . . . . . . . . . . . . . . . . . . . . . . . .  <span class="insert">38</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock">   13. Security Considerations . . . . . . . . . . . . . . . . . . .  <span class="insert">39</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock">   14. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  <span class="insert">40</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock">   15. <span class="insert">Implementation status . . . . . . . . . . . . . . . . . . . .  41</span></td><td class="lineno"></td></tr>
@@ -201,7 +201,32 @@ document.onkeydown = function(e) {
       <tr><td class="lineno"></td><td class="left">   to deliver them.  The design is intentionally constrained to be</td><td> </td><td class="right">   to deliver them.  The design is intentionally constrained to be</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">   usable on much of the current generation of ISP router platforms.</td><td> </td><td class="right">   usable on much of the current generation of ISP router platforms.</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
-      <tr id="part-4" class="change" ><td></td><th><small>skipping to change at</small><a href="#part-4"><em> page 32, line 13<span class="hide"> &para;</span></em></a></th><th> </th><th><small>skipping to change at</small><a href="#part-4"><em> page 32, line 13<span class="hide"> &para;</span></em></a></th><td></td></tr>
+      <tr id="part-4" class="change" ><td></td><th><small>skipping to change at</small><a href="#part-4"><em> page 12, line 24<span class="hide"> &para;</span></em></a></th><th> </th><th><small>skipping to change at</small><a href="#part-4"><em> page 12, line 29<span class="hide"> &para;</span></em></a></th><td></td></tr>
+      <tr><td class="lineno"></td><td class="left">   and it should therefore be the cache's job to simplify the change</td><td> </td><td class="right">   and it should therefore be the cache's job to simplify the change</td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="left">   set, thus reducing work for the router.</td><td> </td><td class="right">   set, thus reducing work for the router.</td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="left">   If the cache does not have the data needed to update the router,</td><td> </td><td class="right">   If the cache does not have the data needed to update the router,</td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="left">   perhaps because its records do not go back to the Serial Number in</td><td> </td><td class="right">   perhaps because its records do not go back to the Serial Number in</td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="left">   the Serial Query, then it responds with a Cache Reset PDU</td><td> </td><td class="right">   the Serial Query, then it responds with a Cache Reset PDU</td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="left">   (Section 5.9).</td><td> </td><td class="right">   (Section 5.9).</td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="left">   The Session ID tells the cache what instance the router expects to</td><td> </td><td class="right">   The Session ID tells the cache what instance the router expects to</td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="left">   ensure that the Serial Numbers are commensurate, i.e., the cache</td><td> </td><td class="right">   ensure that the Serial Numbers are commensurate, i.e., the cache</td><td class="lineno"></td></tr>
+      <tr id="diff0006"><td></td></tr>
+      <tr><td class="lineno"></td><td class="lblock">   session has not been changed.</td><td> </td><td class="rblock">   session has not been changed.  <span class="insert">If the Session ID does not match, the</span></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   cache MUST respond with a Cache Reset.</span></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="left">5.4.  Reset Query</td><td> </td><td class="right">5.4.  Reset Query</td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="left">   0          8          16         24        31</td><td> </td><td class="right">   0          8          16         24        31</td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="left">   .-------------------------------------------.</td><td> </td><td class="right">   .-------------------------------------------.</td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="left">   | Protocol |   PDU    |                     |</td><td> </td><td class="right">   | Protocol |   PDU    |                     |</td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="left">   | Version  |   Type   |         zero        |</td><td> </td><td class="right">   | Version  |   Type   |         zero        |</td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="left">   |    2     |    2     |                     |</td><td> </td><td class="right">   |    2     |    2     |                     |</td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="left">   +-------------------------------------------+</td><td> </td><td class="right">   +-------------------------------------------+</td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="left">   |                                           |</td><td> </td><td class="right">   |                                           |</td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
+      <tr id="part-5" class="change" ><td></td><th><small>skipping to change at</small><a href="#part-5"><em> page 32, line 13<span class="hide"> &para;</span></em></a></th><th> </th><th><small>skipping to change at</small><a href="#part-5"><em> page 32, line 13<span class="hide"> &para;</span></em></a></th><td></td></tr>
       <tr><td class="lineno"></td><td class="left">   connection loss if the client has connections to more than one cache.</td><td> </td><td class="right">   connection loss if the client has connections to more than one cache.</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">   To keep load on Global RPKI services from unnecessary peaks, it is</td><td> </td><td class="right">   To keep load on Global RPKI services from unnecessary peaks, it is</td><td class="lineno"></td></tr>
@@ -212,7 +237,7 @@ document.onkeydown = function(e) {
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">11.  Races, Ordering, and Transactions</td><td> </td><td class="right">11.  Races, Ordering, and Transactions</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
-      <tr id="diff0006"><td></td></tr>
+      <tr id="diff0007"><td></td></tr>
       <tr><td class="lineno"></td><td class="lblock">   Section 11.1 <span class="delete">describes</span> race conditions <span class="delete">which could, if not mitigated,</span></td><td> </td><td class="rblock">   <span class="insert">If a client applies individual PDUs as they are received from the</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"><span class="delete">   cause BGP states</span> to <span class="delete">be temporarily marked as Invalid by Route Origin</span></td><td> </td><td class="rblock"><span class="insert">   cache, such that the PDUs are taken into account immediately for the</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"><span class="delete">   Validation.  Minimal mitigations are described.</span></td><td> </td><td class="rblock"><span class="insert">   purposes of BGP announcement validation, it is possible for a BGP</span></td><td class="lineno"></td></tr>
@@ -224,16 +249,16 @@ document.onkeydown = function(e) {
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   mitigate the effect of these</span> race conditions <span class="insert">on clients, and</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   Section 11.3 for client implementation approaches</span> to <span class="insert">these problems.</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
-      <tr id="diff0007"><td></td></tr>
+      <tr id="diff0008"><td></td></tr>
       <tr><td class="lineno"></td><td class="lblock">   <span class="delete">Section 11.2 describes a RECOMMENDED ordering of all PDUs which</span></td><td> </td><td class="rblock">11.1.  <span class="insert">Races</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"><span class="delete">   allows mitigation of the race conditions described in Section</span> 11.1.</td><td> </td><td class="rblock"></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
-      <tr id="diff0008"><td></td></tr>
+      <tr id="diff0009"><td></td></tr>
       <tr><td class="lineno"></td><td class="lblock">   <span class="delete">Section 11.3 describes how a router MAY process ordered PDUs,</span></td><td> </td><td class="rblock"><span class="insert">11.1.1.  IPv4/IPv6 PDUs with Different Origins</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"><span class="delete">   especially IPvX VRPs, into atomic transactions to be committed in a</span></td><td> </td><td class="rblock"></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"><span class="delete">   manner to mitigate the race conditions.</span></td><td> </td><td class="rblock"></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
-      <tr id="diff0009"><td></td></tr>
+      <tr id="diff0010"><td></td></tr>
       <tr><td class="lineno"></td><td class="lblock"><span class="delete">11.1.  ROA</span> PDU <span class="delete">Race Minimization</span></td><td> </td><td class="rblock">   <span class="insert">If two BGP announcements exist for a given IP prefix destination,</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   each with a different origin ASN, then two IP PDUs must be issued by</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   a cache for those BGP announcements to be considered valid under</span></td><td class="lineno"></td></tr>
@@ -241,11 +266,11 @@ document.onkeydown = function(e) {
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   those PDUs, then the BGP announcement that is validated by the other</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock">   PDU <span class="insert">will be considered invalid until that other PDU is received.</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
-      <tr id="diff0010"><td></td></tr>
+      <tr id="diff0011"><td></td></tr>
       <tr><td class="lineno"></td><td class="lblock">   <span class="delete">When a cache is sending ROA (IPv4 or IPv6) VRPs to a router,</span></td><td> </td><td class="rblock"><span class="insert">11.1.2.  IPv4/IPv6 PDUs for More-Specific Prefixes</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"><span class="delete">   undesirable race conditions are possible:</span></td><td> </td><td class="rblock"></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
-      <tr id="diff0011"><td></td></tr>
+      <tr id="diff0012"><td></td></tr>
       <tr><td class="lineno"></td><td class="lblock">   <span class="delete">Make Before Break:</span>  For <span class="delete">prefix P, an operator</span> may <span class="delete">create two or more</span></td><td> </td><td class="rblock">   For <span class="insert">a given BGP announcement, there</span> may <span class="insert">be multiple IP PDUs that</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"><span class="delete">      ROAs with different ASes because they are in</span> the <span class="delete">process</span> of</td><td> </td><td class="rblock"><span class="insert">   intersect</span> the <span class="insert">BGP announcement's prefix.  If the client does not have</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock">      <span class="delete">changing what provider AS</span> may <span class="delete">announce P.  This is a known</span> as</td><td> </td><td class="rblock"><span class="insert">   all</span> of <span class="insert">these PDUs, it</span> may <span class="insert">classify the BGP announcement</span> as <span class="insert">invalid</span></td><td class="lineno"></td></tr>
@@ -255,7 +280,7 @@ document.onkeydown = function(e) {
       <tr><td class="lineno"></td><td class="lblock"><span class="delete">      the interval.  To minimize</span> that <span class="delete">interval,</span> the <span class="delete">cache SHOULD send</span></td><td> </td><td class="rblock"><span class="insert">   192.0.2.0/25-25 with an origin of AS64494,</span> then <span class="insert">a client</span> that <span class="insert">has</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"><span class="delete">      all VRPs for</span> the <span class="delete">same prefix as close to sequentially</span> as <span class="delete">possible.</span></td><td> </td><td class="rblock"><span class="insert">   only</span> the <span class="insert">first PDU will classify</span> the <span class="insert">BGP announcement</span> as <span class="insert">invalid.</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
-      <tr id="diff0012"><td></td></tr>
+      <tr id="diff0013"><td></td></tr>
       <tr><td class="lineno"></td><td class="lblock">   <span class="delete">Longest Prefix Match:  If an operator has created a ROA for prefix</span></td><td> </td><td class="rblock"><span class="insert">11.1.3.  Withdrawal Before Announcement</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"><span class="delete">      P0, and another operator (often their customer) has created a ROA</span></td><td> </td><td class="rblock"></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"><span class="delete">      for P1 which is a sub-prefix covered by P0, a router which</span></td><td> </td><td class="rblock"></td><td class="lineno"></td></tr>
@@ -265,7 +290,7 @@ document.onkeydown = function(e) {
       <tr><td class="lineno"></td><td class="lblock"><span class="delete">      covering prefix P0.  Conversely, the cache SHOULD withdraw</span></td><td> </td><td class="rblock"></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"><span class="delete">      covering prefixes before covered sub-prefixes.</span></td><td> </td><td class="rblock"></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
-      <tr id="diff0013"><td></td></tr>
+      <tr id="diff0014"><td></td></tr>
       <tr><td class="lineno"></td><td class="lblock">   <span class="delete">AS 0:  To minimize risk of inadvertent marking</span> of BGP <span class="delete">data as</span></td><td> </td><td class="rblock">   <span class="insert">If one</span> of <span class="insert">the underlying RPKI objects is modified in such a way that</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"><span class="delete">      Invalid, an</span> announcement <span class="delete">VRP</span> for <span class="delete">prefix P which has an AS of 0,</span></td><td> </td><td class="rblock"><span class="insert">   both a PDU withdrawal and a PDU announcement will occur, this can</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"><span class="delete">      SHOULD be sent after all other VRPs</span> for <span class="delete">prefix P.  Conversely,</span> a</td><td> </td><td class="rblock"><span class="insert">   lead to a</span> BGP announcement <span class="insert">being considered invalid, if the PDU</span></td><td class="lineno"></td></tr>
@@ -278,10 +303,10 @@ document.onkeydown = function(e) {
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   as invalid under ROV in the time between PDU withdrawal and PDU</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   announcement.</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
-      <tr id="diff0014"><td></td></tr>
+      <tr id="diff0015"><td></td></tr>
       <tr><td class="lineno"></td><td class="lblock">11.2.  <span class="delete">PDU </span>Ordering</td><td> </td><td class="rblock">11.2.  Ordering</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
-      <tr id="diff0015"><td></td></tr>
+      <tr id="diff0016"><td></td></tr>
       <tr><td class="lineno"></td><td class="lblock">   <span class="delete">A Version</span> 2 <span class="delete">Cache SHOULD, unless it requires major revision of</span></td><td> </td><td class="rblock">   <span class="insert">For a protocol version</span> 2 <span class="insert">session, caches MUST use the ordering</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"><span class="delete">   existing code, order Payload</span> PDUs <span class="delete">it sends</span> to <span class="delete">routers.  Ascending</span></td><td> </td><td class="rblock"><span class="insert">   defined in this section when sending</span> PDUs to <span class="insert">clients</span> as <span class="insert">part of a</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"><span class="delete">   order is considered somewhat more efficient</span> as <span class="delete">routers are likely</span></td><td> </td><td class="rblock"><span class="insert">   cache response.  Caches SHOULD use</span> the ordering <span class="insert">defined in this</span></td><td class="lineno"></td></tr>
@@ -289,11 +314,11 @@ document.onkeydown = function(e) {
       <tr><td class="lineno"></td><td class="lblock"><span class="delete">   above,</span> ordering <span class="delete">MUST be,</span> as <span class="delete">follows:</span></td><td> </td><td class="rblock"><span class="insert">   a cache may prefer to preserve its existing behaviour for the sake of</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   backwards compatibility.</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
-      <tr id="diff0016"><td></td></tr>
+      <tr id="diff0017"><td></td></tr>
       <tr><td class="lineno"></td><td class="lblock">   <span class="delete">1  PDUs are first ordered by PDU Type,</span></td><td> </td><td class="rblock">   <span class="insert">The ordering definitions in this section have been modelled on those</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   from Section 4.3.3 of [RFC9582].</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
-      <tr id="diff0017"><td></td></tr>
+      <tr id="diff0018"><td></td></tr>
       <tr><td class="lineno"></td><td class="lblock">   <span class="delete">2  IPv4 and IPv6 Prefix VRPs are ordered by: first IPvX Prefix,</span></td><td> </td><td class="rblock">   <span class="insert">The ordering defined in this section is a total ordering.  While a</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"><span class="delete">      second Prefix Length (largest value first for announcements,</span></td><td> </td><td class="rblock"><span class="insert">   partial ordering could be defined that had</span> the <span class="insert">same benefits as far</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"><span class="delete">      lowest value first for withdrawals), third Max Length, and fourth</span></td><td> </td><td class="rblock">   as <span class="insert">race conditions are concerned, a total ordering makes it easier</span></td><td class="lineno"></td></tr>
@@ -303,29 +328,29 @@ document.onkeydown = function(e) {
       <tr><td class="lineno"></td><td class="lblock"><span class="delete">      sub-prefixes</span> as <span class="delete">sorting first fulfills</span> the <span class="delete">"Longest Prefix Match"</span></td><td> </td><td class="rblock"></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"><span class="delete">      requirement of Section 11.1.</span></td><td> </td><td class="rblock"></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
-      <tr id="diff0018"><td></td></tr>
+      <tr id="diff0019"><td></td></tr>
       <tr><td class="lineno"></td><td class="lblock">   <span class="delete">3  Router Key</span> PDUs <span class="delete">are ordered by AS Number and then Subject Public</span></td><td> </td><td class="rblock">   PDUs <span class="insert">with a lower integer PDU type precede PDUs with a higher integer</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"><span class="delete">      Key Info.</span></td><td> </td><td class="rblock"><span class="insert">   PDU type.  The sections that follow describe ordering as among PDUs</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   of the same type.</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
-      <tr id="diff0019"><td></td></tr>
+      <tr id="diff0020"><td></td></tr>
       <tr><td class="lineno"></td><td class="lblock"><span class="delete">   4  And ASPA PDUs ordered by Customer AS.</span></td><td> </td><td class="rblock"><span class="insert">11.2.1.  IP PDUs</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
-      <tr id="diff0020"><td></td></tr>
+      <tr id="diff0021"><td></td></tr>
       <tr><td class="lineno"></td><td class="lblock">   <span class="delete">Unless specifically configured for a particular cache, a router MUST</span></td><td> </td><td class="rblock">   <span class="insert">In order to semantically compare and sort IP PDUs, each</span> PDU <span class="insert">is mapped</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"><span class="delete">   NOT depend on payload</span> PDU <span class="delete">ordering.</span></td><td> </td><td class="rblock"><span class="insert">   to an abstract data element comprising five integer values:</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
-      <tr id="diff0021"><td></td></tr>
+      <tr id="diff0022"><td></td></tr>
       <tr><td class="lineno"></td><td class="lblock"><span class="delete">11.3.  Transaction-like Commit</span></td><td> </td><td class="rblock">   <span class="insert">addr  The first IP address of the IP prefix appearing in the PDU, as</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">      a 32-bit (IPv4) or 128-bit (IPv6) integer value.</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
-      <tr id="diff0022"><td></td></tr>
+      <tr id="diff0023"><td></td></tr>
       <tr><td class="lineno"></td><td class="lblock">   <span class="delete">Iff a router has been configured to know that a particular cache's</span></td><td> </td><td class="rblock">   <span class="insert">plen  The length</span> of <span class="insert">the IP</span> prefix <span class="insert">appearing in the PDU, as an integer</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"><span class="delete">   data are ordered per Section 11.2, a router MAY wait to commit, i.e.</span></td><td> </td><td class="rblock"><span class="insert">      value.</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"><span class="delete">   make effective, IPvX VRPs only after all sub-prefixes</span> of <span class="delete">a received</span></td><td> </td><td class="rblock"></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"><span class="delete">   covering</span> prefix <span class="delete">are received.</span></td><td> </td><td class="rblock"></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
-      <tr id="diff0023"><td></td></tr>
+      <tr id="diff0024"><td></td></tr>
       <tr><td class="lineno"></td><td class="lblock">   <span class="delete">Another method</span> a <span class="delete">router MAY choose to mitigate</span> the <span class="delete">above race</span></td><td> </td><td class="rblock">   <span class="insert">mlen  The max length appearing in the PDU, as an integer value.</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"><span class="delete">   conditions</span> is <span class="delete">not</span> to <span class="delete">commit, i.e. make effective,</span> the <span class="delete">VRPs received</span></td><td> </td><td class="rblock"><span class="insert"></span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock">   in <span class="delete">response</span> to a <span class="delete">request until</span> the <span class="delete">relevant End</span> of Data PDU is</td><td> </td><td class="rblock"><span class="insert">   asn  The origin ASN appearing in the PDU, as an integer value.</span></td><td class="lineno"></td></tr>
@@ -343,44 +368,45 @@ document.onkeydown = function(e) {
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   The order of two IP PDUs with updt values of 1</span> is <span class="insert">determined by the</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   first non-equal comparison in the following list.</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert"></span></td><td class="lineno"></td></tr>
-      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   1.  Data elements with a higher asn value precede data elements with</span></td><td class="lineno"></td></tr>
-      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">       a lower asn value.  This ensures that AS0 PDU announcements,</span></td><td class="lineno"></td></tr>
-      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">       which can be used</span> to <span class="insert">cause BGP announcements to become invalid</span></td><td class="lineno"></td></tr>
-      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">       under ROV, always appear after all other PDU announcements.</span></td><td class="lineno"></td></tr>
-      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert"></span></td><td class="lineno"></td></tr>
-      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   2.  Data elements with a higher addr value precede data elements with</span></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   1.  Data elements with a higher addr value precede data elements with</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">       a lower addr value.</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert"></span></td><td class="lineno"></td></tr>
-      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   3.  Data elements with a higher mlen value precede data elements with</span></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   2.  Data elements with a higher mlen value precede data elements with</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">       a lower mlen value.</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert"></span></td><td class="lineno"></td></tr>
-      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   4.  Data elements with a higher plen value precede data elements with</span></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   3.  Data elements with a higher plen value precede data elements with</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">       a lower plen value.</span></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert"></span></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   4.  Data elements with a higher asn value precede data elements with</span></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">       a lower asn value.  This ensures that AS0 PDU announcements,</span></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">       which can be used</span> to <span class="insert">cause BGP announcements to become invalid</span></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">       under ROV, always appear after all other relevant PDU</span></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">       announcements.</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert"></span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   The order of two IP PDUs with updt values of 0 is determined by</span> the</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock">   <span class="insert">first non-equal comparison</span> in <span class="insert">the following list.</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert"></span></td><td class="lineno"></td></tr>
-      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   1.  Data elements with a lower asn value precede data elements with a</span></td><td class="lineno"></td></tr>
-      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">       higher asn value.  This ensures that AS0 PDU withdrawals always</span></td><td class="lineno"></td></tr>
-      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">       appear before all other PDU withdrawals.</span></td><td class="lineno"></td></tr>
-      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert"></span></td><td class="lineno"></td></tr>
-      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   2.  Data elements with a lower addr value precede data elements with</span></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   1.  Data elements with a lower addr value precede data elements with</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">       a higher addr value.</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert"></span></td><td class="lineno"></td></tr>
-      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   3.  Data elements with a lower mlen value precede data elements with</span></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   2.  Data elements with a lower mlen value precede data elements with</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">       a higher mlen value.</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert"></span></td><td class="lineno"></td></tr>
-      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   4.  Data elements with a lower plen value precede data elements with</span></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   3.  Data elements with a lower plen value precede data elements with</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">       a higher plen value.</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert"></span></td><td class="lineno"></td></tr>
-      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   For both announcement and withdrawal PDUs, the last three comparisons</span></td><td class="lineno"></td></tr>
-      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   are included so as to address the problem described in</span></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   4.  Data elements with a lower asn value precede data elements with a</span></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">       higher asn value.  This ensures that AS0 PDU withdrawals always</span></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">       appear before all other relevant PDU withdrawals.</span></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert"></span></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   For both announcement and withdrawal PDUs, the first three</span></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   comparisons are included so as to address the problem described in</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   Section 11.1.2.</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert"></span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">11.2.2.  Router Key PDUs</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert"></span></td><td class="lineno"></td></tr>
-      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   In order to semantically compare and sort Router Key PDUs, each PDU</span></td><td class="lineno"></td></tr>
-      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   is mapped</span> to <span class="insert">an abstract data element comprising five values:</span></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   In order</span> to <span class="insert">semantically compare and sort Router Key PDUs, each PDU</span></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   is mapped to an abstract data element comprising five values:</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert"></span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   ski  The Subject Key Identifier appearing in the PDU, as binary data</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">      (20 octets in length).</span></td><td class="lineno"></td></tr>
@@ -423,13 +449,13 @@ document.onkeydown = function(e) {
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert"></span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   casn  The customer ASN appearing in the PDU, as an integer value.</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert"></span></td><td class="lineno"></td></tr>
-      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   updt  The integer 1, if the PDU is an announcement, and the integer</span></td><td class="lineno"></td></tr>
-      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">      0, if the</span> PDU is <span class="insert">a withdrawal.</span></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   updt  The integer 1, if the</span> PDU is <span class="insert">an announcement, and the integer</span></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">      0, if the PDU is a withdrawal.</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert"></span></td><td class="lineno"></td></tr>
-      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   The equality</span> or <span class="insert">relative order of two ASPA PDUs can be tested by</span></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   The equality</span> or <span class="insert">relative order</span> of <span class="insert">two ASPA PDUs can be tested by</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   comparing their abstract representations.</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert"></span></td><td class="lineno"></td></tr>
-      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   1.  Data elements with an updt value</span> of <span class="insert">1 precede data elements with</span></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   1.  Data elements with an updt value of 1 precede data elements with</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">       an updt value of 0.  This addresses the problem described in</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">       Section 11.1.3.</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert"></span></td><td class="lineno"></td></tr>
@@ -472,6 +498,7 @@ document.onkeydown = function(e) {
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   [todo: There were comments about adding guidance as to the timeout</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   here, but</span> how <span class="insert">should that be determined?  Can</span> it <span class="insert">be based on the</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   expiry interval, or something like that?]</span></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert"></span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   A client MAY verify the ordering of PDUs, and when an ordering error</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock">   is <span class="insert">encountered, send an Ordering Error PDU</span> to the <span class="insert">server and</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   terminate the session.  However, given that ordering issues lead only</span></td><td class="lineno"></td></tr>
@@ -522,7 +549,7 @@ document.onkeydown = function(e) {
       <tr><td class="lineno"></td><td class="left">   0: Corrupt Data (fatal):  The receiver believes the received PDU to</td><td> </td><td class="right">   0: Corrupt Data (fatal):  The receiver believes the received PDU to</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">      be corrupt in a manner not specified by another error code.</td><td> </td><td class="right">      be corrupt in a manner not specified by another error code.</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
-      <tr id="part-5" class="change" ><td></td><th><small>skipping to change at</small><a href="#part-5"><em> page 34, line 51<span class="hide"> &para;</span></em></a></th><th> </th><th><small>skipping to change at</small><a href="#part-5"><em> page 38, line 49<span class="hide"> &para;</span></em></a></th><td></td></tr>
+      <tr id="part-6" class="change" ><td></td><th><small>skipping to change at</small><a href="#part-6"><em> page 34, line 51<span class="hide"> &para;</span></em></a></th><th> </th><th><small>skipping to change at</small><a href="#part-6"><em> page 39, line 17<span class="hide"> &para;</span></em></a></th><td></td></tr>
       <tr><td class="lineno"></td><td class="left">      already active in the router.</td><td> </td><td class="right">      already active in the router.</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">   8: Unexpected Protocol Version (fatal):  The received PDU has a</td><td> </td><td class="right">   8: Unexpected Protocol Version (fatal):  The received PDU has a</td><td class="lineno"></td></tr>
@@ -533,7 +560,7 @@ document.onkeydown = function(e) {
       <tr><td class="lineno"></td><td class="left">      incorrect list of Provider Autonomous System Numbers.</td><td> </td><td class="right">      incorrect list of Provider Autonomous System Numbers.</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">   10: Transport Error (fatal):  An error such as a stall (see</td><td> </td><td class="right">   10: Transport Error (fatal):  An error such as a stall (see</td><td class="lineno"></td></tr>
-      <tr id="diff0024"><td></td></tr>
+      <tr id="diff0025"><td></td></tr>
       <tr><td class="lineno"></td><td class="lblock">      Section 9) or <span class="delete">tother</span> transport layer failure occurred.</td><td> </td><td class="rblock">      Section 9) or <span class="insert">other</span> transport layer failure occurred.</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock">                                                                         </td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock">   <span class="insert">11: Ordering Error (fatal):  The received PDU does not conform with</span></td><td class="lineno"></td></tr>
@@ -549,7 +576,7 @@ document.onkeydown = function(e) {
       <tr><td class="lineno"></td><td class="left">      connection to a cache, which it identifies by either IP address or</td><td> </td><td class="right">      connection to a cache, which it identifies by either IP address or</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">      fully qualified domain name.  Be aware that a DNS or address</td><td> </td><td class="right">      fully qualified domain name.  Be aware that a DNS or address</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
-      <tr id="part-6" class="change" ><td></td><th><small>skipping to change at</small><a href="#part-6"><em> page 36, line 46<span class="hide"> &para;</span></em></a></th><th> </th><th><small>skipping to change at</small><a href="#part-6"><em> page 41, line 19<span class="hide"> &para;</span></em></a></th><td></td></tr>
+      <tr id="part-7" class="change" ><td></td><th><small>skipping to change at</small><a href="#part-7"><em> page 36, line 46<span class="hide"> &para;</span></em></a></th><th> </th><th><small>skipping to change at</small><a href="#part-7"><em> page 41, line 19<span class="hide"> &para;</span></em></a></th><td></td></tr>
       <tr><td class="lineno"></td><td class="left">                 1   Internal Error</td><td> </td><td class="right">                 1   Internal Error</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">                 2   No Data Available</td><td> </td><td class="right">                 2   No Data Available</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">                 3   Invalid Request</td><td> </td><td class="right">                 3   Invalid Request</td><td class="lineno"></td></tr>
@@ -560,7 +587,7 @@ document.onkeydown = function(e) {
       <tr><td class="lineno"></td><td class="left">                 8   Unexpected Protocol Version</td><td> </td><td class="right">                 8   Unexpected Protocol Version</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">                 9   ASPA Provider List Error</td><td> </td><td class="right">                 9   ASPA Provider List Error</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">                10   Transport Failure</td><td> </td><td class="right">                10   Transport Failure</td><td class="lineno"></td></tr>
-      <tr id="diff0025"><td></td></tr>
+      <tr id="diff0026"><td></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">                11   Ordering Error</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">            11-254   Unassigned</td><td> </td><td class="right">            11-254   Unassigned</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">               255   Reserved</td><td> </td><td class="right">               255   Reserved</td><td class="lineno"></td></tr>
@@ -573,7 +600,7 @@ document.onkeydown = function(e) {
       <tr><td class="lineno"></td><td class="left">                 0-2       0   Serial Notify</td><td> </td><td class="right">                 0-2       0   Serial Notify</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">                 0-2       1   Serial Query</td><td> </td><td class="right">                 0-2       1   Serial Query</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
-      <tr id="part-7" class="change" ><td></td><th><small>skipping to change at</small><a href="#part-7"><em> page 37, line 23<span class="hide"> &para;</span></em></a></th><th> </th><th><small>skipping to change at</small><a href="#part-7"><em> page 41, line 43<span class="hide"> &para;</span></em></a></th><td></td></tr>
+      <tr id="part-8" class="change" ><td></td><th><small>skipping to change at</small><a href="#part-8"><em> page 37, line 23<span class="hide"> &para;</span></em></a></th><th> </th><th><small>skipping to change at</small><a href="#part-8"><em> page 41, line 43<span class="hide"> &para;</span></em></a></th><td></td></tr>
       <tr><td class="lineno"></td><td class="left">                 0-2       6   IPv6 Prefix</td><td> </td><td class="right">                 0-2       6   IPv6 Prefix</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">                 0-2       7   End of Data</td><td> </td><td class="right">                 0-2       7   End of Data</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">                 0-2       8   Cache Reset</td><td> </td><td class="right">                 0-2       8   Cache Reset</td><td class="lineno"></td></tr>
@@ -584,10 +611,10 @@ document.onkeydown = function(e) {
       <tr><td class="lineno"></td><td class="left">                  2       11   ASPA</td><td> </td><td class="right">                  2       11   ASPA</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">                 0-2     255   Reserved</td><td> </td><td class="right">                 0-2     255   Reserved</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
-      <tr id="diff0026"><td></td></tr>
+      <tr id="diff0027"><td></td></tr>
       <tr><td class="lineno"></td><td class="lblock">15.  <span class="delete">Reference</span>s</td><td> </td><td class="rblock">15.  <span class="insert">Implementation statu</span>s</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
-      <tr id="diff0027"><td></td></tr>
+      <tr id="diff0028"><td></td></tr>
       <tr><td class="lineno"></td><td class="lblock">15.1.  Normative References</td><td> </td><td class="rblock">   <span class="insert">This section is to be removed before publishing as an RFC.</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert"></span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">   This section records the status of known implementations of the</span></td><td class="lineno"></td></tr>
@@ -639,10 +666,10 @@ document.onkeydown = function(e) {
       <tr><td class="lineno"></td><td class="left">              Azimov, A., Uskov, E., Bush, R., Snijders, J., Housley,</td><td> </td><td class="right">              Azimov, A., Uskov, E., Bush, R., Snijders, J., Housley,</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">              R., and B. Maddison, "A Profile for Autonomous System</td><td> </td><td class="right">              R., and B. Maddison, "A Profile for Autonomous System</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">              Provider Authorization", Work in Progress, Internet-Draft,</td><td> </td><td class="right">              Provider Authorization", Work in Progress, Internet-Draft,</td><td class="lineno"></td></tr>
-      <tr id="diff0028"><td></td></tr>
+      <tr id="diff0029"><td></td></tr>
       <tr><td class="lineno"></td><td class="lblock">              draft-ietf-sidrops-aspa-profile-<span class="delete">19, 6 January</span> 2025,</td><td> </td><td class="rblock">              draft-ietf-sidrops-aspa-profile-<span class="insert">20, 18 August</span> 2025,</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">              &lt;https://datatracker.ietf.org/doc/html/draft-ietf-sidrops-</td><td> </td><td class="right">              &lt;https://datatracker.ietf.org/doc/html/draft-ietf-sidrops-</td><td class="lineno"></td></tr>
-      <tr id="diff0029"><td></td></tr>
+      <tr id="diff0030"><td></td></tr>
       <tr><td class="lineno"></td><td class="lblock">              aspa-profile-<span class="delete">19</span>&gt;.</td><td> </td><td class="rblock">              aspa-profile-<span class="insert">20</span>&gt;.</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">   [iana-err] IANA, "rpki-rtr-error",</td><td> </td><td class="right">   [iana-err] IANA, "rpki-rtr-error",</td><td class="lineno"></td></tr>
@@ -655,7 +682,7 @@ document.onkeydown = function(e) {
       <tr><td class="lineno"></td><td class="left">              DOI 10.17487/RFC1982, August 1996,</td><td> </td><td class="right">              DOI 10.17487/RFC1982, August 1996,</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">              &lt;https://www.rfc-editor.org/info/rfc1982&gt;.</td><td> </td><td class="right">              &lt;https://www.rfc-editor.org/info/rfc1982&gt;.</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
-      <tr id="part-8" class="change" ><td></td><th><small>skipping to change at</small><a href="#part-8"><em> page 39, line 5<span class="hide"> &para;</span></em></a></th><th> </th><th><small>skipping to change at</small><a href="#part-8"><em> page 44, line 12<span class="hide"> &para;</span></em></a></th><td></td></tr>
+      <tr id="part-9" class="change" ><td></td><th><small>skipping to change at</small><a href="#part-9"><em> page 39, line 5<span class="hide"> &para;</span></em></a></th><th> </th><th><small>skipping to change at</small><a href="#part-9"><em> page 44, line 12<span class="hide"> &para;</span></em></a></th><td></td></tr>
       <tr><td class="lineno"></td><td class="left">              DOI 10.17487/RFC5926, June 2010,</td><td> </td><td class="right">              DOI 10.17487/RFC5926, June 2010,</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">              &lt;https://www.rfc-editor.org/info/rfc5926&gt;.</td><td> </td><td class="right">              &lt;https://www.rfc-editor.org/info/rfc5926&gt;.</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
@@ -666,7 +693,7 @@ document.onkeydown = function(e) {
       <tr><td class="lineno"></td><td class="left">              Security (TLS)", RFC 6125, DOI 10.17487/RFC6125, March</td><td> </td><td class="right">              Security (TLS)", RFC 6125, DOI 10.17487/RFC6125, March</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">              2011, &lt;https://www.rfc-editor.org/info/rfc6125&gt;.</td><td> </td><td class="right">              2011, &lt;https://www.rfc-editor.org/info/rfc6125&gt;.</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
-      <tr id="diff0030"><td></td></tr>
+      <tr id="diff0031"><td></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock">   <span class="insert">[RFC6483]  Huston, G. and G. Michaelson, "Validation of Route</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">              Origination Using the Resource Certificate Public Key</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">              Infrastructure (PKI) and Route Origin Authorizations</span></td><td class="lineno"></td></tr>
@@ -684,7 +711,7 @@ document.onkeydown = function(e) {
       <tr><td class="lineno"></td><td class="left">              &lt;https://www.rfc-editor.org/info/rfc6810&gt;.</td><td> </td><td class="right">              &lt;https://www.rfc-editor.org/info/rfc6810&gt;.</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
-      <tr id="part-9" class="change" ><td></td><th><small>skipping to change at</small><a href="#part-9"><em> page 39, line 42<span class="hide"> &para;</span></em></a></th><th> </th><th><small>skipping to change at</small><a href="#part-9"><em> page 45, line 9<span class="hide"> &para;</span></em></a></th><td></td></tr>
+      <tr id="part-10" class="change" ><td></td><th><small>skipping to change at</small><a href="#part-10"><em> page 39, line 42<span class="hide"> &para;</span></em></a></th><th> </th><th><small>skipping to change at</small><a href="#part-10"><em> page 45, line 9<span class="hide"> &para;</span></em></a></th><td></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">   [RFC8608]  Turner, S. and O. Borchert, "BGPsec Algorithms, Key</td><td> </td><td class="right">   [RFC8608]  Turner, S. and O. Borchert, "BGPsec Algorithms, Key</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">              Formats, and Signature Formats", RFC 8608,</td><td> </td><td class="right">              Formats, and Signature Formats", RFC 8608,</td><td class="lineno"></td></tr>
@@ -695,7 +722,7 @@ document.onkeydown = function(e) {
       <tr><td class="lineno"></td><td class="left">              BGPsec", RFC 8635, DOI 10.17487/RFC8635, August 2019,</td><td> </td><td class="right">              BGPsec", RFC 8635, DOI 10.17487/RFC8635, August 2019,</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">              &lt;https://www.rfc-editor.org/info/rfc8635&gt;.</td><td> </td><td class="right">              &lt;https://www.rfc-editor.org/info/rfc8635&gt;.</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
-      <tr id="diff0031"><td></td></tr>
+      <tr id="diff0032"><td></td></tr>
       <tr><td class="lineno"></td><td class="lblock">1<span class="delete">5</span>.2.  Informative References</td><td> </td><td class="rblock">1<span class="insert">6</span>.2.  Informative References</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">   [RFC1996]  Vixie, P., "A Mechanism for Prompt Notification of Zone</td><td> </td><td class="right">   [RFC1996]  Vixie, P., "A Mechanism for Prompt Notification of Zone</td><td class="lineno"></td></tr>
@@ -708,7 +735,7 @@ document.onkeydown = function(e) {
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">   [RFC5781]  Weiler, S., Ward, D., and R. Housley, "The rsync URI</td><td> </td><td class="right">   [RFC5781]  Weiler, S., Ward, D., and R. Housley, "The rsync URI</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
-      <tr id="part-10" class="change" ><td></td><th><small>skipping to change at</small><a href="#part-10"><em> page 40, line 22<span class="hide"> &para;</span></em></a></th><th> </th><th><small>skipping to change at</small><a href="#part-10"><em> page 45, line 36<span class="hide"> &para;</span></em></a></th><td></td></tr>
+      <tr id="part-11" class="change" ><td></td><th><small>skipping to change at</small><a href="#part-11"><em> page 40, line 22<span class="hide"> &para;</span></em></a></th><th> </th><th><small>skipping to change at</small><a href="#part-11"><em> page 45, line 36<span class="hide"> &para;</span></em></a></th><td></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">   [RFC6481]  Huston, G., Loomans, R., and G. Michaelson, "A Profile for</td><td> </td><td class="right">   [RFC6481]  Huston, G., Loomans, R., and G. Michaelson, "A Profile for</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">              Resource Certificate Repository Structure", RFC 6481,</td><td> </td><td class="right">              Resource Certificate Repository Structure", RFC 6481,</td><td class="lineno"></td></tr>
@@ -719,7 +746,7 @@ document.onkeydown = function(e) {
       <tr><td class="lineno"></td><td class="left">              DOI 10.17487/RFC0793, September 1981,</td><td> </td><td class="right">              DOI 10.17487/RFC0793, September 1981,</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">              &lt;https://www.rfc-editor.org/info/rfc793&gt;.</td><td> </td><td class="right">              &lt;https://www.rfc-editor.org/info/rfc793&gt;.</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
-      <tr id="diff0032"><td></td></tr>
+      <tr id="diff0033"><td></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock">   <span class="insert">[RFC7942]  Sheffer, Y. and A. Farrel, "Improving Awareness of Running</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">              Code: The Implementation Status Section", BCP 205,</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">              RFC 7942, DOI 10.17487/RFC7942, July 2016,</span></td><td class="lineno"></td></tr>
@@ -733,7 +760,7 @@ document.onkeydown = function(e) {
       <tr><td class="lineno"></td><td class="left">              STD 7, RFC 9293, DOI 10.17487/RFC9293, August 2022,</td><td> </td><td class="right">              STD 7, RFC 9293, DOI 10.17487/RFC9293, August 2022,</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">              &lt;https://www.rfc-editor.org/info/rfc9293&gt;.</td><td> </td><td class="right">              &lt;https://www.rfc-editor.org/info/rfc9293&gt;.</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
-      <tr id="diff0033"><td></td></tr>
+      <tr id="diff0034"><td></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock">   <span class="insert">[RFC9582]  Snijders, J., Maddison, B., Lepinski, M., Kong, D., and S.</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">              Kent, "A Profile for Route Origin Authorizations (ROAs)",</span></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="lblock"></td><td> </td><td class="rblock"><span class="insert">              RFC 9582, DOI 10.17487/RFC9582, May 2024,</span></td><td class="lineno"></td></tr>
@@ -742,17 +769,25 @@ document.onkeydown = function(e) {
       <tr><td class="lineno"></td><td class="left">Acknowledgements</td><td> </td><td class="right">Acknowledgements</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">   The authors wish to thank Nils Bars, Steve Bellovin, Oliver Borchert,</td><td> </td><td class="right">   The authors wish to thank Nils Bars, Steve Bellovin, Oliver Borchert,</td><td class="lineno"></td></tr>
-      <tr><td class="lineno"></td><td class="left">   Mohamed Boucadair, Tim Bruijnzeels, Roman Danyliw, Rex Fernando,</td><td> </td><td class="right">   Mohamed Boucadair, Tim Bruijnzeels, Roman Danyliw, Rex Fernando,</td><td class="lineno"></td></tr>
-      <tr><td class="lineno"></td><td class="left">   Richard Hansen, Martin Hoffmann, Paul Hoffman, Fabian Holler, Russ</td><td> </td><td class="right">   Richard Hansen, Martin Hoffmann, Paul Hoffman, Fabian Holler, Russ</td><td class="lineno"></td></tr>
-      <tr><td class="lineno"></td><td class="left">   Housley, Claudio Jeker, Pradosh Mohapatra, Keyur Patel, David</td><td> </td><td class="right">   Housley, Claudio Jeker, Pradosh Mohapatra, Keyur Patel, David</td><td class="lineno"></td></tr>
-      <tr><td class="lineno"></td><td class="left">   Mandelberg, Sandy Murphy, Robert Raszuk, Andreas Reuter, Thomas</td><td> </td><td class="right">   Mandelberg, Sandy Murphy, Robert Raszuk, Andreas Reuter, Thomas</td><td class="lineno"></td></tr>
+      <tr id="diff0035"><td></td></tr>
+      <tr><td class="lineno"></td><td class="lblock">   Mohamed Boucadair, Tim Bruijnzeels, Roman Danyliw, Rex Fernando,</td><td> </td><td class="rblock">   Mohamed Boucadair, Tim Bruijnzeels, <span class="insert">Ralph Covelli,</span> Roman Danyliw, Rex</td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="lblock">   Richard Hansen, Martin Hoffmann, Paul Hoffman, Fabian Holler, Russ</td><td> </td><td class="rblock">   Fernando, Richard Hansen, Martin Hoffmann, Paul Hoffman, Fabian</td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="lblock">   Housley, Claudio Jeker, Pradosh Mohapatra, Keyur Patel, David</td><td> </td><td class="rblock">   Holler, Russ Housley, Claudio Jeker, Pradosh Mohapatra, Keyur Patel,</td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="lblock">   Mandelberg, Sandy Murphy, Robert Raszuk, Andreas Reuter, Thomas</td><td> </td><td class="rblock">   David Mandelberg, Sandy Murphy, Robert Raszuk, Andreas Reuter, Thomas</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">   Schmidt, John Scudder, Job Snijders, Ruediger Volk, Matthias</td><td> </td><td class="right">   Schmidt, John Scudder, Job Snijders, Ruediger Volk, Matthias</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">   Waehlisch, and David Ward.  Particular thanks go to Hannes Gredler</td><td> </td><td class="right">   Waehlisch, and David Ward.  Particular thanks go to Hannes Gredler</td><td class="lineno"></td></tr>
       <tr><td class="lineno"></td><td class="left">   for showing us the dangers of unnecessary fields.</td><td> </td><td class="right">   for showing us the dangers of unnecessary fields.</td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="left">   No doubt this list is incomplete.  We apologize to any contributor</td><td> </td><td class="right">   No doubt this list is incomplete.  We apologize to any contributor</td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="left">   whose name we missed.</td><td> </td><td class="right">   whose name we missed.</td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="left">Authors' Addresses</td><td> </td><td class="right">Authors' Addresses</td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="left"></td><td> </td><td class="right"></td><td class="lineno"></td></tr>
+      <tr><td class="lineno"></td><td class="left">   Randy Bush</td><td> </td><td class="right">   Randy Bush</td><td class="lineno"></td></tr>
 
      <tr><td></td><td class="left"></td><td> </td><td class="right"></td><td></td></tr>
-     <tr id="end" bgcolor="gray"><th colspan="5" align="center">&nbsp;End of changes. 33 change blocks.&nbsp;</th></tr>
-     <tr class="stats"><td></td><th><i>86 lines changed or deleted</i></th><th><i> </i></th><th><i>335 lines changed or added</i></th><td></td></tr>
+     <tr id="end" bgcolor="gray"><th colspan="5" align="center">&nbsp;End of changes. 35 change blocks.&nbsp;</th></tr>
+     <tr class="stats"><td></td><th><i>91 lines changed or deleted</i></th><th><i> </i></th><th><i>343 lines changed or added</i></th><td></td></tr>
      <tr><td colspan="5" align="center" class="small"><br/>This html diff was produced by rfcdiff 1.45. The latest version is available from <a href="http://www.tools.ietf.org/tools/rfcdiff/" >http://tools.ietf.org/tools/rfcdiff/</a> </td></tr>
    </table>
    </body>

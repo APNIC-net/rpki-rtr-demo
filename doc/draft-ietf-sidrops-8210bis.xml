@@ -624,7 +624,9 @@
         <t>
           The Session ID tells the cache what instance the router
           expects to ensure that the Serial Numbers are commensurate,
-          i.e., the cache session has not been changed.
+          i.e., the cache session has not been changed.  If the
+          Session ID does not match, the cache MUST respond with a Cache
+          Reset.
         </t>
       </section>
 
@@ -1923,13 +1925,6 @@ Cache                         Router
             </t>
             <ol indent="adaptive">
               <li>
-                  Data elements with a higher asn value precede data
-                  elements with a lower asn value.  This ensures that
-                  AS0 PDU announcements, which can be used to cause BGP
-                  announcements to become invalid under ROV, always
-                  appear after all other PDU announcements.
-              </li>
-              <li>
                   Data elements with a higher addr value precede data
                   elements with a lower addr value. 
               </li>
@@ -1940,6 +1935,13 @@ Cache                         Router
               <li>
                   Data elements with a higher plen value precede data
                   elements with a lower plen value.
+              </li>
+              <li>
+                  Data elements with a higher asn value precede data
+                  elements with a lower asn value.  This ensures that
+                  AS0 PDU announcements, which can be used to cause BGP
+                  announcements to become invalid under ROV, always
+                  appear after all other relevant PDU announcements.
               </li>
             </ol>
 
@@ -1953,12 +1955,6 @@ Cache                         Router
             </t>
             <ol indent="adaptive">
               <li>
-                  Data elements with a lower asn value precede data
-                  elements with a higher asn value.  This ensures that
-                  AS0 PDU withdrawals always appear before all other
-                  PDU withdrawals.
-              </li>
-              <li>
                   Data elements with a lower addr value precede data
                   elements with a higher addr value.
               </li>
@@ -1970,13 +1966,19 @@ Cache                         Router
                   Data elements with a lower plen value precede data
                   elements with a higher plen value.
               </li>
+              <li>
+                  Data elements with a lower asn value precede data
+                  elements with a higher asn value.  This ensures that
+                  AS0 PDU withdrawals always appear before all other
+                  relevant PDU withdrawals.
+              </li>
             </ol>
 
             <t>
 
-                For both announcement and withdrawal PDUs, the last three
-                comparisons are included so as to address the problem
-                described in <xref target="more-specifics" />.
+                For both announcement and withdrawal PDUs, the first
+                three comparisons are included so as to address the
+                problem described in <xref target="more-specifics" />.
 
             </t>
 
@@ -2593,14 +2595,14 @@ Cache                         Router
     <section anchor="Acknowledgements" title="Acknowledgements" numbered="no">
       <t>
         The authors wish to thank Nils Bars, Steve Bellovin, Oliver
-        Borchert, Mohamed Boucadair, Tim Bruijnzeels, Roman Danyliw, Rex
-        Fernando, Richard Hansen, Martin Hoffmann, Paul Hoffman, Fabian
-        Holler, Russ Housley, Claudio Jeker, Pradosh Mohapatra, Keyur
-        Patel, David Mandelberg, Sandy Murphy, Robert Raszuk, Andreas
-        Reuter, Thomas Schmidt, John Scudder, Job Snijders, Ruediger
-        Volk, Matthias Waehlisch, and David Ward.  Particular thanks go
-        to Hannes Gredler for showing us the dangers of unnecessary
-        fields.
+        Borchert, Mohamed Boucadair, Tim Bruijnzeels, Ralph Covelli,
+        Roman Danyliw, Rex Fernando, Richard Hansen, Martin Hoffmann,
+        Paul Hoffman, Fabian Holler, Russ Housley, Claudio Jeker,
+        Pradosh Mohapatra, Keyur Patel, David Mandelberg, Sandy Murphy,
+        Robert Raszuk, Andreas Reuter, Thomas Schmidt, John Scudder, Job
+        Snijders, Ruediger Volk, Matthias Waehlisch, and David Ward.
+        Particular thanks go to Hannes Gredler for showing us the
+        dangers of unnecessary fields.
       </t>
       <t>
         No doubt this list is incomplete.  We apologize to any

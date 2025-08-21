@@ -103,7 +103,7 @@ my $pid;
         APNIC::RPKI::RTR::PDU::IPv4Prefix->new(
             version       => 1,
             flags         => 1,
-            asn           => 4608,
+            asn           => 4610,
             address       => '1.0.0.0',
             prefix_length => 24,
             max_length    => 24,
@@ -147,7 +147,7 @@ my $pid;
               'Got expected validation results');
 
     # Committing as received leads to four results: unknown (after the
-    # 2.0.0.0/24 PDU), invalid (after the 4608 PDU), valid (after the
+    # 2.0.0.0/24 PDU), invalid (after the 4610 PDU), valid (after the
     # 4609 PDU), and valid (after the EOD PDU).
 
     eval { $client_asr->reset() };

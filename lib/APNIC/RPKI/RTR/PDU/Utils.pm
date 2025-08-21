@@ -115,13 +115,8 @@ sub order_pdus
     #  - Addition IP PDU max length ordering (larger to smaller)
     #    occurs before prefix length ordering, because the ordering
     #    will lead to incorrect results otherwise.
-    #  - The document is not clear on how withdrawal is supposed to
-    #    be handled.  The algorithm here simply reverses whatever is
-    #    used for addition.  One issue with this is that withdrawal
-    #    PDUs will have ASNs in descending order, but that seems like
-    #    a reasonable tradeoff for securing the reversal behaviour.
 
-    my @ip_pdus =
+    my @add_ip_pdus =
         map  { $_->[0] }
             # Order from larger address to smaller address, so that
             # subprefixes come first, and so that addresses are
@@ -137,37 +132,55 @@ sub order_pdus
             # length, for similar reasons to the previous part.
                 || ($b->[0]->prefix_length()
                     <=> $a->[0]->prefix_length())
-            # Put AS0 PDUs last, but otherwise order ascending.
-                || (($a->[0]->asn() || $SENTINEL_ASN)
-                    <=> ($b->[0]->asn() || $SENTINEL_ASN)) }
+            # Order from largest ASN to smallest ASN, so that AS0 PDUs
+            # come last.
+                || ($b->[0]->asn() <=> $a->[0]->asn()) }
         map  { [ $_, $_->address_as_number() ] }
+        grep { $_->flags() == 1 }
         grep { ($_->type() == PDU_IPV4_PREFIX()
              or $_->type() == PDU_IPV6_PREFIX()) }
             @pdus;
 
     my @add_ipv4_pdus =
-        grep { $_->flags() == 1
-                and $_->type() == PDU_IPV4_PREFIX() }
-            @ip_pdus;
-    
-    # The ordering used for additions should be reversed for removals.
-    my @remove_ipv4_pdus =
-        reverse
-        grep { $_->flags() == 0
-                and $_->type() == PDU_IPV4_PREFIX() }
-            @ip_pdus;
+        grep { $_->type() == PDU_IPV4_PREFIX() }
+            @add_ip_pdus;
 
     my @add_ipv6_pdus =
-        grep { $_->flags() == 1
-                and $_->type() == PDU_IPV6_PREFIX() }
-            @ip_pdus;
-    
-    my @remove_ipv6_pdus =
-        reverse
-        grep { $_->flags() == 0
-                and $_->type() == PDU_IPV6_PREFIX() }
-            @ip_pdus;
+        grep { $_->type() == PDU_IPV6_PREFIX() }
+            @add_ip_pdus;
 
+    my @remove_ip_pdus =
+        map  { $_->[0] }
+            # Order from smaller address to larger address, so that
+            # covering prefixes come first, and so that addresses are
+            # processed as close together as possible.
+        sort { ($a->[1] <=> $b->[1])
+            # Order from smaller max length to larger max length, so
+            # that a PDU with a larger max length isn't inadvertently
+            # left in place such that it invalidates a route.
+                || ($a->[0]->max_length()
+                    <=> $b->[0]->max_length())
+            # Order from smaller prefix length to larger prefix
+            # length, for similar reasons to the previous part.
+                || ($a->[0]->prefix_length()
+                    <=> $b->[0]->prefix_length())
+            # Order from smallest ASN to largest ASN, so that AS0 PDUs
+            # come first.
+                || ($a->[0]->asn() <=> $b->[0]->asn()) }
+        map  { [ $_, $_->address_as_number() ] }
+        grep { $_->flags() == 0 }
+        grep { ($_->type() == PDU_IPV4_PREFIX()
+             or $_->type() == PDU_IPV6_PREFIX()) }
+            @pdus;
+
+    my @remove_ipv4_pdus =
+        grep { $_->type() == PDU_IPV4_PREFIX() }
+            @remove_ip_pdus;
+
+    my @remove_ipv6_pdus =
+        grep { $_->type() == PDU_IPV6_PREFIX() }
+            @remove_ip_pdus;
+    
     my @router_key_pdus =
         sort { # This is a numeric comparison, but has the same
                # outcome as the lexicographical comparison from the

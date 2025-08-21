@@ -119,8 +119,8 @@ Internet-Draft            RPKI-Router Protocol               August 2025
        11.2.2.  Router Key PDUs  . . . . . . . . . . . . . . . . . .  35
        11.2.3.  ASPA PDUs  . . . . . . . . . . . . . . . . . . . . .  35
      11.3.  Transactions . . . . . . . . . . . . . . . . . . . . . .  36
-     11.4.  Other Considerations . . . . . . . . . . . . . . . . . .  36
-   12. Error Codes . . . . . . . . . . . . . . . . . . . . . . . . .  37
+     11.4.  Other Considerations . . . . . . . . . . . . . . . . . .  37
+   12. Error Codes . . . . . . . . . . . . . . . . . . . . . . . . .  38
    13. Security Considerations . . . . . . . . . . . . . . . . . . .  39
    14. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  40
    15. Implementation status . . . . . . . . . . . . . . . . . . . .  41
@@ -643,7 +643,8 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
    The Session ID tells the cache what instance the router expects to
    ensure that the Serial Numbers are commensurate, i.e., the cache
-   session has not been changed.
+   session has not been changed.  If the Session ID does not match, the
+   cache MUST respond with a Cache Reset.
 
 5.4.  Reset Query
 
@@ -664,7 +665,6 @@ Internet-Draft            RPKI-Router Protocol               August 2025
    an End of Data PDU (Section 5.8).
 
 5.5.  Cache Response
-
 
 
 
@@ -1865,39 +1865,39 @@ Internet-Draft            RPKI-Router Protocol               August 2025
    The order of two IP PDUs with updt values of 1 is determined by the
    first non-equal comparison in the following list.
 
-   1.  Data elements with a higher asn value precede data elements with
-       a lower asn value.  This ensures that AS0 PDU announcements,
-       which can be used to cause BGP announcements to become invalid
-       under ROV, always appear after all other PDU announcements.
-
-   2.  Data elements with a higher addr value precede data elements with
+   1.  Data elements with a higher addr value precede data elements with
        a lower addr value.
 
-   3.  Data elements with a higher mlen value precede data elements with
+   2.  Data elements with a higher mlen value precede data elements with
        a lower mlen value.
 
-   4.  Data elements with a higher plen value precede data elements with
+   3.  Data elements with a higher plen value precede data elements with
        a lower plen value.
+
+   4.  Data elements with a higher asn value precede data elements with
+       a lower asn value.  This ensures that AS0 PDU announcements,
+       which can be used to cause BGP announcements to become invalid
+       under ROV, always appear after all other relevant PDU
+       announcements.
 
    The order of two IP PDUs with updt values of 0 is determined by the
    first non-equal comparison in the following list.
 
-   1.  Data elements with a lower asn value precede data elements with a
-       higher asn value.  This ensures that AS0 PDU withdrawals always
-       appear before all other PDU withdrawals.
-
-   2.  Data elements with a lower addr value precede data elements with
+   1.  Data elements with a lower addr value precede data elements with
        a higher addr value.
 
-   3.  Data elements with a lower mlen value precede data elements with
+   2.  Data elements with a lower mlen value precede data elements with
        a higher mlen value.
 
-   4.  Data elements with a lower plen value precede data elements with
+   3.  Data elements with a lower plen value precede data elements with
        a higher plen value.
 
-   For both announcement and withdrawal PDUs, the last three comparisons
-   are included so as to address the problem described in
-   Section 11.1.2.
+   4.  Data elements with a lower asn value precede data elements with a
+       higher asn value.  This ensures that AS0 PDU withdrawals always
+       appear before all other relevant PDU withdrawals.
+
+
+
 
 
 
@@ -1905,6 +1905,10 @@ Bush & Austein          Expires 22 February 2026               [Page 34]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
+
+   For both announcement and withdrawal PDUs, the first three
+   comparisons are included so as to address the problem described in
+   Section 11.1.2.
 
 11.2.2.  Router Key PDUs
 
@@ -1950,10 +1954,6 @@ Internet-Draft            RPKI-Router Protocol               August 2025
    In order to semantically compare and sort ASPA PDUs, each PDU is
    mapped to an abstract data element comprising two integer values:
 
-   casn  The customer ASN appearing in the PDU, as an integer value.
-
-   updt  The integer 1, if the PDU is an announcement, and the integer
-      0, if the PDU is a withdrawal.
 
 
 
@@ -1961,6 +1961,11 @@ Bush & Austein          Expires 22 February 2026               [Page 35]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
+
+   casn  The customer ASN appearing in the PDU, as an integer value.
+
+   updt  The integer 1, if the PDU is an announcement, and the integer
+      0, if the PDU is a withdrawal.
 
    The equality or relative order of two ASPA PDUs can be tested by
    comparing their abstract representations.
@@ -1998,6 +2003,21 @@ Internet-Draft            RPKI-Router Protocol               August 2025
    application of any PDUs received during the failed synchronisation
    attempt.
 
+
+
+
+
+
+
+
+
+
+
+Bush & Austein          Expires 22 February 2026               [Page 36]
+
+Internet-Draft            RPKI-Router Protocol               August 2025
+
+
 11.4.  Other Considerations
 
    A client that applies PDUs transactionally (e.g. on receipt of an End
@@ -2008,15 +2028,6 @@ Internet-Draft            RPKI-Router Protocol               August 2025
    [todo: There were comments about adding guidance as to the timeout
    here, but how should that be determined?  Can it be based on the
    expiry interval, or something like that?]
-
-
-
-
-
-Bush & Austein          Expires 22 February 2026               [Page 36]
-
-Internet-Draft            RPKI-Router Protocol               August 2025
-
 
    A client MAY verify the ordering of PDUs, and when an ordering error
    is encountered, send an Ordering Error PDU to the server and
@@ -2051,6 +2062,18 @@ Internet-Draft            RPKI-Router Protocol               August 2025
    all such RPKI objects within a single CA, though, to avoid the
    problems that arise here.
 
+
+
+
+
+
+
+
+Bush & Austein          Expires 22 February 2026               [Page 37]
+
+Internet-Draft            RPKI-Router Protocol               August 2025
+
+
    A client that is generally unable to apply PDUs only on receipt of an
    End of Data PDU should consider whether it is possible to implement
    that behaviour at least in the context of new session initiation and
@@ -2066,14 +2089,6 @@ Internet-Draft            RPKI-Router Protocol               August 2025
    dropped, and the router MUST flush all data learned from that cache.
 
    0: Corrupt Data (fatal):  The receiver believes the received PDU to
-
-
-
-Bush & Austein          Expires 22 February 2026               [Page 37]
-
-Internet-Draft            RPKI-Router Protocol               August 2025
-
-
       be corrupt in a manner not specified by another error code.
 
    1: Internal Error (fatal):  The party reporting the error experienced
@@ -2106,6 +2121,15 @@ Internet-Draft            RPKI-Router Protocol               August 2025
       does not exist in the receiver's database.
 
    7: Duplicate Announcement Received (fatal):  The received PDU has
+
+
+
+
+Bush & Austein          Expires 22 February 2026               [Page 38]
+
+Internet-Draft            RPKI-Router Protocol               August 2025
+
+
       Flag=1, but a matching record ({Prefix, Len, Max-Len, AS} tuple
       for an IPvX PDU, or {SKI, AS, Subject Public Key} tuple for a
       Router Key PDU), or Customer Autonomous System for an ASPA PDU is
@@ -2122,14 +2146,6 @@ Internet-Draft            RPKI-Router Protocol               August 2025
       Section 9) or other transport layer failure occurred.
 
    11: Ordering Error (fatal):  The received PDU does not conform with
-
-
-
-Bush & Austein          Expires 22 February 2026               [Page 38]
-
-Internet-Draft            RPKI-Router Protocol               August 2025
-
-
       the ordering defined in Section 11.2.
 
 13.  Security Considerations
@@ -2161,6 +2177,15 @@ Internet-Draft            RPKI-Router Protocol               August 2025
       lightly protected.
 
       However, this protocol assumes that the routers cannot do the
+
+
+
+
+Bush & Austein          Expires 22 February 2026               [Page 39]
+
+Internet-Draft            RPKI-Router Protocol               August 2025
+
+
       validation cryptography.  Hence, the last link, from cache to
       router, SHOULD be secured by server authentication and transport-
       level security to prevent monkey in the middle attacks; though it
@@ -2173,19 +2198,6 @@ Internet-Draft            RPKI-Router Protocol               August 2025
       betting your routing on this.
 
       While we cannot say the cache must be on the same LAN, if only due
-
-
-
-
-
-
-
-
-Bush & Austein          Expires 22 February 2026               [Page 39]
-
-Internet-Draft            RPKI-Router Protocol               August 2025
-
-
       to the issue of an enterprise wanting to offload the cache task to
       their upstream ISP(s), locality, trust, and control are very
       critical issues here.  The cache(s) really SHOULD be as close, in
@@ -2220,18 +2232,6 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
    The "rpki-rtr-error: registry [iana-err] should be updated as
    follows:
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -2525,10 +2525,10 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 Acknowledgements
 
    The authors wish to thank Nils Bars, Steve Bellovin, Oliver Borchert,
-   Mohamed Boucadair, Tim Bruijnzeels, Roman Danyliw, Rex Fernando,
-   Richard Hansen, Martin Hoffmann, Paul Hoffman, Fabian Holler, Russ
-   Housley, Claudio Jeker, Pradosh Mohapatra, Keyur Patel, David
-   Mandelberg, Sandy Murphy, Robert Raszuk, Andreas Reuter, Thomas
+   Mohamed Boucadair, Tim Bruijnzeels, Ralph Covelli, Roman Danyliw, Rex
+   Fernando, Richard Hansen, Martin Hoffmann, Paul Hoffman, Fabian
+   Holler, Russ Housley, Claudio Jeker, Pradosh Mohapatra, Keyur Patel,
+   David Mandelberg, Sandy Murphy, Robert Raszuk, Andreas Reuter, Thomas
    Schmidt, John Scudder, Job Snijders, Ruediger Volk, Matthias
    Waehlisch, and David Ward.  Particular thanks go to Hannes Gredler
    for showing us the dangers of unnecessary fields.
