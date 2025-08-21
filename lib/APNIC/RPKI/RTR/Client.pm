@@ -329,11 +329,22 @@ sub _process_responses
     my $socket  = $self->{'socket'};
     my $changeset = APNIC::RPKI::RTR::Changeset->new();
     for my $pdu (@{$self->{'pr_pdus'}}) {
+        dprint("client: dequeueing queued PDU");
         $changeset->add_pdu($pdu);
     }
     $self->{'pr_pdus'} = [];
     my $res;
     my $pdu;
+
+    my $car = $self->{'commit_as_received'}   ? 1 : 0;
+    my $csp = $self->{'commit_same_prefixes'} ? 1 : 0;
+    my $cas = $self->{'commit_aspas'}         ? 1 : 0;
+
+    dprint("client: commit as received:   '$car'");
+    dprint("client: commit same prefixes: '$csp'");
+    dprint("client: commit ASPAs:         '$cas'");
+
+    my $using_alt_commit_strategy = ($car or $csp or $cas);
 
     for (;;) {
         dprint("client: processing response");
@@ -357,65 +368,87 @@ sub _process_responses
                 die "client: got PDU with announce not set to 1";
             }
 
-            my $using_alt_commit_strategy =
-                ($self->{'commit_as_received'}
-                    || $self->{'commit_same_prefixes'}
-                    || $self->{'commit_aspas'});
-
-            if ($self->{'commit_as_received'}) {
+            if ($car) {
+                dprint("client: returning changeset for single PDU ".
+                       "(commit as received)");
                 $changeset->add_pdu($pdu);
                 return (1, $changeset, $pdu, 1);
             }
 
-            if ($self->{'commit_same_prefixes'}) {
-                if ($changeset->pdus()) {
-                    my @pdus = $changeset->pdus();
+            if ($csp) {
+                my @pdus = $changeset->pdus();
+                if (@pdus) {
                     my $previous_pdu = $pdus[$#pdus];
                     my $previous_pdu_type = $previous_pdu->type();
                     my $pdu_type = $pdu->type();
                     if ($previous_pdu->is_ip_type()) {
+                        dprint("client: previous PDU is IP PDU");
                         if (($previous_pdu_type == $pdu_type)
                             and ($previous_pdu->prefix_equals($pdu))) {
+                            dprint("client: IP PDU prefix matches ".
+                                   "previous PDU, adding to changeset");
                             $changeset->add_pdu($pdu);
                             next;
                         } else {
+                            dprint("client: current PDU not IP type ".
+                                   "or no prefix match, returning ".
+                                   "changeset and queueing current PDU");
                             $self->{'pr_pdus'} = [$pdu];
                             return (1, $changeset, undef, 1);
                         }
+                    } else {
+                        dprint("client: previous PDU is not IP PDU");
                     }
                 } elsif ($pdu->is_ip_type()) {
+                    dprint("client: adding IP PDU as first ".
+                           "PDU of current changeset");
                     $changeset->add_pdu($pdu);
                     next;
                 }
             }
 
-            if ($self->{'commit_aspas'}) {
+            if ($cas) {
                 my $pdu_type = $pdu->type();
-                if ($changeset->pdus()) {
+                my @pdus = $changeset->pdus();
+                if (@pdus) {
                     my @pdus = $changeset->pdus();
                     my $previous_pdu = $pdus[$#pdus];
                     my $previous_pdu_type = $previous_pdu->type();
                     if ($previous_pdu_type == PDU_ASPA()) {
+                        dprint("client: previous PDU is ASPA PDU");
                         if ($previous_pdu_type == $pdu_type) {
+                            dprint("client: adding new ASPA PDU to ".
+                                   "current changeset");
                             $changeset->add_pdu($pdu);
                             next;
                         } else {
+                            dprint("client: current PDU not ASPA, ".
+                                   "returning changeset and queueing ".
+                                   "current PDU");
                             $self->{'pr_pdus'} = [$pdu];
                             return (1, $changeset, undef, 1);
                         }
+                    } else {
+                        dprint("client: previous PDU is not ASPA PDU");
                     }
                 } elsif ($pdu_type == PDU_ASPA()) {
+                    dprint("client: adding ASPA PDU as first ".
+                           "PDU of current changeset");
                     $changeset->add_pdu($pdu);
                     next;
                 }
             }
 
             if ($using_alt_commit_strategy) {
+                dprint("client: using alternative commit ".
+                       "strategy, defaulting to returning ".
+                       "single PDU");
                 # Implicit that the PDU is added and returned
                 # immediately if this point is reached.
                 $changeset->add_pdu($pdu);
                 return (1, $changeset, $pdu, 1);
             } else {
+                dprint("client: adding PDU to current changeset");
                 $changeset->add_pdu($pdu);
             }
         } elsif ($pdu->type() == PDU_END_OF_DATA()) {
