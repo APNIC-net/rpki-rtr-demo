@@ -1831,9 +1831,15 @@ Cache                         Router
             ordering defined in this section when sending PDUs to
             clients as part of a cache response.  Caches SHOULD use
             the ordering defined in this section for sessions using
-            earlier protocol versions as well, though a cache may
-            prefer to preserve its existing behaviour for the sake of
-            backwards compatibility.
+            earlier protocol versions as well.  This is because those
+            versions did not prescribe a specific ordering for PDUs,
+            and the benefits of ordering with respect to race
+            conditions are the same for those earlier versions.  An
+            example scenario where an implementor would use another
+            ordering for earlier protocol versions is where the
+            implementation has an existing ordering it uses for those
+            versions, and the implementor knows of clients that
+            inadvertently depend on that ordering for some reason.
 
         </t>
 
