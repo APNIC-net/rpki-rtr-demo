@@ -5,8 +5,8 @@
 Network Working Group                                            R. Bush
 Internet-Draft                               Arrcus, DRL, & IIJ Research
 Intended status: Standards Track                              R. Austein
-Expires: 23 February 2026                           Dragon Research Labs
-                                                          22 August 2025
+Expires: 2 March 2026                               Dragon Research Labs
+                                                          29 August 2025
 
 
    The Resource Public Key Infrastructure (RPKI) to Router Protocol,
@@ -41,7 +41,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 23 February 2026.
+   This Internet-Draft will expire on 2 March 2026.
 
 Copyright Notice
 
@@ -53,7 +53,7 @@ Copyright Notice
 
 
 
-Bush & Austein          Expires 23 February 2026                [Page 1]
+Bush & Austein            Expires 2 March 2026                  [Page 1]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -109,13 +109,13 @@ Table of Contents
 
 
 
-Bush & Austein          Expires 23 February 2026                [Page 2]
+Bush & Austein            Expires 2 March 2026                  [Page 2]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
 
      11.2.  Ordering . . . . . . . . . . . . . . . . . . . . . . . .  33
-       11.2.1.  IP PDUs  . . . . . . . . . . . . . . . . . . . . . .  33
+       11.2.1.  IP PDUs  . . . . . . . . . . . . . . . . . . . . . .  34
        11.2.2.  Router Key PDUs  . . . . . . . . . . . . . . . . . .  35
        11.2.3.  ASPA PDUs  . . . . . . . . . . . . . . . . . . . . .  36
      11.3.  Transactions . . . . . . . . . . . . . . . . . . . . . .  36
@@ -165,7 +165,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026                [Page 3]
+Bush & Austein            Expires 2 March 2026                  [Page 3]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -221,7 +221,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026                [Page 4]
+Bush & Austein            Expires 2 March 2026                  [Page 4]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -277,7 +277,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026                [Page 5]
+Bush & Austein            Expires 2 March 2026                  [Page 5]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -333,7 +333,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026                [Page 6]
+Bush & Austein            Expires 2 March 2026                  [Page 6]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -389,7 +389,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026                [Page 7]
+Bush & Austein            Expires 2 March 2026                  [Page 7]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -445,7 +445,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026                [Page 8]
+Bush & Austein            Expires 2 March 2026                  [Page 8]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -501,7 +501,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026                [Page 9]
+Bush & Austein            Expires 2 March 2026                  [Page 9]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -557,7 +557,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026               [Page 10]
+Bush & Austein            Expires 2 March 2026                 [Page 10]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -613,7 +613,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026               [Page 11]
+Bush & Austein            Expires 2 March 2026                 [Page 11]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -669,7 +669,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026               [Page 12]
+Bush & Austein            Expires 2 March 2026                 [Page 12]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -725,7 +725,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026               [Page 13]
+Bush & Austein            Expires 2 March 2026                 [Page 13]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -781,7 +781,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026               [Page 14]
+Bush & Austein            Expires 2 March 2026                 [Page 14]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -837,7 +837,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026               [Page 15]
+Bush & Austein            Expires 2 March 2026                 [Page 15]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -893,7 +893,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026               [Page 16]
+Bush & Austein            Expires 2 March 2026                 [Page 16]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -949,7 +949,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026               [Page 17]
+Bush & Austein            Expires 2 March 2026                 [Page 17]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -1005,7 +1005,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026               [Page 18]
+Bush & Austein            Expires 2 March 2026                 [Page 18]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -1061,7 +1061,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026               [Page 19]
+Bush & Austein            Expires 2 March 2026                 [Page 19]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -1117,7 +1117,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026               [Page 20]
+Bush & Austein            Expires 2 March 2026                 [Page 20]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -1173,7 +1173,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026               [Page 21]
+Bush & Austein            Expires 2 March 2026                 [Page 21]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -1229,7 +1229,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026               [Page 22]
+Bush & Austein            Expires 2 March 2026                 [Page 22]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -1285,7 +1285,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026               [Page 23]
+Bush & Austein            Expires 2 March 2026                 [Page 23]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -1341,7 +1341,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026               [Page 24]
+Bush & Austein            Expires 2 March 2026                 [Page 24]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -1397,7 +1397,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026               [Page 25]
+Bush & Austein            Expires 2 March 2026                 [Page 25]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -1453,7 +1453,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026               [Page 26]
+Bush & Austein            Expires 2 March 2026                 [Page 26]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -1509,7 +1509,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026               [Page 27]
+Bush & Austein            Expires 2 March 2026                 [Page 27]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -1565,7 +1565,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026               [Page 28]
+Bush & Austein            Expires 2 March 2026                 [Page 28]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -1621,7 +1621,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026               [Page 29]
+Bush & Austein            Expires 2 March 2026                 [Page 29]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -1677,7 +1677,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026               [Page 30]
+Bush & Austein            Expires 2 March 2026                 [Page 30]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -1733,7 +1733,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026               [Page 31]
+Bush & Austein            Expires 2 March 2026                 [Page 31]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -1789,7 +1789,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026               [Page 32]
+Bush & Austein            Expires 2 March 2026                 [Page 32]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -1831,9 +1831,24 @@ Internet-Draft            RPKI-Router Protocol               August 2025
    for clients to verify that the ordering is correct, and may also
    provide opportunities for client optimisations.
 
+   When using PDU values as integers for ordering comparisons,
+   implementors should ensure that each value being used in a comparison
+   is not inadvertently encoded using little-endian bit order, since
+   such an encoding will lead to incorrect results.
+
    PDUs with a lower integer PDU type precede PDUs with a higher integer
    PDU type.  The sections that follow describe ordering as among PDUs
    of the same type.
+
+
+
+
+
+
+Bush & Austein            Expires 2 March 2026                 [Page 33]
+
+Internet-Draft            RPKI-Router Protocol               August 2025
+
 
 11.2.1.  IP PDUs
 
@@ -1842,13 +1857,6 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
    addr  The first IP address of the IP prefix appearing in the PDU, as
       a 32-bit (IPv4) or 128-bit (IPv6) integer value.
-
-
-
-Bush & Austein          Expires 23 February 2026               [Page 33]
-
-Internet-Draft            RPKI-Router Protocol               August 2025
-
 
    plen  The length of the IP prefix appearing in the PDU, as an integer
       value.
@@ -1891,20 +1899,18 @@ Internet-Draft            RPKI-Router Protocol               August 2025
    1.  Data elements with a lower addr value precede data elements with
        a higher addr value.
 
+
+
+Bush & Austein            Expires 2 March 2026                 [Page 34]
+
+Internet-Draft            RPKI-Router Protocol               August 2025
+
+
    2.  Data elements with a lower mlen value precede data elements with
        a higher mlen value.
 
    3.  Data elements with a lower plen value precede data elements with
        a higher plen value.
-
-
-
-
-
-Bush & Austein          Expires 23 February 2026               [Page 34]
-
-Internet-Draft            RPKI-Router Protocol               August 2025
-
 
    4.  Data elements with a lower asn value precede data elements with a
        higher asn value.  This ensures that AS0 PDU withdrawals always
@@ -1947,20 +1953,20 @@ Internet-Draft            RPKI-Router Protocol               August 2025
    3.  Data elements with a lower spkinfolen value precede data elements
        with a higher spkinfolen value.
 
+
+
+
+
+Bush & Austein            Expires 2 March 2026                 [Page 35]
+
+Internet-Draft            RPKI-Router Protocol               August 2025
+
+
    4.  Data elements are then ordered based on their spkinfo values.
        This ordering is the same as for the ski values.
 
    5.  Data elements with a lower asn value precede data elements with a
        higher asn value.
-
-
-
-
-
-Bush & Austein          Expires 23 February 2026               [Page 35]
-
-Internet-Draft            RPKI-Router Protocol               August 2025
-
 
 11.2.3.  ASPA PDUs
 
@@ -2004,19 +2010,17 @@ Internet-Draft            RPKI-Router Protocol               August 2025
    generally be transient, because a subsequent PDU received during the
    same synchronisation attempt should act to rectify the problem, there
    is a risk that those PDUs are not received due to an error during the
-   synchronisation attempt.  In that scenario, clients SHOULD revert the
-   application of any PDUs received during the failed synchronisation
-   attempt.
 
 
 
-
-
-
-Bush & Austein          Expires 23 February 2026               [Page 36]
+Bush & Austein            Expires 2 March 2026                 [Page 36]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
+
+   synchronisation attempt.  In that scenario, clients SHOULD revert the
+   application of any PDUs received during the failed synchronisation
+   attempt.
 
 11.4.  Other Considerations
 
@@ -2065,11 +2069,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-
-
-
-
-Bush & Austein          Expires 23 February 2026               [Page 37]
+Bush & Austein            Expires 2 March 2026                 [Page 37]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -2125,7 +2125,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026               [Page 38]
+Bush & Austein            Expires 2 March 2026                 [Page 38]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -2181,7 +2181,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026               [Page 39]
+Bush & Austein            Expires 2 March 2026                 [Page 39]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -2237,7 +2237,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026               [Page 40]
+Bush & Austein            Expires 2 March 2026                 [Page 40]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -2293,7 +2293,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026               [Page 41]
+Bush & Austein            Expires 2 March 2026                 [Page 41]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -2349,7 +2349,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026               [Page 42]
+Bush & Austein            Expires 2 March 2026                 [Page 42]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -2405,7 +2405,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026               [Page 43]
+Bush & Austein            Expires 2 March 2026                 [Page 43]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -2461,7 +2461,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026               [Page 44]
+Bush & Austein            Expires 2 March 2026                 [Page 44]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -2517,7 +2517,7 @@ Internet-Draft            RPKI-Router Protocol               August 2025
 
 
 
-Bush & Austein          Expires 23 February 2026               [Page 45]
+Bush & Austein            Expires 2 March 2026                 [Page 45]
 
 Internet-Draft            RPKI-Router Protocol               August 2025
 
@@ -2573,4 +2573,4 @@ Authors' Addresses
 
 
 
-Bush & Austein          Expires 23 February 2026               [Page 46]
+Bush & Austein            Expires 2 March 2026                 [Page 46]

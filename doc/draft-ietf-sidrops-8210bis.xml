@@ -1864,6 +1864,16 @@ Cache                         Router
 
         <t>
 
+            When using PDU values as integers for ordering
+            comparisons, implementors should ensure that each value
+            being used in a comparison is not inadvertently encoded
+            using little-endian bit order, since such an encoding will
+            lead to incorrect results.
+
+        </t>
+
+        <t>
+
             PDUs with a lower integer PDU type precede PDUs with a
             higher integer PDU type.  The sections that follow
             describe ordering as among PDUs of the same type.
