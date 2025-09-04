@@ -1787,12 +1787,13 @@ Cache                         Router
                 PDUs that intersect the BGP announcement's prefix.  If
                 the client does not have all of these PDUs, it may
                 classify the BGP announcement as invalid under ROV.
-                For example, if there is a BGP announcement for
-                192.0.2.0/25 with an origin of AS64494, an IPv4 PDU
-                for 192.0.2.0/24-24 with an origin of AS64495, and an
-                IPv4 PDU for 192.0.2.0/25-25 with an origin of
-                AS64494, then a client that has only the first PDU
-                will classify the BGP announcement as invalid.
+                For example, consider a scenario where there is a BGP
+                announcement for 192.0.2.0/25 with an origin of
+                AS64494, an IPv4 VRP for 192.0.2.0/24-24 with an
+                origin of AS64495, and an IPv4 VRP for 192.0.2.0/25-25
+                with an origin of AS64494.  A client that has received
+                an announcement PDU for the first VRP only will
+                classify the BGP announcement as invalid.
 
             </t>
 
@@ -1803,19 +1804,21 @@ Cache                         Router
             <t>
 
                 If one of the underlying RPKI objects is modified in
-                such a way that both a PDU withdrawal and a PDU
-                announcement will occur, this can lead to a BGP
-                announcement being considered invalid, if the PDU
-                withdrawal is received first.  For example, if there
-                is a BGP announcement for 192.0.2.0/25 with an origin
-                of AS64494, an IPv4 PDU for 192.0.2.0/24-24 with an
-                origin of AS64495, and an IPv4 PDU for 192.0.2.0/25-25
-                with an origin of AS64494, then a withdrawal of the
-                second PDU followed by an announcement of a
-                replacement PDU with a greater max-length will lead to
-                the BGP announcement being classified as invalid under
-                ROV in the time between PDU withdrawal and PDU
-                announcement. 
+                such a way that both a withdrawal PDU and an
+                announcement PDU will be issued, and the withdrawal
+                PDU is received by the client before the announcement
+                PDU, this can lead to a BGP announcement being
+                considered invalid until the announcement PDU is
+                received.  For example, consider a scenario where
+                there is a BGP announcement for 192.0.2.0/25 with an
+                origin of AS64494, an IPv4 VRP for 192.0.2.0/24-24
+                with an origin of AS64495, and an IPv4 VRP for
+                192.0.2.0/25-25 with an origin of AS64494.  If a
+                client receives a withdrawal PDU for the second VRP,
+                followed by an announcement PDU that acts to replace
+                the second VRP but with a greater max-length, then for
+                the time between receipt of those two PDUs, the BGP
+                announcement will be classified as invalid.
 
             </t>
 
