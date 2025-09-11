@@ -119,15 +119,17 @@
               type (<xref target="aspa"/>) has been added to support
               <xref target="I-D.ietf-sidrops-aspa-profile"/>.
             </t>
+
 	    <t>
-	      A small <xref target="races"/> has been added to handle
-	      two possible ROA (Route Origination Authorization) PDU
-	      race conditions, Make Before Break and Shorter Prefix
-	      First.
+
+              <xref target="races-ordering-transactions"/> has been
+              added in order to handle race conditions, by
+              mandating a payload PDU ordering for
+              caches and documenting related client implementation
+              options.
+
 	    </t>
-	    <t>
-	      Optional ordering of payload PDUs has been added.
-	    </t>
+
 	    <t>
 	      Language was clarified when multiple caches are
 	      configured, and an interesting affect is noted.
@@ -1740,7 +1742,7 @@ Cache                         Router
       </t>
     </section>
 
-    <section title="Races, Ordering, and Transactions">
+    <section anchor="races-ordering-transactions" title="Races, Ordering, and Transactions">
 
       <t>
 
@@ -2377,7 +2379,7 @@ Cache                         Router
 	    An error such as a stall (see <xref target="Transport"/>) or
 	    other transport layer failure occurred.
           </t>
-          <t hangText="11: Ordering Error (fatal):">
+          <t hangText="11: Ordering Error (non-fatal):">
             The received PDU does not conform with the ordering
             defined in <xref target="ordering" />.
           </t>
