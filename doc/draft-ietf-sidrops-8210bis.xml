@@ -7,7 +7,7 @@
 <?rfc compact="yes"?>
 <?rfc subcompact="no"?>
 
-<rfc category="std" docName="draft-ietf-sidrops-8210bis-22"
+<rfc category="std" docName="draft-ietf-sidrops-8210bis-23"
      submissionType="IETF" ipr="trust200902" version="2" consensus="yes">
 
   <front>
@@ -539,7 +539,7 @@
         </t>
         <t>
           Upon receipt of a Serial Notify PDU, the router MAY issue an
-          immediate Serial Query (<xref target="serialquery"/>) or 
+          immediate Serial Query (<xref target="serialquery"/>) or
           Reset Query (<xref target="resetquery"/>) without waiting for
           the Refresh Interval timer (see <xref target="timing"/>)
           to expire.
@@ -1094,7 +1094,7 @@
 	</t>
 
       </section>
-        
+
      </section>
 
     <section anchor="timing" title="Protocol Timing Parameters">
@@ -1885,81 +1885,81 @@ Cache                         Router
 
         </t>
 
-        <section title="IP PDUs">
+        <section title="IP Prefix PDUs">
 
           <t>
-  
-              In order to semantically compare and sort IP PDUs, each
+
+              In order to semantically compare and sort IP Prefix PDUs, each
               PDU is mapped to an abstract data element comprising
               five integer values:
-  
+
           </t>
-  
+
           <dl>
-            <dt>addr</dt>
-            
+            <dt><tt>addr</tt></dt>
+
             <dd>The first IP address of the IP prefix appearing in the
             PDU, as a 32-bit (IPv4) or 128-bit (IPv6) integer
             value.</dd>
 
-            <dt>plen</dt>
+            <dt><tt>plen</tt></dt>
 
             <dd>The length of the IP prefix appearing in the PDU, as an
             integer value.</dd>
 
-            <dt>mlen</dt>
+            <dt><tt>mlen</tt></dt>
 
             <dd>The max length appearing in the PDU, as an integer
             value.</dd>
 
-            <dt>asn</dt>
+            <dt><tt>asn</tt></dt>
 
             <dd>The origin ASN appearing in the PDU, as an integer
             value.</dd>
-            
-            <dt>updt</dt>
+
+            <dt><tt>updt</tt></dt>
 
             <dd>The integer 1, if the PDU is an announcement, and the
             integer 0, if the PDU is a withdrawal.</dd>
 
           </dl>
-  
+
           <t>
-            The equality or relative order of two IP PDUs can be
+            The equality or relative order of two IP Prefix PDUs can be
             tested by comparing their abstract representations.
           </t>
 
           <t>
 
-            The first order comparison is based on the updt value.
-            Data elements with an updt value of 1 precede data
-            elements with an updt value of 0.  This addresses the
+            The first order comparison is based on the <tt>updt</tt> value.
+            Data elements with an <tt>updt</tt> value of 1 precede data
+            elements with an <tt>updt</tt> value of 0.  This addresses the
             problem described in <xref target="withdrawals" />.
 
           </t>
 
           <section numbered="true">
             <t>
-                The order of two IP PDUs with updt values of 1 is
+                The order of two IP Prefix PDUs with <tt>updt</tt> values of 1 is
                 determined by the first non-equal comparison in the
                 following list.
             </t>
             <ol indent="adaptive">
               <li>
-                  Data elements with a higher addr value precede data
-                  elements with a lower addr value. 
+                  Data elements with a higher <tt>addr</tt> value precede data
+                  elements with a lower <tt>addr</tt> value.
               </li>
               <li>
-                  Data elements with a higher mlen value precede data
-                  elements with a lower mlen value.
+                  Data elements with a higher <tt>mlen</tt> value precede data
+                  elements with a lower <tt>mlen</tt> value.
               </li>
               <li>
-                  Data elements with a higher plen value precede data
-                  elements with a lower plen value.
+                  Data elements with a higher <tt>plen</tt> value precede data
+                  elements with a lower <tt>plen</tt> value.
               </li>
               <li>
-                  Data elements with a higher asn value precede data
-                  elements with a lower asn value.  This ensures that
+                  Data elements with a higher <tt>asn</tt> value precede data
+                  elements with a lower <tt>asn</tt> value.  This ensures that
                   AS0 PDU announcements, which can be used to cause BGP
                   announcements to become invalid under ROV, always
                   appear after all other relevant PDU announcements.
@@ -1970,26 +1970,26 @@ Cache                         Router
 
           <section numbered="true">
             <t>
-                The order of two IP PDUs with updt values of 0 is
+                The order of two IP Prefix PDUs with <tt>updt</tt> values of 0 is
                 determined by the first non-equal comparison in the
                 following list.
             </t>
             <ol indent="adaptive">
               <li>
-                  Data elements with a lower addr value precede data
-                  elements with a higher addr value.
+                  Data elements with a lower <tt>addr</tt> value precede data
+                  elements with a higher <tt>addr</tt> value.
               </li>
               <li>
-                  Data elements with a lower mlen value precede data
-                  elements with a higher mlen value.
+                  Data elements with a lower <tt>mlen</tt> value precede data
+                  elements with a higher <tt>mlen</tt> value.
               </li>
               <li>
-                  Data elements with a lower plen value precede data
-                  elements with a higher plen value.
+                  Data elements with a lower <tt>plen</tt> value precede data
+                  elements with a higher <tt>plen</tt> value.
               </li>
               <li>
-                  Data elements with a lower asn value precede data
-                  elements with a higher asn value.  This ensures that
+                  Data elements with a lower <tt>asn</tt> value precede data
+                  elements with a higher <tt>asn</tt> value.  This ensures that
                   AS0 PDU withdrawals always appear before all other
                   relevant PDU withdrawals.
               </li>
@@ -2010,40 +2010,40 @@ Cache                         Router
         <section title="Router Key PDUs">
 
           <t>
-  
+
               In order to semantically compare and sort Router Key PDUs,
               each PDU is mapped to an abstract data element
               comprising five values:
 
           </t>
-  
+
           <dl>
-            <dt>ski</dt>
+            <dt><tt>ski</tt></dt>
 
             <dd>The Subject Key Identifier appearing in the PDU, as
             binary data (20 octets in length).</dd>
 
-            <dt>spkinfo</dt>
+            <dt><tt>spkinfo</tt></dt>
 
             <dd>The Subject Public Key Info appearing in the PDU, as
             DER-encoded data.</dd>
 
-            <dt>spkinfolen</dt>
+            <dt><tt>spkinfolen</tt></dt>
 
             <dd>The number of octets in spkinfo.</dd>
 
-            <dt>asn</dt>
-            
+            <dt><tt>asn</tt></dt>
+
             <dd>The ASN appearing in the PDU, as an integer
             value.</dd>
 
-            <dt>updt</dt>
+            <dt><tt>updt</tt></dt>
 
             <dd>The integer 1, if the PDU is an announcement, and the
             integer 0, if the PDU is a withdrawal.</dd>
 
           </dl>
-  
+
           <t>
 
             The equality or relative order of two Router Key PDUs can
@@ -2054,8 +2054,8 @@ Cache                         Router
           <section numbered="true">
             <ol indent="adaptive">
               <li>
-                  Data elements with an updt value of 1 precede data
-                  elements with an updt value of 0.  This addresses
+                  Data elements with an <tt>updt</tt> value of 1 precede data
+                  elements with an <tt>updt</tt> value of 0.  This addresses
                   the problem described in <xref target="withdrawals"
                   />.
               </li>
@@ -2063,7 +2063,7 @@ Cache                         Router
               <li>
 
                   Data elements are then ordered based on their
-                  ski values.  This ordering is lexicographical:
+                  <tt>ski</tt> values.  This ordering is lexicographical:
                   each octet of binary data is treated as a symbol to
                   compare, with the symbols ordered by their numerical
                   value.
@@ -2072,23 +2072,23 @@ Cache                         Router
 
               <li>
 
-                  Data elements with a lower spkinfolen value precede data
-                  elements with a higher spkinfolen value.
+                  Data elements with a lower <tt>spkinfolen</tt> value precede data
+                  elements with a higher <tt>spkinfolen</tt> value.
 
               </li>
 
               <li>
 
                   Data elements are then ordered based on their
-                  spkinfo values.  This ordering is the same as for
-                  the ski values.
+                  <tt>spkinfo</tt> values.  This ordering is the same as for
+                  the <tt>ski</tt> values.
 
               </li>
 
               <li>
 
-                  Data elements with a lower asn value precede data
-                  elements with a higher asn value.
+                  Data elements with a lower <tt>asn</tt> value precede data
+                  elements with a higher <tt>asn</tt> value.
 
               </li>
 
@@ -2099,26 +2099,26 @@ Cache                         Router
         <section title="ASPA PDUs">
 
           <t>
-  
+
               In order to semantically compare and sort ASPA PDUs,
               each PDU is mapped to an abstract data element
               comprising two integer values:
 
           </t>
-  
+
           <dl>
-            <dt>casn</dt>
-            
+            <dt><tt>casn</tt></dt>
+
             <dd>The customer ASN appearing in the PDU, as an integer
             value.</dd>
 
-            <dt>updt</dt>
+            <dt><tt>updt</tt></dt>
 
             <dd>The integer 1, if the PDU is an announcement, and the
             integer 0, if the PDU is a withdrawal.</dd>
 
           </dl>
-  
+
           <t>
             The equality or relative order of two ASPA PDUs can be
             tested by comparing their abstract representations.
@@ -2127,14 +2127,14 @@ Cache                         Router
           <section numbered="true">
             <ol indent="adaptive">
               <li>
-                  Data elements with an updt value of 1 precede data
-                  elements with an updt value of 0.  This addresses
+                  Data elements with an <tt>updt</tt> value of 1 precede data
+                  elements with an <tt>updt</tt> value of 0.  This addresses
                   the problem described in <xref target="withdrawals"
                   />.
               </li>
               <li>
-                  Data elements with a lower casn value precede data
-                  elements with a higher casn value.
+                  Data elements with a lower <tt>casn</tt> value precede data
+                  elements with a higher <tt>casn</tt> value.
               </li>
             </ol>
           </section>
@@ -2158,7 +2158,7 @@ Cache                         Router
             A client may be unable to apply PDUs only on receipt of an
             End of Data PDU, due e.g. to memory limitations.  An
             alternative implementation approach that a client can use
-            is to apply IP PDUs as a single group if their prefixes
+            is to apply IP Prefix PDUs as a single group if their prefixes
             are equal.  Since the mandatory ordering is such that
             those PDUs will appear in sequence, and such groups will
             generally be small, this should be easier for clients to
@@ -2197,9 +2197,6 @@ Cache                         Router
             will close the transaction.  This is especially important
             when initiating or resetting a session, since it may take
             some time to receive all relevant data from the cache.
-            [todo: There were comments about adding guidance as to the
-            timeout here, but how should that be determined?  Can it
-            be based on the expiry interval, or something like that?]
 
         </t>
 
@@ -2379,7 +2376,7 @@ Cache                         Router
 	    An error such as a stall (see <xref target="Transport"/>) or
 	    other transport layer failure occurred.
           </t>
-          <t hangText="11: Ordering Error (non-fatal):">
+          <t hangText="11: Ordering Error (fatal):">
             The received PDU does not conform with the ordering
             defined in <xref target="ordering" />.
           </t>
@@ -2483,7 +2480,7 @@ Cache                         Router
 	be updated as follows:
       </t>
       <figure>
-        <artwork>	  
+        <artwork>
 	  Error
 	  Code    Description
 	  -----   ----------------
@@ -2503,7 +2500,7 @@ Cache                         Router
 	    255   Reserved
         </artwork>
       </figure>
-	
+
       <t>
         The "rpki-rtr-pdu" registry <xref target="iana-pdu"/> has been
         updated as follows:
