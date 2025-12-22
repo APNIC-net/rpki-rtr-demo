@@ -7,7 +7,7 @@
 <?rfc compact="yes"?>
 <?rfc subcompact="no"?>
 
-<rfc category="std" docName="draft-ietf-sidrops-8210bis-23"
+<rfc category="std" docName="draft-ietf-sidrops-8210bis-24"
      submissionType="IETF" ipr="trust200902" version="2" consensus="yes">
 
   <front>
@@ -626,9 +626,7 @@
         <t>
           The Session ID tells the cache what instance the router
           expects to ensure that the Serial Numbers are commensurate,
-          i.e., the cache session has not been changed.  If the
-          Session ID does not match, the cache MUST respond with a Cache
-          Reset.
+          i.e., the cache session has not been changed.
         </t>
       </section>
 
@@ -750,6 +748,18 @@
 	  {Prefix, Len, Max-Len, AS} into the minimal (or no) VRP to
 	  update the router to to the desired state.
 	</t>
+        <t>
+
+          Strictly speaking, the only data that a router client needs
+          from the Prefix is that indicated by the Prefix Length.  For
+          example, if the Prefix Length is eight, then only the first
+          eight bits of the Prefix are required for a router client to
+          make use of the PDU.  Notwithstanding this, the cache server
+          MUST set the remaining bits of the Prefix to zero, for
+          consistency with the approach used for the other unused
+          components of the PDU.
+
+        </t>
         </section>
 
       <section anchor="ipv6" title="IPv6 Prefix">
@@ -788,10 +798,10 @@
 	  target="RFC6811"/>.
 	</t>
         <t>
-          Analogous to the IPv4 Prefix PDU, it has 96 more bits and no
-          magic.
+          The behaviour specified in the previous section for the IPv4
+          Prefix PDU is also applicable to the IPv6 Prefix PDU.
         </t>
-        </section>
+      </section>
 
       <section anchor="eod" title="End of Data">
         <figure>
@@ -1014,7 +1024,7 @@
           The Arbitrary Text field is optional; if not present, the
           Length of Arbitrary text field MUST be zero.  If Arbitrary
           Text is present, it MUST be a string in UTF-8 encoding (see
-          <xref target="RFC3629"/>) in the Queen's English.
+          <xref target="RFC3629"/>) in English.
         </t>
       </section>
 
