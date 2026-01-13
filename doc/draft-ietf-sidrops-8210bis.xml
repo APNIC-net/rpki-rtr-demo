@@ -626,36 +626,34 @@
           to the cache, and it should therefore be the cache's job to
           simplify the change set, thus reducing work for the router.
         </t>
+
         <t>
-          If the cache does not have the data needed to update the
-          router, because its records do not go back to the Serial
-          Number in the Serial Query, then it responds with a Cache
-          Reset PDU (<xref target="cachereset"/>).
+
+        If the cache does not have the data needed to update the
+        router, then it responds with a Cache Reset PDU (<xref
+        target="cachereset" />).  There are two main scenarios where
+        this will happen: when the Serial Number requested in the
+        Serial Query is no longer available to the cache, and when the
+        session ID in the Serial Query designates a session that is no
+        longer available to the cache.
+
         </t>
+
         <t>
-          If the cache receives a Serial Query with an unknown Session
-          ID, and it has not yet sent a Cache Response to the router
-          during the current session, then the cache can either
-          respond with a Cache Reset PDU (<xref
-          target="cachereset"/>), or immediately terminate the session
-          with an Error Report PDU with code 0 ("Corrupt Data"), in
-          which case the router MUST flush all data learned from the
-          cache. The advantage of the Cache Reset approach is that it
-          saves requiring the router to flush the data that it has
-          learned, as well as also saving the termination of the
-          session for the router. The advantage of the Error Report
-          approach is that it allows for an implementation to use the
-          same behaviour during session establishment as for a session
-          that is already in progress. The Error Report approach may
-          also be more useful in cases where the cache Session ID is
-          not expected to change.
+
+        Per section 5.1, if the Serial Query contains a session ID
+        that is not equal to that previously established in the
+        session between the router and the cache, the cache terminates
+        the session with an Error Report PDU with code 0 ("Corrupt
+        Data").  The behaviour in the second scenario from the
+        previous paragraph is limited to two cases: where the router
+        is using the previously-established session ID, and where the
+        cache is unable to determine whether the router is using the
+        previously-established session ID, due to data loss or
+        similar.
+
         </t>
-        <t>
-          (The behaviour required of a cache when it receives a Serial
-          Query with an unknown Session ID but has already sent a
-          Cache Response to the router during the current session is
-          described in <xref target="fields" />.)
-        </t>
+
       </section>
 
       <section anchor="resetquery" title="Reset Query">
