@@ -180,6 +180,9 @@ sub _parse_pdu
 
     my $socket = $self->{'socket'};
     my $pdu = parse_pdu($socket);
+    if (not $pdu) {
+        die "client: unable to parse PDU";
+    }
     if (my $cv = $self->{'current_version'}) {
         if ($pdu->version() != $cv) {
             if ($pdu->type() == PDU_ERROR_REPORT()) {

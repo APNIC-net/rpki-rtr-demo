@@ -11,7 +11,7 @@ COPY ./docker-rtrlib.sh .
 RUN ./docker-rtrlib.sh
 COPY . /root/rpki-rtr-demo
 WORKDIR /root/rpki-rtr-demo
-RUN sudo cpanm -v --installdeps .
+RUN sudo cpanm -v -n --installdeps .
 RUN sudo make clean || true
 RUN perl Makefile.PL && make
 CMD /bin/bash
