@@ -31,6 +31,20 @@
       </address>
     </author>
 
+    <author initials="T." surname="Harrison" fullname="Tom Harrison">
+        <organization abbrev="APNIC">Asia Pacific Network Information Centre</organization>
+        <address>
+            <postal>
+                <street>6 Cordelia St</street>
+                <city>South Brisbane</city>
+                <code>4101</code>
+                <country>Australia</country>
+                <region>QLD</region>
+            </postal>
+            <email>tomh@apnic.net</email>
+        </address>
+    </author>
+
     <date />
 
     <abstract>
@@ -1050,7 +1064,7 @@
           The Arbitrary Text field is optional; if not present, the
           Length of Arbitrary text field MUST be zero.  If Arbitrary
           Text is present, it MUST be a string in UTF-8 encoding (see
-          <xref target="RFC3629"/>) in English.
+          <xref target="RFC3629"/>) in the Queen's English.
         </t>
       </section>
 
