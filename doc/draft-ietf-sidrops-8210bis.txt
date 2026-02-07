@@ -1745,12 +1745,13 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 11.1.1.  IPv4/IPv6 PDUs with Different Origins
 
-   If two BGP announcements exist for a given IP prefix destination,
-   each with a different origin ASN, then two IP PDUs must be issued by
-   a cache for those BGP announcements to be considered valid under
-   route origin validation (ROV) [RFC6483].  If a client has only one of
-   those PDUs, then the BGP announcement that is validated by the other
-   PDU will be considered invalid until that other PDU is received.
+   If two BGP route announcements exist for a given IP destination, each
+   with a different origin ASN, then two IP Prefix PDUs must be
+   announced by a cache for those route announcements to be considered
+   valid under BGP Prefix Origin Validation [RFC6811].  If a client has
+   only one of those PDUs, then the BGP announcement that is validated
+   by the other PDU will be considered invalid until that other PDU is
+   received.
 
 11.1.2.  IPv4/IPv6 PDUs for More-Specific Prefixes
 
@@ -1778,7 +1779,6 @@ Internet-Draft            RPKI-Router Protocol             February 2026
    announcement PDU that acts to replace the second VRP but with a
    greater max-length, then for the time between receipt of those two
    PDUs, the BGP announcement will be classified as invalid.
-
 
 
 
@@ -2410,12 +2410,6 @@ Bush, et al.             Expires 11 August 2026                [Page 43]
 Internet-Draft            RPKI-Router Protocol             February 2026
 
 
-   [RFC6483]  Huston, G. and G. Michaelson, "Validation of Route
-              Origination Using the Resource Certificate Public Key
-              Infrastructure (PKI) and Route Origin Authorizations
-              (ROAs)", RFC 6483, DOI 10.17487/RFC6483, February 2012,
-              <https://www.rfc-editor.org/info/rfc6483>.
-
    [RFC6487]  Huston, G., Michaelson, G., and R. Loomans, "A Profile for
               X.509 PKIX Resource Certificates", RFC 6487,
               DOI 10.17487/RFC6487, February 2012,
@@ -2459,16 +2453,18 @@ Internet-Draft            RPKI-Router Protocol             February 2026
               Changes (DNS NOTIFY)", RFC 1996, DOI 10.17487/RFC1996,
               August 1996, <https://www.rfc-editor.org/info/rfc1996>.
 
+   [RFC4808]  Bellovin, S., "Key Change Strategies for TCP-MD5",
+              RFC 4808, DOI 10.17487/RFC4808, March 2007,
+              <https://www.rfc-editor.org/info/rfc4808>.
+
+
+
 
 
 Bush, et al.             Expires 11 August 2026                [Page 44]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
-
-   [RFC4808]  Bellovin, S., "Key Change Strategies for TCP-MD5",
-              RFC 4808, DOI 10.17487/RFC4808, March 2007,
-              <https://www.rfc-editor.org/info/rfc4808>.
 
    [RFC5781]  Weiler, S., Ward, D., and R. Housley, "The rsync URI
               Scheme", RFC 5781, DOI 10.17487/RFC5781, February 2010,
@@ -2514,6 +2510,10 @@ Acknowledgements
    David Mandelberg, Sandy Murphy, Robert Raszuk, Andreas Reuter, Thomas
    Schmidt, John Scudder, Job Snijders, Ruediger Volk, Matthias
    Waehlisch, and David Ward.  Particular thanks go to Hannes Gredler
+   for showing us the dangers of unnecessary fields.
+
+   No doubt this list is incomplete.  We apologize to any contributor
+   whose name we missed.
 
 
 
@@ -2521,11 +2521,6 @@ Bush, et al.             Expires 11 August 2026                [Page 45]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
-
-   for showing us the dangers of unnecessary fields.
-
-   No doubt this list is incomplete.  We apologize to any contributor
-   whose name we missed.
 
 Authors' Addresses
 
@@ -2545,6 +2540,11 @@ Authors' Addresses
    South Brisbane QLD 4101
    Australia
    Email: tomh@apnic.net
+
+
+
+
+
 
 
 

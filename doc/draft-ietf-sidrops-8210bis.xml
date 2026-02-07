@@ -1819,12 +1819,12 @@ Cache                         Router
 
             <t>
 
-                If two BGP announcements exist for a given IP prefix
+                If two BGP route announcements exist for a given IP
                 destination, each with a different origin ASN, then
-                two IP  PDUs must be issued by a cache for those BGP
-                announcements to be considered valid under route
-                origin validation (ROV) <xref target="RFC6483" />.  If
-                a client has only one of those PDUs, then the BGP
+                two IP Prefix PDUs must be announced by a cache for
+                those route announcements to be considered valid under
+                BGP Prefix Origin Validation <xref target="RFC6811" />.
+                If a client has only one of those PDUs, then the BGP
                 announcement that is validated by the other PDU will
                 be considered invalid until that other PDU is
                 received.
@@ -2648,7 +2648,6 @@ Cache                         Router
       <?rfc include="reference.RFC.5925.xml"?>
       <?rfc include="reference.RFC.5926.xml"?>
       <?rfc include="reference.RFC.6125.xml"?>
-      <?rfc include="reference.RFC.6483.xml"?>
       <?rfc include="reference.RFC.6487.xml"?>
       <?rfc include="reference.RFC.6810.xml"?>
       <?rfc include="reference.RFC.6811.xml"?>
