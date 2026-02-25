@@ -7,7 +7,7 @@ use JSON::XS qw(decode_json);
 
 use APNIC::RPKI::RTR::Constants;
 use APNIC::RPKI::RTR::Utils qw(dprint);
-use APNIC::RPKI::RTR::PDU::Utils qw(parse_pdu);
+use APNIC::RPKI::RTR::PDU::Utils;
 use APNIC::RPKI::RTR::Utils qw(recv_all
                                encode_json_rtr);
 
