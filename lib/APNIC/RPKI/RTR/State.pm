@@ -93,6 +93,9 @@ sub apply_changeset
                 }
                 $self->{'vrps'}->{$asn}->{$addr}->{$length}->{$max_length} = 1;
             } elsif ($flags == 0) {
+                if ($self->{'aggregator'}) {
+                    die "Withdrawals are unhandled when aggregating";
+                }
                 dprint("state: removing IP prefix: $asn, $addr/$length-$max_length");
                 if (not $ignore_errors) {
                     if (not exists $self->{'vrps'}->{$asn}->{$addr}->{$length}->{$max_length}) {
@@ -144,6 +147,9 @@ sub apply_changeset
                 }
                 $self->{'rks'}->{$asn}->{$ski->bstr()}->{$spki} = 1; 
             } elsif ($flags == 0) {
+                if ($self->{'aggregator'}) {
+                    die "Withdrawals are unhandled when aggregating";
+                }
                 if (not $ignore_errors) {
                     if (not exists $self->{'rks'}->{$asn}->{$ski->bstr()}->{$spki}) {
                         dprint("state: withdrawal of unknown record");
@@ -229,6 +235,9 @@ sub apply_changeset
                     $self->{'aspas'}->{$customer_asn} = \@provider_asns;
                 }
             } else {
+                if ($self->{'aggregator'}) {
+                    die "Withdrawals are unhandled when aggregating";
+                }
                 if (not $ignore_errors) {
                     if (not exists $self->{'aspas'}->{$customer_asn}) {
                         dprint("state: withdrawal of unknown record");
@@ -243,12 +252,7 @@ sub apply_changeset
                         dprint("state: withdrawal of known record");
                     }
                 }
-                # When combining ASPA records (only relevant when the
-                # router is connecting to multiple caches), an empty
-                # ASPA has no effect.
-                if (not $self->{'aggregator'}) {
-                    delete $self->{'aspas'}->{$customer_asn};
-                }
+                delete $self->{'aspas'}->{$customer_asn};
             }
         } else {
             warn "Unexpected PDU type ".$pdu->type().", skipping";
