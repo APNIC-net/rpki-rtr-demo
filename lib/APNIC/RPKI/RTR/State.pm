@@ -209,6 +209,16 @@ sub apply_changeset
                             return $error_pdu;
                         }
                     }
+                    if (@provider_asns > 1 and $provider_asns[0] == 0) {
+                        dprint("state: AS0 included alongside other providers");
+                        my $error_pdu =
+                            APNIC::RPKI::RTR::PDU::ErrorReport->new(
+                                version          => $version,
+                                error_code       => ERR_ASPA_PROVIDER_LIST_ERROR(),
+                                encapsulated_pdu => $pdu,
+                            );
+                        return $error_pdu;
+                    }
                 }
                 if ($combine_aspas) {
                     $self->{'aspas'}->{$customer_asn} =
