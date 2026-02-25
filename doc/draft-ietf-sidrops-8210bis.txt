@@ -5,10 +5,10 @@
 Network Working Group                                            R. Bush
 Internet-Draft                               Arrcus, DRL, & IIJ Research
 Intended status: Standards Track                              R. Austein
-Expires: 10 August 2026                             Dragon Research Labs
+Expires: 11 August 2026                             Dragon Research Labs
                                                              T. Harrison
                                                                    APNIC
-                                                         6 February 2026
+                                                         7 February 2026
 
 
    The Resource Public Key Infrastructure (RPKI) to Router Protocol,
@@ -43,7 +43,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 10 August 2026.
+   This Internet-Draft will expire on 11 August 2026.
 
 Copyright Notice
 
@@ -53,7 +53,7 @@ Copyright Notice
 
 
 
-Bush, et al.             Expires 10 August 2026                 [Page 1]
+Bush, et al.             Expires 11 August 2026                 [Page 1]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -109,7 +109,7 @@ Table of Contents
 
 
 
-Bush, et al.             Expires 10 August 2026                 [Page 2]
+Bush, et al.             Expires 11 August 2026                 [Page 2]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -165,7 +165,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                 [Page 3]
+Bush, et al.             Expires 11 August 2026                 [Page 3]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -221,7 +221,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                 [Page 4]
+Bush, et al.             Expires 11 August 2026                 [Page 4]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -277,7 +277,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                 [Page 5]
+Bush, et al.             Expires 11 August 2026                 [Page 5]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -333,7 +333,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                 [Page 6]
+Bush, et al.             Expires 11 August 2026                 [Page 6]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -389,7 +389,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                 [Page 7]
+Bush, et al.             Expires 11 August 2026                 [Page 7]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -445,7 +445,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                 [Page 8]
+Bush, et al.             Expires 11 August 2026                 [Page 8]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -501,7 +501,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                 [Page 9]
+Bush, et al.             Expires 11 August 2026                 [Page 9]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -557,7 +557,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                [Page 10]
+Bush, et al.             Expires 11 August 2026                [Page 10]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -613,7 +613,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                [Page 11]
+Bush, et al.             Expires 11 August 2026                [Page 11]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -669,7 +669,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                [Page 12]
+Bush, et al.             Expires 11 August 2026                [Page 12]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -725,7 +725,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                [Page 13]
+Bush, et al.             Expires 11 August 2026                [Page 13]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -781,7 +781,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                [Page 14]
+Bush, et al.             Expires 11 August 2026                [Page 14]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -837,7 +837,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                [Page 15]
+Bush, et al.             Expires 11 August 2026                [Page 15]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -893,7 +893,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                [Page 16]
+Bush, et al.             Expires 11 August 2026                [Page 16]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -949,7 +949,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                [Page 17]
+Bush, et al.             Expires 11 August 2026                [Page 17]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -1005,7 +1005,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                [Page 18]
+Bush, et al.             Expires 11 August 2026                [Page 18]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -1061,7 +1061,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                [Page 19]
+Bush, et al.             Expires 11 August 2026                [Page 19]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -1117,7 +1117,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                [Page 20]
+Bush, et al.             Expires 11 August 2026                [Page 20]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -1140,7 +1140,9 @@ Internet-Draft            RPKI-Router Protocol             February 2026
    previously announced record from that cache with the same Customer
    Autonomous System Number.  For an announcement, the PDU MUST contain
    at least one Provider Autonomous System Number or an Error PDU with
-   code 9, ASPA Provider List Error is returned.
+   code 9, ASPA Provider List Error is returned.  An ASPA announcement
+   PDU containing multiple Provider Autonomous System Numbers MUST NOT
+   contain AS 0 or an Error PDU with code 9 is returned.
 
    If the announce/withdraw flag is set to 0, the entire ASPA record
    from that cache for that Customer AS MUST be removed from the router.
@@ -1168,15 +1170,15 @@ Internet-Draft            RPKI-Router Protocol             February 2026
       waiting for the Refresh Interval to expire.  Countdown for this
       timer starts upon receipt of the containing End Of Data PDU.
 
-      Minimum allowed value:  1 second.
 
 
 
-
-Bush, et al.             Expires 10 August 2026                [Page 21]
+Bush, et al.             Expires 11 August 2026                [Page 21]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
+
+      Minimum allowed value:  1 second.
 
       Maximum allowed value:  86400 seconds (1 day).
 
@@ -1224,15 +1226,15 @@ Internet-Draft            RPKI-Router Protocol             February 2026
    highest version of this protocol the router implements in the
    Protocol Version field.  If the cache supports that version, it
    responds with a Cache Response (Section 5.5) of that version and the
-   session is considered open.
 
 
 
-
-Bush, et al.             Expires 10 August 2026                [Page 22]
+Bush, et al.             Expires 11 August 2026                [Page 22]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
+
+   session is considered open.
 
    If a cache which supports version C receives a query with Protocol
    Version Q < C, and the cache does not support versions <= Q, the
@@ -1283,9 +1285,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-
-
-Bush, et al.             Expires 10 August 2026                [Page 23]
+Bush, et al.             Expires 11 August 2026                [Page 23]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -1341,7 +1341,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                [Page 24]
+Bush, et al.             Expires 11 August 2026                [Page 24]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -1397,7 +1397,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                [Page 25]
+Bush, et al.             Expires 11 August 2026                [Page 25]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -1453,7 +1453,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                [Page 26]
+Bush, et al.             Expires 11 August 2026                [Page 26]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -1509,7 +1509,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                [Page 27]
+Bush, et al.             Expires 11 August 2026                [Page 27]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -1565,7 +1565,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                [Page 28]
+Bush, et al.             Expires 11 August 2026                [Page 28]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -1621,7 +1621,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                [Page 29]
+Bush, et al.             Expires 11 August 2026                [Page 29]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -1677,7 +1677,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                [Page 30]
+Bush, et al.             Expires 11 August 2026                [Page 30]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -1733,7 +1733,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                [Page 31]
+Bush, et al.             Expires 11 August 2026                [Page 31]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -1745,12 +1745,13 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 11.1.1.  IPv4/IPv6 PDUs with Different Origins
 
-   If two BGP announcements exist for a given IP prefix destination,
-   each with a different origin ASN, then two IP PDUs must be issued by
-   a cache for those BGP announcements to be considered valid under
-   route origin validation (ROV) [RFC6483].  If a client has only one of
-   those PDUs, then the BGP announcement that is validated by the other
-   PDU will be considered invalid until that other PDU is received.
+   If two BGP route announcements exist for a given IP destination, each
+   with a different origin ASN, then two IP Prefix PDUs must be
+   announced by a cache for those route announcements to be considered
+   valid under BGP Prefix Origin Validation [RFC6811].  If a client has
+   only one of those PDUs, then the BGP announcement that is validated
+   by the other PDU will be considered invalid until that other PDU is
+   received.
 
 11.1.2.  IPv4/IPv6 PDUs for More-Specific Prefixes
 
@@ -1788,8 +1789,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-
-Bush, et al.             Expires 10 August 2026                [Page 32]
+Bush, et al.             Expires 11 August 2026                [Page 32]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -1845,7 +1845,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                [Page 33]
+Bush, et al.             Expires 11 August 2026                [Page 33]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -1901,7 +1901,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                [Page 34]
+Bush, et al.             Expires 11 August 2026                [Page 34]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -1957,7 +1957,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                [Page 35]
+Bush, et al.             Expires 11 August 2026                [Page 35]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -2013,7 +2013,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                [Page 36]
+Bush, et al.             Expires 11 August 2026                [Page 36]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -2069,7 +2069,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                [Page 37]
+Bush, et al.             Expires 11 August 2026                [Page 37]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -2125,7 +2125,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                [Page 38]
+Bush, et al.             Expires 11 August 2026                [Page 38]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -2181,7 +2181,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                [Page 39]
+Bush, et al.             Expires 11 August 2026                [Page 39]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -2237,7 +2237,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                [Page 40]
+Bush, et al.             Expires 11 August 2026                [Page 40]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -2293,7 +2293,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                [Page 41]
+Bush, et al.             Expires 11 August 2026                [Page 41]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -2349,7 +2349,7 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                [Page 42]
+Bush, et al.             Expires 11 August 2026                [Page 42]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
@@ -2405,16 +2405,10 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
 
 
-Bush, et al.             Expires 10 August 2026                [Page 43]
+Bush, et al.             Expires 11 August 2026                [Page 43]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
-
-   [RFC6483]  Huston, G. and G. Michaelson, "Validation of Route
-              Origination Using the Resource Certificate Public Key
-              Infrastructure (PKI) and Route Origin Authorizations
-              (ROAs)", RFC 6483, DOI 10.17487/RFC6483, February 2012,
-              <https://www.rfc-editor.org/info/rfc6483>.
 
    [RFC6487]  Huston, G., Michaelson, G., and R. Loomans, "A Profile for
               X.509 PKIX Resource Certificates", RFC 6487,
@@ -2459,16 +2453,18 @@ Internet-Draft            RPKI-Router Protocol             February 2026
               Changes (DNS NOTIFY)", RFC 1996, DOI 10.17487/RFC1996,
               August 1996, <https://www.rfc-editor.org/info/rfc1996>.
 
-
-
-Bush, et al.             Expires 10 August 2026                [Page 44]
-
-Internet-Draft            RPKI-Router Protocol             February 2026
-
-
    [RFC4808]  Bellovin, S., "Key Change Strategies for TCP-MD5",
               RFC 4808, DOI 10.17487/RFC4808, March 2007,
               <https://www.rfc-editor.org/info/rfc4808>.
+
+
+
+
+
+Bush, et al.             Expires 11 August 2026                [Page 44]
+
+Internet-Draft            RPKI-Router Protocol             February 2026
+
 
    [RFC5781]  Weiler, S., Ward, D., and R. Housley, "The rsync URI
               Scheme", RFC 5781, DOI 10.17487/RFC5781, February 2010,
@@ -2514,18 +2510,17 @@ Acknowledgements
    David Mandelberg, Sandy Murphy, Robert Raszuk, Andreas Reuter, Thomas
    Schmidt, John Scudder, Job Snijders, Ruediger Volk, Matthias
    Waehlisch, and David Ward.  Particular thanks go to Hannes Gredler
-
-
-
-Bush, et al.             Expires 10 August 2026                [Page 45]
-
-Internet-Draft            RPKI-Router Protocol             February 2026
-
-
    for showing us the dangers of unnecessary fields.
 
    No doubt this list is incomplete.  We apologize to any contributor
    whose name we missed.
+
+
+
+Bush, et al.             Expires 11 August 2026                [Page 45]
+
+Internet-Draft            RPKI-Router Protocol             February 2026
+
 
 Authors' Addresses
 
@@ -2573,4 +2568,9 @@ Authors' Addresses
 
 
 
-Bush, et al.             Expires 10 August 2026                [Page 46]
+
+
+
+
+
+Bush, et al.             Expires 11 August 2026                [Page 46]
