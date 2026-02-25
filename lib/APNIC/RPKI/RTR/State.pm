@@ -61,7 +61,7 @@ sub session_id
 
 sub apply_changeset
 {
-    my ($self, $changeset, $version, $ignore_errors, $combine_aspas) = @_;
+    my ($self, $changeset, $version, $ignore_errors) = @_;
 
     my @pdus = @{$changeset->{'pdus'}};
     my $pdu_count = scalar @pdus;
@@ -220,7 +220,7 @@ sub apply_changeset
                         return $error_pdu;
                     }
                 }
-                if ($combine_aspas) {
+                if ($self->{'aggregator'}) {
                     $self->{'aspas'}->{$customer_asn} =
                         [sort(uniq(
                             @{$self->{'aspas'}->{$customer_asn} || []},
@@ -246,7 +246,7 @@ sub apply_changeset
                 # When combining ASPA records (only relevant when the
                 # router is connecting to multiple caches), an empty
                 # ASPA has no effect.
-                if (not $combine_aspas) {
+                if (not $self->{'aggregator'}) {
                     delete $self->{'aspas'}->{$customer_asn};
                 }
             }
@@ -310,7 +310,9 @@ sub _pdus
         # It is possible for AS0 to be present here alongside other
         # ASNs, when aggregating the state for multiple clients.  It
         # should not happen outside of that context, though.
-        if (@provider_asns > 1 and $provider_asns[0] == 0) {
+        if ($self->{'aggregator'}
+                and (@provider_asns > 1)
+                and ($provider_asns[0] == 0)) {
             shift @provider_asns;
         }
         my $pdu =
