@@ -196,6 +196,19 @@ sub apply_changeset
                             );
                         return $error_pdu;
                     }
+                    my @sorted_provider_asns = sort @provider_asns;
+                    for (my $i = 0; $i < @sorted_provider_asns; $i++) {
+                        if ($sorted_provider_asns[$i] != $provider_asns[$i]) {
+                            dprint("state: unordered provider ASNs in ASPA announcement");
+                            my $error_pdu =
+                                APNIC::RPKI::RTR::PDU::ErrorReport->new(
+                                    version          => $version,
+                                    error_code       => ERR_ASPA_PROVIDER_LIST_ERROR(),
+                                    encapsulated_pdu => $pdu,
+                                );
+                            return $error_pdu;
+                        }
+                    }
                 }
                 if ($combine_aspas) {
                     $self->{'aspas'}->{$customer_asn} =
