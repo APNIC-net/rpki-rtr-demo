@@ -1754,13 +1754,14 @@ Internet-Draft            RPKI-Router Protocol             February 2026
    there may be multiple covering ROAs from multiple caches.  The
    results are as described in [RFC6811].
 
-   For a given customer ASN, there may be multiple ASPA PDUs to
-   consider.  When combining ASPA data for further use locally, routers
-   should take care to handle the case where one ASPA PDU has only AS0
-   as a provider, while another ASPA PDU has a provider list that does
-   not include AS0.  For example, to align with the behaviour that must
-   be implemented by caches, a router could exclude AS0 from the
-   provider list that is synthesised by combining the relevant PDUs.
+   When working with multiple caches that have the same priority, there
+   may be multiple ASPA PDUs to consider for a single customer ASN.
+   When combining ASPA data for further use locally, routers should take
+   care to handle the case where one ASPA PDU has only AS0 as a
+   provider, while another ASPA PDU has a provider list that does not
+   include AS0.  For example, to align with the behaviour that must be
+   implemented by caches, a router could exclude AS0 from the provider
+   list that is synthesised by combining the relevant PDUs.
 
 11.  Races, Ordering, and Transactions
 
@@ -1785,7 +1786,6 @@ Internet-Draft            RPKI-Router Protocol             February 2026
    valid under BGP Prefix Origin Validation [RFC6811].  If a client has
    only one of those PDUs, then the BGP announcement that is validated
    by the other PDU will be considered invalid until that other PDU is
-   received.
 
 
 
@@ -1793,6 +1793,8 @@ Bush, et al.             Expires 29 August 2026                [Page 32]
 
 Internet-Draft            RPKI-Router Protocol             February 2026
 
+
+   received.
 
 11.1.2.  IPv4/IPv6 PDUs for More-Specific Prefixes
 
@@ -1837,8 +1839,6 @@ Internet-Draft            RPKI-Router Protocol             February 2026
 
    The ordering definitions in this section have been modelled on those
    from Section 4.3.3 of [RFC9582].
-
-
 
 
 

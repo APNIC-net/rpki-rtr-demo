@@ -1794,12 +1794,13 @@ Cache                         Router
         <xref target="RFC6811"/>.
       </t>
       <t>
-        For a given customer ASN, there may be multiple ASPA PDUs to
-        consider. When combining ASPA data for further use locally,
-        routers should take care to handle the case where one ASPA PDU
-        has only AS0 as a provider, while another ASPA PDU has a
-        provider list that does not include AS0. For example, to align
-        with the behaviour that must be implemented by caches, a
+        When working with multiple caches that have the same priority,
+        there may be multiple ASPA PDUs to consider for a single
+        customer ASN. When combining ASPA data for further use
+        locally, routers should take care to handle the case where one
+        ASPA PDU has only AS0 as a provider, while another ASPA PDU
+        has a provider list that does not include AS0. For example, to
+        align with the behaviour that must be implemented by caches, a
         router could exclude AS0 from the provider list that is
         synthesised by combining the relevant PDUs.
       </t>
