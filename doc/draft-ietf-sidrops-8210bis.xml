@@ -1750,12 +1750,6 @@ Cache                         Router
         later updates MUST affect the correct data.
       </t>
       <t>
-        Just as there may be more than one covering ROA from a single
-        cache, there may be multiple covering ROAs from multiple caches.
-        The results are as described in
-        <xref target="RFC6811"/>.
-      </t>
-      <t>
         If data from multiple caches are held, implementations MUST NOT
         distinguish between data sources when performing validation of
         BGP announcements.
@@ -1792,6 +1786,22 @@ Cache                         Router
         do so all at the same times, e.g., on the hour.  Choose a random
         time, perhaps the ISP's AS number modulo 60, and jitter the
         inter-fetch timing.
+      </t>
+      <t>
+        Just as there may be more than one covering ROA from a single
+        cache, there may be multiple covering ROAs from multiple caches.
+        The results are as described in
+        <xref target="RFC6811"/>.
+      </t>
+      <t>
+        For a given customer ASN, there may be multiple ASPA PDUs to
+        consider. When combining ASPA data for further use locally,
+        routers should take care to handle the case where one ASPA PDU
+        has only AS0 as a provider, while another ASPA PDU has a
+        provider list that does not include AS0. For example, to align
+        with the behaviour that must be implemented by caches, a
+        router could exclude AS0 from the provider list that is
+        synthesised by combining the relevant PDUs.
       </t>
     </section>
 
