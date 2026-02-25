@@ -126,6 +126,7 @@ sub reset
             if ($success) {
                 dprint("New active index is $index");
                 $self->{'active'} = $index;
+                last;
             }
         }
     }
@@ -179,6 +180,7 @@ sub refresh
             if ($success) {
                 dprint("New active index is $index");
                 $self->{'active'} = $index;
+                last;
             }
         }
     }

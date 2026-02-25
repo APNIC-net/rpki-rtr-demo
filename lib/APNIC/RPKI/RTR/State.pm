@@ -222,9 +222,9 @@ sub apply_changeset
                 }
                 if ($combine_aspas) {
                     $self->{'aspas'}->{$customer_asn} =
-                        [sort uniq(
+                        [sort(uniq(
                             @{$self->{'aspas'}->{$customer_asn} || []},
-                            @provider_asns)];
+                            @provider_asns))];
                 } else {
                     $self->{'aspas'}->{$customer_asn} = \@provider_asns;
                 }
@@ -307,6 +307,12 @@ sub _pdus
     @asns = keys %{$aspas};
     for my $asn (@asns) {
         my @provider_asns = @{$aspas->{$asn}};
+        # It is possible for AS0 to be present here alongside other
+        # ASNs, when aggregating the state for multiple clients.  It
+        # should not happen outside of that context, though.
+        if (@provider_asns > 1 and $provider_asns[0] == 0) {
+            shift @provider_asns;
+        }
         my $pdu =
             APNIC::RPKI::RTR::PDU::ASPA->new(
                 version       => 2,
