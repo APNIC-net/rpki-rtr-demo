@@ -1104,8 +1104,9 @@
         </t>
         <t>
           There are zero or more 32-bit Provider Autonomous System
-          Number fields in increasing numeric order.  See <xref
-          target="I-D.ietf-sidrops-aspa-profile"/>.
+          Number fields in increasing numeric order. Each Provider
+          Autonomous System Number in a given ASPA PDU MUST be unique.
+          See <xref target="I-D.ietf-sidrops-aspa-profile"/>.
         </t>
         <t>
           The Flags field is as described in <xref target="pdus"/>.

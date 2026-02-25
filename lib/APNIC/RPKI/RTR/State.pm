@@ -3,6 +3,7 @@ package APNIC::RPKI::RTR::State;
 use warnings;
 use strict;
 
+use List::MoreUtils qw(uniq);
 use Math::BigInt;
 use JSON::XS qw(encode_json decode_json);
 
@@ -176,6 +177,17 @@ sub apply_changeset
                 if (not $ignore_errors) {
                     if (not @provider_asns) {
                         dprint("state: no provider ASNs in ASPA announcement");
+                        my $error_pdu =
+                            APNIC::RPKI::RTR::PDU::ErrorReport->new(
+                                version          => $version,
+                                error_code       => ERR_ASPA_PROVIDER_LIST_ERROR(),
+                                encapsulated_pdu => $pdu,
+                            );
+                        return $error_pdu;
+                    }
+                    my @unique_provider_asns = uniq @provider_asns;
+                    if (@unique_provider_asns != @provider_asns) {
+                        dprint("state: duplicate provider ASNs in ASPA announcement");
                         my $error_pdu =
                             APNIC::RPKI::RTR::PDU::ErrorReport->new(
                                 version          => $version,
