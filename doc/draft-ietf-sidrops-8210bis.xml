@@ -1802,7 +1802,7 @@ Cache                         Router
         has a provider list that does not include AS0. For example, to
         align with the behaviour that must be implemented by caches, a
         router could exclude AS0 from the provider list that is
-        synthesised by combining the relevant PDUs.
+        synthesised when combining the relevant PDUs.
       </t>
     </section>
 
@@ -1850,16 +1850,17 @@ Cache                         Router
             <t>
 
                 For a given BGP announcement, there may be multiple IP
-                PDUs that intersect the BGP announcement's prefix.  If
-                the client does not have all of these PDUs, it may
-                classify the BGP announcement as invalid under ROV.
-                For example, consider a scenario where there is a BGP
-                announcement for 192.0.2.0/25 with an origin of
-                AS64494, an IPv4 VRP for 192.0.2.0/24-24 with an
-                origin of AS64495, and an IPv4 VRP for 192.0.2.0/25-25
-                with an origin of AS64494.  A client that has received
-                an announcement PDU for the first VRP only will
-                classify the BGP announcement as invalid.
+                Prefix PDUs that intersect the BGP announcement's
+                prefix.  If the client does not have all of these
+                PDUs, it may classify the BGP announcement as invalid
+                under ROV.  For example, consider a scenario where
+                there is a BGP announcement for 192.0.2.0/25 with an
+                origin of AS64494, an IPv4 VRP for 192.0.2.0/24-24
+                with an origin of AS64495, and an IPv4 VRP for
+                192.0.2.0/25-25 with an origin of AS64494.  A client
+                that has received an announcement PDU for the first
+                VRP only will classify the BGP announcement as
+                invalid.
 
             </t>
 
