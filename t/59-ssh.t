@@ -14,6 +14,7 @@ use Cwd qw(cwd);
 use File::Slurp qw(write_file read_file);
 use File::Temp qw(tempdir);
 use List::MoreUtils qw(uniq);
+use Net::EmptyPort qw(empty_port);
 use IPC::Open2 qw(open2);
 use IO::File;
 
@@ -27,10 +28,8 @@ if ($ENV{'SKIP_RTR_SSH'}) {
 my @pids;
 
 {
-    my $ssh_port =
-        ($$ + int(rand(1024))) % (65535 - 1024) + 1024;
-    my $port =
-        ($$ + int(rand(1024))) % (65535 - 1024) + 1024;
+    my $ssh_port = empty_port();
+    my $port = empty_port();
 
     my %ssh_pids =
         map { chomp; $_ => 1 } 
@@ -63,6 +62,9 @@ my @pids;
         }
         write_file("t/_sshd.conf", (join '', @sshd_conf));
         my ($sshd) = `which sshd`;
+        if (not $sshd) {
+            die "Unable to find sshd executable";
+        }
         chomp $sshd;
         system("chmod 600 ./t/hostkeys/etc/ssh/ssh_host_rsa_key");
         system("$sshd -d -D -f t/_sshd.conf");

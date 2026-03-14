@@ -18,7 +18,8 @@ use APNIC::RPKI::RTR::Changeset;
 use APNIC::RPKI::RTR::State;
 use APNIC::RPKI::RTR::Socket::SSH;
 use APNIC::RPKI::RTR::PDU::Utils qw(parse_pdu
-                                    error_type_to_string);
+                                    error_type_to_string
+                                    pdus_are_ordered);
 use APNIC::RPKI::RTR::PDU::Exit;
 use APNIC::RPKI::RTR::PDU::ResetQuery;
 use APNIC::RPKI::RTR::Utils qw(inet_ntop
@@ -210,6 +211,9 @@ sub _parse_pdu
 
     my $socket = $self->{'socket'};
     my $pdu = parse_pdu($socket);
+    if (not $pdu) {
+        die "client: unable to parse PDU";
+    }
     if (my $cv = $self->{'current_version'}) {
         if ($pdu->version() != $cv) {
             if ($pdu->type() == PDU_ERROR_REPORT()) {
@@ -358,10 +362,27 @@ sub _process_responses
 
     my $socket  = $self->{'socket'};
     my $changeset = APNIC::RPKI::RTR::Changeset->new();
+    for my $pdu (@{$self->{'pr_pdus'}}) {
+        dprint("client: dequeueing queued PDU");
+        $changeset->add_pdu($pdu);
+    }
+    $self->{'pr_pdus'} = [];
+    my $res;
+    my $pdu;
+
+    my $car = $self->{'commit_as_received'}   ? 1 : 0;
+    my $csp = $self->{'commit_same_prefixes'} ? 1 : 0;
+    my $cas = $self->{'commit_aspas'}         ? 1 : 0;
+
+    dprint("client: commit as received:   '$car'");
+    dprint("client: commit same prefixes: '$csp'");
+    dprint("client: commit ASPAs:         '$cas'");
+
+    my $using_alt_commit_strategy = ($car or $csp or $cas);
 
     for (;;) {
         dprint("client: processing response");
-        my $pdu = $self->_parse_pdu();
+        $pdu = $self->_parse_pdu();
         # For tests only.
         if ($self->{'pdu_cb'}) {
             $self->{'pdu_cb'}->($pdu);
@@ -393,16 +414,102 @@ sub _process_responses
                 $self->flush();
                 die "client: got PDU with announce not set to 1";
             }
-            $changeset->add_pdu($pdu);
+
+            if ($car) {
+                dprint("client: returning changeset for single PDU ".
+                       "(commit as received)");
+                $changeset->add_pdu($pdu);
+                return (1, $changeset, $pdu, 1);
+            }
+
+            if ($csp) {
+                my @pdus = $changeset->pdus();
+                if (@pdus) {
+                    my $previous_pdu = $pdus[$#pdus];
+                    my $previous_pdu_type = $previous_pdu->type();
+                    my $pdu_type = $pdu->type();
+                    if ($previous_pdu->is_ip_type()) {
+                        dprint("client: previous PDU is IP PDU");
+                        if (($previous_pdu_type == $pdu_type)
+                            and ($previous_pdu->prefix_equals($pdu))) {
+                            dprint("client: IP PDU prefix matches ".
+                                   "previous PDU, adding to changeset");
+                            $changeset->add_pdu($pdu);
+                            next;
+                        } else {
+                            dprint("client: current PDU not IP type ".
+                                   "or no prefix match, returning ".
+                                   "changeset and queueing current PDU");
+                            $self->{'pr_pdus'} = [$pdu];
+                            return (1, $changeset, undef, 1);
+                        }
+                    } else {
+                        dprint("client: previous PDU is not IP PDU");
+                    }
+                } elsif ($pdu->is_ip_type()) {
+                    dprint("client: adding IP PDU as first ".
+                           "PDU of current changeset");
+                    $changeset->add_pdu($pdu);
+                    next;
+                }
+            }
+
+            if ($cas) {
+                my $pdu_type = $pdu->type();
+                my @pdus = $changeset->pdus();
+                if (@pdus) {
+                    my @pdus = $changeset->pdus();
+                    my $previous_pdu = $pdus[$#pdus];
+                    my $previous_pdu_type = $previous_pdu->type();
+                    if ($previous_pdu_type == PDU_ASPA()) {
+                        dprint("client: previous PDU is ASPA PDU");
+                        if ($previous_pdu_type == $pdu_type) {
+                            dprint("client: adding new ASPA PDU to ".
+                                   "current changeset");
+                            $changeset->add_pdu($pdu);
+                            next;
+                        } else {
+                            dprint("client: current PDU not ASPA, ".
+                                   "returning changeset and queueing ".
+                                   "current PDU");
+                            $self->{'pr_pdus'} = [$pdu];
+                            return (1, $changeset, undef, 1);
+                        }
+                    } else {
+                        dprint("client: previous PDU is not ASPA PDU");
+                    }
+                } elsif ($pdu_type == PDU_ASPA()) {
+                    dprint("client: adding ASPA PDU as first ".
+                           "PDU of current changeset");
+                    $changeset->add_pdu($pdu);
+                    next;
+                }
+            }
+
+            if ($using_alt_commit_strategy) {
+                dprint("client: using alternative commit ".
+                       "strategy, defaulting to returning ".
+                       "single PDU");
+                # Implicit that the PDU is added and returned
+                # immediately if this point is reached.
+                $changeset->add_pdu($pdu);
+                return (1, $changeset, $pdu, 1);
+            } else {
+                dprint("client: adding PDU to current changeset");
+                $changeset->add_pdu($pdu);
+            }
         } elsif ($pdu->type() == PDU_END_OF_DATA()) {
-            return (1, $changeset, $pdu);
+            $res = 1;
+            last;
         } elsif ($pdu->type() == PDU_ERROR_REPORT()) {
-            return (0, $changeset, $pdu);
+            $res = 0;
+            last;
         } elsif ($pdu->type() == PDU_SERIAL_NOTIFY()) {
             dprint("client: received serial notify, ignore");
         } elsif ($pdu->type() == PDU_CACHE_RESET()) {
             dprint("client: got cache reset PDU");
-            return (0, $changeset, $pdu);
+            $res = 0;
+            last;
         } else {
             my $err_pdu =
                 APNIC::RPKI::RTR::PDU::ErrorReport->new(
@@ -416,7 +523,21 @@ sub _process_responses
         }
     }
 
-    return 0;
+    if ($res
+            and $self->{'strict_receive'}
+            and not pdus_are_ordered($changeset->_pdus())) {
+        my $err_pdu =
+            APNIC::RPKI::RTR::PDU::ErrorReport->new(
+                version          => $self->_current_version(),
+                error_code       => ERR_UNORDERED_PDUS(),
+                encapsulated_pdu => $pdu,
+            );
+        $self->_send($socket, $err_pdu->serialise_binary());
+        $self->flush();
+        die "client: got unordered PDUs from server";
+    }
+
+    return ($res, $changeset, $pdu);
 }
 
 sub _process_eod
@@ -516,34 +637,46 @@ sub reset
         );
     $self->{'state'} = $state;
 
-    my ($res, $changeset, $other_pdu) = $self->_process_responses(1);
-    if (not $res) {
-        if ($other_pdu) {
-            dprint($other_pdu->serialise_json());
+    $self->{'pr_pdus'} = [];
+    for (;;) {
+        my ($res, $changeset, $other_pdu, $continue) =
+            $self->_process_responses(1);
+        if (not $res) {
+            if ($other_pdu) {
+                dprint($other_pdu->serialise_json());
+            }
+            die "Failed to process cache responses";
+        } else {
+            my $error_pdu = $state->apply_changeset($changeset, $version);
+            if ($error_pdu and ref $error_pdu) {
+                my $socket = $self->{'socket'};
+                $self->_send($socket, $error_pdu->serialise_binary());
+                $self->flush();
+                die "client: got error: ".
+                    error_type_to_string($error_pdu->error_code());
+            }
+            if ($self->{'post_commit_cb'}) {
+                $self->{'post_commit_cb'}->();
+            }
+            if ($continue) {
+                next;
+            }
+            $self->_process_eod($other_pdu);
+            $self->{'last_run'} = time();
+            $state->{'serial_number'} = $other_pdu->serial_number();
         }
-        die "Failed to process cache responses";
-    } else {
-        my $error_pdu = $state->apply_changeset($changeset, $version);
-        if ($error_pdu and ref $error_pdu) {
-            my $socket = $self->{'socket'};
-            $self->_send($socket, $error_pdu->serialise_binary());
-            $self->flush();
-            die "client: got error: ".
-                error_type_to_string($error_pdu->error_code());
-        }
-        $self->_process_eod($other_pdu);
-        $self->{'last_run'} = time();
-        $state->{'serial_number'} = $other_pdu->serial_number();
-    }
 
-    if ($persist) {
-        if (my $sp = $self->{'state_path'}) {
-            my $data = $self->serialise_json();
-            write_file($sp, $data);
+        if ($persist) {
+            if (my $sp = $self->{'state_path'}) {
+                my $data = $self->serialise_json();
+                write_file($sp, $data);
+            }
+            return $self->refresh(0, $persist);
+        } else {
+            $self->_close_socket();
         }
-        return $self->refresh(0, $persist);
-    } else {
-        $self->_close_socket();
+
+        last;
     }
 
     return 1;
@@ -649,45 +782,57 @@ sub refresh
     $self->{'current_version'} = $version_override || $version;
     # todo: negotiation checks needed here.
 
-    my ($res, $changeset, $other_pdu) = $self->_process_responses();
-    if (not $res) {
-        if ($other_pdu) {
-            if ($other_pdu->type() == PDU_CACHE_RESET()) {
-                # Cache reset PDU: call reset.
-                $self->{'state'}    = undef;
-                $self->{'eod'}      = undef;
-                $self->{'last_run'} = undef;
-                $self->{'socket'}   = undef;
-                return $self->reset(1);
+    $self->{'pr_pdus'} = [];
+    for (;;) {
+        my ($res, $changeset, $other_pdu, $continue) =
+            $self->_process_responses();
+        if (not $res) {
+            if ($other_pdu) {
+                if ($other_pdu->type() == PDU_CACHE_RESET()) {
+                    # Cache reset PDU: call reset.
+                    $self->{'state'}    = undef;
+                    $self->{'eod'}      = undef;
+                    $self->{'last_run'} = undef;
+                    $self->{'socket'}   = undef;
+                    return $self->reset(1);
+                }
+                dprint($other_pdu->serialise_json());
             }
-            dprint($other_pdu->serialise_json());
+            die "Failed to process cache responses";
+        } else {
+            my $error_pdu = $self->{'state'}->apply_changeset($changeset, $version);
+            if ($error_pdu and ref $error_pdu) {
+                my $socket = $self->{'socket'};
+                $self->_send($socket, $error_pdu->serialise_binary());
+                $self->flush();
+                die "client: got error: ".
+                    error_type_to_string($error_pdu->error_code());
+            }
+            if ($self->{'post_commit_cb'}) {
+                $self->{'post_commit_cb'}->();
+            }
+            if ($continue) {
+                next;
+            }
+            $self->_process_eod($other_pdu);
+            $self->{'last_run'} = time();
+            $self->{'state'}->{'serial_number'} = $other_pdu->serial_number();
         }
-        die "Failed to process cache responses";
-    } else {
-        my $error_pdu = $self->{'state'}->apply_changeset($changeset, $version);
-        if ($error_pdu and ref $error_pdu) {
-            my $socket = $self->{'socket'};
-            $self->_send($socket, $error_pdu->serialise_binary());
-            $self->flush();
-            die "client: got error: ".
-                error_type_to_string($error_pdu->error_code());
+    
+        if ($persist) {
+            if (my $sp = $self->{'state_path'}) {
+                my $data = $self->serialise_json();
+                write_file($sp, $data);
+            }
+            if ($success_cb) {
+                $success_cb->();
+            }
+            return $self->refresh(0, $persist, $version_override, $success_cb);
+        } else {
+            $self->_close_socket();
         }
-        $self->_process_eod($other_pdu);
-        $self->{'last_run'} = time();
-        $self->{'state'}->{'serial_number'} = $other_pdu->serial_number();
-    }
 
-    if ($persist) {
-        if (my $sp = $self->{'state_path'}) {
-            my $data = $self->serialise_json();
-            write_file($sp, $data);
-        }
-        if ($success_cb) {
-            $success_cb->();
-        }
-        return $self->refresh(0, $persist, $version_override, $success_cb);
-    } else {
-        $self->_close_socket();
+        last;
     }
 
     return 1;

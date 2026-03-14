@@ -3,12 +3,13 @@ package APNIC::RPKI::RTR::PDU::RouterKey;
 use warnings;
 use strict;
 
-use JSON::XS qw(encode_json decode_json);
+use JSON::XS qw(decode_json);
 
 use APNIC::RPKI::RTR::Constants;
 use APNIC::RPKI::RTR::Utils qw(dprint
                                recv_all
-                               get_zero);
+                               get_zero
+                               encode_json_rtr);
 
 use base qw(APNIC::RPKI::RTR::PDU);
 
@@ -38,6 +39,11 @@ sub type_str
     return 'Router Key';
 }
 
+sub is_ip_type
+{
+    return 0;
+}
+
 sub version
 {
     my ($self) = @_;
@@ -59,6 +65,13 @@ sub ski
     return $self->{'ski'};
 }
 
+sub ski_bigint
+{
+    my ($self) = @_;
+
+    return Math::BigInt->new($self->ski());
+}
+
 sub asn
 {
     my ($self) = @_;
@@ -73,11 +86,18 @@ sub spki
     return $self->{'spki'};
 }
 
+sub spki_len
+{
+    my ($self) = @_;
+
+    return length($self->{'spki'});
+}
+
 sub serialise_binary
 {
     my ($self) = @_;
 
-    my $ski_bi = Math::BigInt->new($self->ski());
+    my $ski_bi = $self->ski_bigint();
     my $mask = Math::BigInt->new(1)->blsft(32)->bsub(1);
     my $ski1 = $ski_bi->copy()->brsft(128)->band($mask);
     my $ski2 = $ski_bi->copy()->brsft(96)->band($mask);
@@ -136,7 +156,7 @@ sub serialise_json
 {
     my ($self) = @_;
 
-    return encode_json({%{$self}, type => $self->type()});
+    return encode_json_rtr({%{$self}, type => $self->type()});
 }
 
 sub deserialise_json

@@ -3,7 +3,7 @@
 [![Build Status](https://github.com/APNIC-net/rpki-rtr-demo/actions/workflows/build.yml/badge.svg)](https://github.com/APNIC-net/rpki-rtr-demo/actions)
 
 A proof-of-concept for the RPKI-to-Router protocol, as at
-[draft-ietf-sidrops-8210bis-16](https://www.ietf.org/archive/id/draft-ietf-sidrops-8210bis-16.txt).
+[draft-ietf-sidrops-8210bis-21](https://www.ietf.org/archive/id/draft-ietf-sidrops-8210bis-21.txt).
 
 ### Build
 
@@ -84,6 +84,17 @@ A proof-of-concept for the RPKI-to-Router protocol, as at
 
 If the `APNIC_DEBUG` environment variable is set to a true value, then
 each command will print debug output to standard error.
+
+To run tests, including basic integration tests against
+[RTRTR](https://github.com/NLnetLabs/rtrtr),
+[RTRlib](https://github.com/rtrlib/rtrlib), and
+[StayRTR](https://github.com/bgp/stayrtr):
+
+    docker build . -t rpki-rtr-demo
+    # Single test:
+    docker run --env-file docker-env -it rpki-rtr-demo perl -Mblib t/35-rtrtr.t
+    # All tests:
+    docker run --env-file docker-env -it rpki-rtr-demo make test
 
 ### Todo
 

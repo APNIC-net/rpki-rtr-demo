@@ -126,6 +126,7 @@ sub reset
             if ($success) {
                 dprint("New active index is $index");
                 $self->{'active'} = $index;
+                last;
             }
         }
     }
@@ -179,6 +180,7 @@ sub refresh
             if ($success) {
                 dprint("New active index is $index");
                 $self->{'active'} = $index;
+                last;
             }
         }
     }
@@ -202,6 +204,7 @@ sub state
     my @states = map { clone($_->state()) } @client_objects;
 
     my $initial_state = shift @states;
+    $initial_state->{'aggregator'} = 1;
     for my $other_state (@states) {
         $initial_state->apply_changeset(
             $other_state->to_changeset(),
@@ -209,7 +212,6 @@ sub state
             # PDUs.
             0,
             1,
-            1
         );
     }
 

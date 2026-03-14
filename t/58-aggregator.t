@@ -14,6 +14,7 @@ use APNIC::RPKI::RTR::PDU::Utils qw(parse_pdu);
 
 use File::Slurp qw(write_file read_file);
 use File::Temp qw(tempdir);
+use Net::EmptyPort qw(empty_port);
 
 use Test::More tests => 10;
 
@@ -25,8 +26,7 @@ my @pids;
         APNIC::RPKI::RTR::Server::Maintainer->new(
             data_dir => $data_dir1
         );
-    my $port1 =
-        ($$ + int(rand(1024))) % (65535 - 1024) + 1024;
+    my $port1 = empty_port();
     my $server1 =
         APNIC::RPKI::RTR::Server->new(
             server           => '127.0.0.1',
@@ -47,8 +47,7 @@ my @pids;
         APNIC::RPKI::RTR::Server::Maintainer->new(
             data_dir => $data_dir2
         );
-    my $port2 =
-        ($$ + int(rand(1024))) % (65535 - 1024) + 1024;
+    my $port2 = empty_port();
     my $server2 =
         APNIC::RPKI::RTR::Server->new(
             server           => '127.0.0.1',
@@ -69,8 +68,7 @@ my @pids;
         APNIC::RPKI::RTR::Server::Maintainer->new(
             data_dir => $data_dir3
         );
-    my $port3 =
-        ($$ + int(rand(1024))) % (65535 - 1024) + 1024;
+    my $port3 = empty_port();
     my $server3 =
         APNIC::RPKI::RTR::Server->new(
             server           => '127.0.0.1',

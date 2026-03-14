@@ -17,10 +17,13 @@ use APNIC::RPKI::RTR::PDU::ErrorReport;
 use APNIC::RPKI::RTR::PDU::ASPA;
 use APNIC::RPKI::RTR::PDU::SubscribingData;
 use APNIC::RPKI::RTR::PDU::Exit;
-use APNIC::RPKI::RTR::Utils qw(recv_all);
+use APNIC::RPKI::RTR::Utils qw(dprint
+                               recv_all);
 
 use IO::Socket::SSL;
 use JSON::XS qw(decode_json);
+
+my $SENTINEL_ASN = 1 << 32;
 
 use base qw(Exporter);
 
@@ -28,6 +31,7 @@ our @EXPORT_OK = qw(parse_pdu
                     order_pdus
                     error_type_to_string
                     type_to_module
+                    pdus_are_ordered
                     is_data_pdu_type);
 
 my %TYPE_TO_MODULE = (
@@ -113,13 +117,22 @@ sub order_pdus
 {
     my (@pdus) = @_;
 
-    my @ip_pdus =
+    # The ordering algorithm here is slightly different from that in
+    # -21:
+    #
+    #  - Addition IP PDUs are ordered from larger address to smaller
+    #    address, rather than smaller to larger, because the ordering
+    #    will lead to incorrect results otherwise.
+    #  - Addition IP PDU max length ordering (larger to smaller)
+    #    occurs before prefix length ordering, because the ordering
+    #    will lead to incorrect results otherwise.
+
+    my @add_ip_pdus =
         map  { $_->[0] }
-        sort { ($b->[0]->type() <=> $a->[0]->type())
             # Order from larger address to smaller address, so that
             # subprefixes come first, and so that addresses are
             # processed as close together as possible.
-                || ($b->[1] <=> $a->[1])
+        sort { ($b->[1] <=> $a->[1])
             # Order from larger max length to smaller max length, so
             # that a PDU with a smaller max length doesn't
             # inadvertently invalidate a route with a larger max
@@ -130,19 +143,170 @@ sub order_pdus
             # length, for similar reasons to the previous part.
                 || ($b->[0]->prefix_length()
                     <=> $a->[0]->prefix_length())
-            # Put AS0 PDUs last.
+            # Order from largest ASN to smallest ASN, so that AS0 PDUs
+            # come last.
                 || ($b->[0]->asn() <=> $a->[0]->asn()) }
         map  { [ $_, $_->address_as_number() ] }
+        grep { $_->flags() == 1 }
         grep { ($_->type() == PDU_IPV4_PREFIX()
              or $_->type() == PDU_IPV6_PREFIX()) }
             @pdus;
 
-    my @non_ip_pdus =
-        grep { $_->type() != PDU_IPV4_PREFIX()
-           and $_->type() != PDU_IPV6_PREFIX() }
+    my @add_ipv4_pdus =
+        grep { $_->type() == PDU_IPV4_PREFIX() }
+            @add_ip_pdus;
+
+    my @add_ipv6_pdus =
+        grep { $_->type() == PDU_IPV6_PREFIX() }
+            @add_ip_pdus;
+
+    my @remove_ip_pdus =
+        map  { $_->[0] }
+            # Order from smaller address to larger address, so that
+            # covering prefixes come first, and so that addresses are
+            # processed as close together as possible.
+        sort { ($a->[1] <=> $b->[1])
+            # Order from smaller max length to larger max length, so
+            # that a PDU with a larger max length isn't inadvertently
+            # left in place such that it invalidates a route.
+                || ($a->[0]->max_length()
+                    <=> $b->[0]->max_length())
+            # Order from smaller prefix length to larger prefix
+            # length, for similar reasons to the previous part.
+                || ($a->[0]->prefix_length()
+                    <=> $b->[0]->prefix_length())
+            # Order from smallest ASN to largest ASN, so that AS0 PDUs
+            # come first.
+                || ($a->[0]->asn() <=> $b->[0]->asn()) }
+        map  { [ $_, $_->address_as_number() ] }
+        grep { $_->flags() == 0 }
+        grep { ($_->type() == PDU_IPV4_PREFIX()
+             or $_->type() == PDU_IPV6_PREFIX()) }
             @pdus;
 
-    return (@ip_pdus, @non_ip_pdus);
+    my @remove_ipv4_pdus =
+        grep { $_->type() == PDU_IPV4_PREFIX() }
+            @remove_ip_pdus;
+
+    my @remove_ipv6_pdus =
+        grep { $_->type() == PDU_IPV6_PREFIX() }
+            @remove_ip_pdus;
+    
+    my @router_key_pdus =
+        sort { # This is a numeric comparison, but has the same
+               # outcome as the lexicographical comparison from the
+               # text.
+                  ($a->ski_bigint() <=> $b->ski_bigint())
+               || ($a->spki_len() <=> $b->spki_len())
+               || ($a->spki() cmp $b->spki())
+               || ($a->asn() <=> $b->asn()) }
+        grep { $_->type() == PDU_ROUTER_KEY() }
+            @pdus;
+
+    my @add_router_key_pdus =
+        grep { $_->flags() == 1 }
+            @router_key_pdus;
+
+    my @remove_router_key_pdus =
+        grep { $_->flags() == 0 }
+            @router_key_pdus;
+
+    my @aspa_pdus =
+        sort { $a->customer_asn() <=> $b->customer_asn() }
+        grep { $_->type() == PDU_ASPA() }
+            @pdus;
+
+    my @add_aspa_pdus =
+        grep { $_->flags() == 1 }
+            @aspa_pdus;
+
+    my @remove_aspa_pdus =
+        grep { $_->flags() == 0 }
+            @aspa_pdus;
+
+    my @other_pdus =
+        grep {      $_->type() != PDU_IPV4_PREFIX()
+                and $_->type() != PDU_IPV6_PREFIX()
+                and $_->type() != PDU_ROUTER_KEY()
+                and $_->type() != PDU_ASPA() }
+            @pdus;
+    if (@other_pdus) {
+        die "Unhandled PDU types found in order_pdus";
+    }
+
+    return (@add_ipv4_pdus,
+            @remove_ipv4_pdus,
+            @add_ipv6_pdus,
+            @remove_ipv6_pdus,
+            @add_router_key_pdus,
+            @remove_router_key_pdus,
+            @add_aspa_pdus,
+            @remove_aspa_pdus);
+}
+
+sub pdus_are_ordered
+{
+    my (@pdus) = @_;
+
+    my $last_pdu = shift @pdus;
+    my $msg = "PDU ordering incorrect";
+
+    for my $pdu (@pdus) {
+        my $last_pdu_type = $last_pdu->type();
+        my $type = $pdu->type();
+        if ($type < $last_pdu_type) {
+            my $tm = type_to_module($type);
+            my $ctm = type_to_module($last_pdu_type);
+            dprint("$msg: $tm found after $ctm");
+            return 0;
+        }
+        if ((($type == PDU_IPV4_PREFIX())
+                and ($last_pdu_type == PDU_IPV4_PREFIX()))
+                or (($type == PDU_IPV6_PREFIX())
+                        and ($last_pdu_type == PDU_IPV6_PREFIX()))) {
+            if ($pdu->flags() == 1) {
+                if ($last_pdu->flags() == 0) {
+                    dprint("$msg: addition found after withdrawal");
+                    return 0;
+                } elsif ($pdu->address_as_number()
+                            > $last_pdu->address_as_number()) {
+                    dprint("$msg: addition of larger address");
+                    return 0;
+                } elsif ($pdu->prefix_length()
+                            > $last_pdu->prefix_length()) {
+                    dprint("$msg: addition of larger prefix length");
+                    return 0;
+                } elsif ($pdu->max_length()
+                            > $last_pdu->max_length()) {
+                    dprint("$msg: addition of larger max length");
+                    return 0;
+                } elsif (($pdu->asn() || $SENTINEL_ASN)
+                            < ($last_pdu->asn() || $SENTINEL_ASN)) {
+                    dprint("$msg: addition with incorrect ASN ordering");
+                    return 0;
+                }
+            } elsif ($pdu->address_as_number()
+                        < $last_pdu->address_as_number()) {
+                dprint("$msg: withdrawal of smaller address");
+                return 0;
+            } elsif ($pdu->prefix_length()
+                        < $last_pdu->prefix_length()) {
+                dprint("$msg: withdrawal of smaller prefix length");
+                return 0;
+            } elsif ($pdu->max_length()
+                        < $last_pdu->max_length()) {
+                dprint("$msg: withdrawal of smaller max length");
+                return 0;
+            } elsif (($pdu->asn() || $SENTINEL_ASN)
+                        > ($last_pdu->asn() || $SENTINEL_ASN)) {
+                dprint("$msg: withdrawal with incorrect ASN ordering");
+                return 0;
+            }
+        }
+        $last_pdu = $pdu;
+    }
+
+    return 1;
 }
 
 sub deserialise_json

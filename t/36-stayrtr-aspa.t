@@ -12,9 +12,10 @@ use APNIC::RPKI::RTR::Changeset;
 
 use File::Temp qw(tempdir);
 use File::Slurp qw(read_file write_file);
+use Net::EmptyPort qw(empty_port);
 use Test::More;
 
-plan skip_all => 'stayrtr not yet updated for 16';
+plan skip_all => 'stayrtr not yet updated for ASPAs';
 
 if ($ENV{'HAS_STAYRTR'}) {
     plan tests => 3;
@@ -36,10 +37,8 @@ my @pids;
         $stayrtr_pid_lookup{$stayrtr_pid} = 1;
     }
 
-    my $stayrtr_rtr_port =
-        ($$ + int(rand(1024))) % (65535 - 1024) + 1024;
-    my $metrics_port =
-        ($$ + int(rand(1024))) % (65535 - 1024) + 1024;
+    my $stayrtr_rtr_port = empty_port();
+    my $metrics_port = empty_port();
     if (my $pid = fork()) {
         push @pids, $pid;
     } else {

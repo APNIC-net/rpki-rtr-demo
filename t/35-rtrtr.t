@@ -11,6 +11,7 @@ use APNIC::RPKI::RTR::Changeset;
 
 use File::Temp qw(tempdir);
 use File::Slurp qw(read_file write_file);
+use Net::EmptyPort qw(empty_port);
 use Test::More;
 
 if ($ENV{'HAS_RTRTR'}) {
@@ -29,8 +30,7 @@ my @pids;
         APNIC::RPKI::RTR::Server::Maintainer->new(
             data_dir => $data_dir
         );
-    my $port =
-        ($$ + int(rand(1024))) % (65535 - 1024) + 1024;
+    my $port = empty_port();
     my $server =
         APNIC::RPKI::RTR::Server->new(
             server   => '127.0.0.1',
@@ -97,7 +97,8 @@ EOF
     if (my $pid = fork()) {
         push @pids, $pid;
     } else {
-        system("rtrtr -c $fn");
+        my $rtr_path = $ENV{'RTRTR_PATH'} || 'rtrtr';
+        system("$rtr_path -c $fn");
         exit(0);
     }
     sleep(1);

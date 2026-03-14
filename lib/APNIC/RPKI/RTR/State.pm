@@ -3,6 +3,7 @@ package APNIC::RPKI::RTR::State;
 use warnings;
 use strict;
 
+use List::MoreUtils qw(uniq);
 use Math::BigInt;
 use JSON::XS qw(encode_json decode_json);
 
@@ -35,9 +36,9 @@ sub new
     my $self = {
         session_id      => $session_id,
         serial_number   => $serial_number,
-        vrps            => $args{vrps},
-        rks             => {},
-        aspas           => {},
+        vrps            => $args{'vrps'},
+        aspas           => $args{'aspas'} || {},
+        rks             => $args{'rks'}   || {},
     };
     bless $self, $class;
 
@@ -60,7 +61,7 @@ sub session_id
 
 sub apply_changeset
 {
-    my ($self, $changeset, $version, $ignore_errors, $combine_aspas) = @_;
+    my ($self, $changeset, $version, $ignore_errors) = @_;
 
     my @pdus = @{$changeset->{'pdus'}};
     my $pdu_count = scalar @pdus;
@@ -92,6 +93,9 @@ sub apply_changeset
                 }
                 $self->{'vrps'}->{$asn}->{$addr}->{$length}->{$max_length} = 1;
             } elsif ($flags == 0) {
+                if ($self->{'aggregator'}) {
+                    die "Withdrawals are unhandled when aggregating";
+                }
                 dprint("state: removing IP prefix: $asn, $addr/$length-$max_length");
                 if (not $ignore_errors) {
                     if (not exists $self->{'vrps'}->{$asn}->{$addr}->{$length}->{$max_length}) {
@@ -143,6 +147,9 @@ sub apply_changeset
                 }
                 $self->{'rks'}->{$asn}->{$ski->bstr()}->{$spki} = 1; 
             } elsif ($flags == 0) {
+                if ($self->{'aggregator'}) {
+                    die "Withdrawals are unhandled when aggregating";
+                }
                 if (not $ignore_errors) {
                     if (not exists $self->{'rks'}->{$asn}->{$ski->bstr()}->{$spki}) {
                         dprint("state: withdrawal of unknown record");
@@ -184,16 +191,53 @@ sub apply_changeset
                             );
                         return $error_pdu;
                     }
+                    my @unique_provider_asns = uniq @provider_asns;
+                    if (@unique_provider_asns != @provider_asns) {
+                        dprint("state: duplicate provider ASNs in ASPA announcement");
+                        my $error_pdu =
+                            APNIC::RPKI::RTR::PDU::ErrorReport->new(
+                                version          => $version,
+                                error_code       => ERR_ASPA_PROVIDER_LIST_ERROR(),
+                                encapsulated_pdu => $pdu,
+                            );
+                        return $error_pdu;
+                    }
+                    my @sorted_provider_asns = sort @provider_asns;
+                    for (my $i = 0; $i < @sorted_provider_asns; $i++) {
+                        if ($sorted_provider_asns[$i] != $provider_asns[$i]) {
+                            dprint("state: unordered provider ASNs in ASPA announcement");
+                            my $error_pdu =
+                                APNIC::RPKI::RTR::PDU::ErrorReport->new(
+                                    version          => $version,
+                                    error_code       => ERR_ASPA_PROVIDER_LIST_ERROR(),
+                                    encapsulated_pdu => $pdu,
+                                );
+                            return $error_pdu;
+                        }
+                    }
+                    if (@provider_asns > 1 and $provider_asns[0] == 0) {
+                        dprint("state: AS0 included alongside other providers");
+                        my $error_pdu =
+                            APNIC::RPKI::RTR::PDU::ErrorReport->new(
+                                version          => $version,
+                                error_code       => ERR_ASPA_PROVIDER_LIST_ERROR(),
+                                encapsulated_pdu => $pdu,
+                            );
+                        return $error_pdu;
+                    }
                 }
-                if ($combine_aspas) {
+                if ($self->{'aggregator'}) {
                     $self->{'aspas'}->{$customer_asn} =
-                        [sort uniq(
+                        [sort(uniq(
                             @{$self->{'aspas'}->{$customer_asn} || []},
-                            @provider_asns)];
+                            @provider_asns))];
                 } else {
                     $self->{'aspas'}->{$customer_asn} = \@provider_asns;
                 }
             } else {
+                if ($self->{'aggregator'}) {
+                    die "Withdrawals are unhandled when aggregating";
+                }
                 if (not $ignore_errors) {
                     if (not exists $self->{'aspas'}->{$customer_asn}) {
                         dprint("state: withdrawal of unknown record");
@@ -208,12 +252,7 @@ sub apply_changeset
                         dprint("state: withdrawal of known record");
                     }
                 }
-                # When combining ASPA records (only relevant when the
-                # router is connecting to multiple caches), an empty
-                # ASPA has no effect.
-                if (not $combine_aspas) {
-                    delete $self->{'aspas'}->{$customer_asn};
-                }
+                delete $self->{'aspas'}->{$customer_asn};
             }
         } else {
             warn "Unexpected PDU type ".$pdu->type().", skipping";
@@ -272,6 +311,14 @@ sub _pdus
     @asns = keys %{$aspas};
     for my $asn (@asns) {
         my @provider_asns = @{$aspas->{$asn}};
+        # It is possible for AS0 to be present here alongside other
+        # ASNs, when aggregating the state for multiple clients.  It
+        # should not happen outside of that context, though.
+        if ($self->{'aggregator'}
+                and (@provider_asns > 1)
+                and ($provider_asns[0] == 0)) {
+            shift @provider_asns;
+        }
         my $pdu =
             APNIC::RPKI::RTR::PDU::ASPA->new(
                 version       => 2,

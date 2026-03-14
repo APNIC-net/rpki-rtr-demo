@@ -13,6 +13,16 @@ sub type
     die "Abstract";
 }
 
+sub is_ip_type
+{
+    die "Abstract";
+}
+
+sub overlaps
+{
+    die "Abstract";
+}
+
 sub serialise_binary
 {
     die "Abstract";

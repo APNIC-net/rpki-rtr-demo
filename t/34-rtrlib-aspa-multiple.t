@@ -11,14 +11,13 @@ use APNIC::RPKI::RTR::Changeset;
 
 use File::Temp qw(tempdir);
 use List::MoreUtils qw(before);
+use Net::EmptyPort qw(empty_port);
 use Test::More;
 
-plan skip_all => 'ASPA rtrlib not yet updated for 16';
-
-# Per https://github.com/tanneberger/rtrlib
-# at ba4bef884dbb638548e8c17679f9a5595da741fd.
+# Per the hackathon-ietf-123-aspa-and-rpki-upgrade branch at
+# https://github.com/rtrlib/rtrlib.
 if ($ENV{'HAS_ASPA_RTRCLIENT'}) {
-    plan tests => 7;
+    plan tests => 5;
 } else {
     plan skip_all => 'ASPA rtrclient not available';
 }
@@ -33,8 +32,7 @@ my @pids;
         APNIC::RPKI::RTR::Server::Maintainer->new(
             data_dir => $data_dir
         );
-    my $port =
-        ($$ + int(rand(1024))) % (65535 - 1024) + 1024;
+    my $port = empty_port();
     my $server =
         APNIC::RPKI::RTR::Server->new(
             server   => '127.0.0.1',
@@ -116,8 +114,7 @@ my @pids;
     $changeset2->add_pdu($pdu2_2);
     $mnt2->apply_changeset($changeset2);
 
-    # Run rtrclient.  (The branch that supports ASPA records doesn't
-    # print them when -e is set, so rely on the '+' lines instead.)
+    # Run rtrclient.
 
     my $error_output =
         $ENV{'APNIC_DEBUG'}
@@ -136,19 +133,15 @@ my @pids;
         use Data::Dumper;
         diag Dumper(\@res);
     }
-    is(@res, 6, 'Got six lines in rtrclient output');
+    is(@res, 4, 'Got six lines in rtrclient output');
     is($res[0], '+ 127.0.0.1 1.0.0.0 24 - 32 4608',
         'Got correct VRP line in rtrclient output (1)');
     is($res[1], '+ 127.0.0.1 2.0.0.0 24 - 32 4608',
         'Got correct VRP line in rtrclient output (2)');
-    is($res[2], 'Customer ASN: 4608',
+    is($res[2], '+ ASPA 4608 => [ 1, 2, 3, 4 ]',
         'Got correct ASPA line in rtrclient output (3)');
-    is($res[3], 'Customer ASN: 4608',
+    is($res[3], '+ ASPA 4608 => [ 4, 5, 6, 7 ]',
         'Got correct ASPA line in rtrclient output (4)');
-    is($res[4], 'Provider ASNs: 1, 2, 3, 4',
-        'Got correct ASPA line in rtrclient output (5)');
-    is($res[5], 'Provider ASNs: 4, 5, 6, 7',
-        'Got correct ASPA line in rtrclient output (6)');
 
     for my $pid (@pids) {
         kill('TERM', $pid);

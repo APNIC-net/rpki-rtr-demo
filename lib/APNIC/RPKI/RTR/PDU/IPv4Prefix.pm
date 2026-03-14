@@ -3,7 +3,7 @@ package APNIC::RPKI::RTR::PDU::IPv4Prefix;
 use warnings;
 use strict;
 
-use JSON::XS qw(encode_json decode_json);
+use JSON::XS qw(decode_json);
 use Net::IP::XS;
 
 use APNIC::RPKI::RTR::Constants;
@@ -11,7 +11,8 @@ use APNIC::RPKI::RTR::Utils qw(inet_pton
                                inet_ntop
                                dprint
                                recv_all
-                               get_zero);
+                               get_zero
+                               encode_json_rtr);
 
 use base qw(APNIC::RPKI::RTR::PDU);
 
@@ -44,6 +45,11 @@ sub type
 sub type_str
 {
     return 'IPv4 Prefix';
+}
+
+sub is_ip_type
+{
+    return 1;
 }
 
 sub version
@@ -79,6 +85,13 @@ sub address
     my ($self) = @_;
 
     return $self->{'address'};
+}
+
+sub prefix
+{
+    my ($self) = @_;
+
+    return $self->address()."/".$self->prefix_length();
 }
 
 sub asn
@@ -135,7 +148,7 @@ sub serialise_json
 {
     my ($self) = @_;
 
-    return encode_json({%{$self}, type => $self->type()});
+    return encode_json_rtr({%{$self}, type => $self->type()});
 }
 
 sub deserialise_json
@@ -158,6 +171,16 @@ sub is_reversal_of
             and ($self->address() eq $other->address())
             and ($self->asn() == $other->asn())
             and ($self->flags() xor $other->flags()));
+}
+
+sub prefix_equals
+{
+    my ($self, $other) = @_;
+
+    return ($other->type() == $self->type()
+            and ($self->version() eq $other->version())
+            and ($self->prefix_length() == $other->prefix_length())
+            and ($self->address() eq $other->address()));
 }
 
 sub equals
