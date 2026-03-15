@@ -9,6 +9,7 @@ COPY ./docker-mkcert.sh .
 RUN ./docker-mkcert.sh
 COPY ./docker-rtrlib.sh .
 RUN ./docker-rtrlib.sh
+RUN sudo cpanm Net::EmptyPort Test::TCP Test::SharedFork
 COPY . /root/rpki-rtr-demo
 WORKDIR /root/rpki-rtr-demo
 RUN sudo cpanm -v -n --installdeps .

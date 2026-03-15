@@ -15,7 +15,7 @@ use constant {
     PDU_ROUTER_KEY       => 9,
     PDU_ERROR_REPORT     => 10,
     PDU_ASPA             => 11,
-    PDU_SUBSCRIBING_DATA => 12,
+    PDU_SUBSCRIBING_DATA => 99,
     PDU_EXIT             => 255,
 
     ERR_CORRUPT_DATA                    => 0,
