@@ -7,7 +7,7 @@
 <?rfc compact="yes"?>
 <?rfc subcompact="no"?>
 
-<rfc category="std" docName="draft-ietf-sidrops-8210bis-25"
+<rfc category="std" docName="draft-ietf-sidrops-8210bis-26"
      submissionType="IETF" ipr="trust200902" version="2" consensus="yes">
 
   <front>
@@ -389,7 +389,7 @@
               as the other's in accordance with the behaviour in this
               paragraph, the party which detects the mismatch MUST
               immediately terminate the session with an Error Report
-              PDU with code 0 ("Corrupt Data"), and the router MUST
+              PDU with Error Code 0 ("Corrupt Data"), and the router MUST
               flush all data learned from that cache.
             </t>
             <t>
@@ -455,13 +455,14 @@
             </t>
             <t hangText="Flags:">
               An 8-bit binary field, with the lowest-order bit being 1
-              for an announcement and 0 for a withdrawal.  For a Prefix
+              for an announcement and 0 for a withdrawal. This bit is
+              called the announce/withdraw flag. For a Prefix
               PDU (IPv4 or IPv6), the announce/withdraw flag indicates
               whether this PDU announces a new right to announce the
               prefix or withdraws a previously announced right; a
               withdraw effectively deletes one previously announced
-              Prefix PDU with the exact same Prefix, Length, Max-Len,
-              and Autonomous System Number (AS).
+              Prefix PDU with the exact same Prefix, Prefix Length,
+              Max Length, and Autonomous System Number (ASN).
 	    </t>
             <t>
 	      Similarly, for a Router Key PDU, the flag indicates
@@ -470,9 +471,11 @@
 	      Number, subjectKeyIdentifier, and subjectPublicKeyInfo.
 	    </t>
 	    <t>
-	      Similarly, for an ASPA PDU, the flag indicates a new or
-	      replacement mapping of the specified Customer AS to a set of
-	      Provider ASes or the removal of the existant mapping.
+              Similarly, for an ASPA PDU, the flag value 1 indicates a
+              new or replacement mapping of the specified Customer AS
+              to a set of Provider ASes and the flag value 0 indicates
+              the removal of the existent mapping. The details
+              regarding this are provided in <xref target="aspa"/>.
 	    </t>
             <t>
               The remaining bits in the Flags field are reserved for
@@ -631,8 +634,8 @@
 	<t>
 	  In the data responding to a Serial Query, should the router
 	  receive duplicate announcements or withdrawals, the router
-	  should raise an Error with Error Code 7, Duplicate
-	  Announcement Received.
+	  should raise an Error with Error Code 7 ("Duplicate
+	  Announcement Received").
 	</t>
         <t>
           The rationale for this approach is that the entire purpose of
@@ -658,7 +661,7 @@
         Per section 5.1, if the Serial Query contains a session ID
         that is not equal to that previously established in the
         session between the router and the cache, the cache terminates
-        the session with an Error Report PDU with code 0 ("Corrupt
+        the session with an Error Report PDU with Error Code 0 ("Corrupt
         Data").  The behaviour in the second scenario from the
         previous paragraph is limited to two cases: where the router
         is using the previously-established session ID, and where the
@@ -718,7 +721,7 @@
           Serial Number sent by the client router.  When replying to a
           Reset Query (<xref target="resetquery"/>), the cache sends
           the set of all data records it has; in this case, the
-          announce/withdraw field in the payload PDUs MUST have the
+          announce/withdraw flag in the payload PDUs MUST have the
           value 1 (announce).
         </t>
         <t>
@@ -771,21 +774,21 @@
           upstream certificate is being reissued or there is an address
           ownership transfer up the validation chain.  The ROA would be
           identical in the router sense, i.e., have the same {Prefix,
-          Len, Max-Len, AS}, but it would have a different validation
+          Prefix Length, Max Length, ASN}, but it would have a different validation
           path in the RPKI.  This is important to the RPKI but not to
           the router.
         </t>
         <t>
           The cache server MUST ensure that it has told the router
           client to have one and only one IPvX VRP for a unique {Prefix,
-          Len, Max-Len, AS} at any one point in time.  Should the
-          router client receive an IPvX VRP with a {Prefix, Len,
-          Max-Len, AS} identical to one it already has active, it
+          Prefix Length, Max Length, ASN} at any one point in time.  Should the
+          router client receive an IPvX VRP with a {Prefix, Prefix Length,
+          Max Length, ASN} identical to one it already has active, it
           SHOULD raise a Duplicate Announcement Received error.
         </t>
 	<t>
 	  The cache MUST merge announce/withdraw ROAs for the same
-	  {Prefix, Len, Max-Len, AS} into the minimal (or no) VRP to
+	  {Prefix, Prefix Length, Max Length, ASN} into the minimal (or no) VRP to
 	  update the router to to the desired state.
 	</t>
         <t>
@@ -1068,7 +1071,7 @@
         </t>
       </section>
 
-      <section anchor="aspa" title="ASPA PDU">
+      <section anchor="aspa" title="ASPA">
 	<!-- protocol "Protocol Version 2:8,PDU Type 11:8,Flags:8,zero:8,Length:32,Customer Autonomous System Number:32,Provider Autonomous System Numbers:32" -->
         <figure>
           <artwork>
@@ -1100,7 +1103,7 @@
         <t>
           The Customer Autonomous System Number is the 32-bit Autonomous
           System Number of the customer which authenticated the ASPA
-          RPKI data.
+          RPKI record(s).
         </t>
         <t>
           There are zero or more 32-bit Provider Autonomous System
@@ -1121,30 +1124,33 @@
 	  the global RPKI into one ASPA PDU.
 	</t>
 	<t>
-	  Receipt of an ASPA PDU announcement (announce/withdraw flag ==
-	  1) when the router already has an ASPA PDU with the same
-	  Customer Autonomous System Number from that cache replaces the
-	  previous one.  The cache MUST deliver the complete data of an
-	  ASPA record in a single ASPA PDU.
+          Receipt of an ASPA PDU announcement with the
+          announce/withdraw flag set to 1 when the router already has
+          an ASPA PDU with the same Customer Autonomous System Number
+          from that cache replaces the previous one.  The cache MUST
+          deliver the complete data of the ASPA record(s) of a CAS in
+          a single ASPA PDU.
 	</t>
         <t>
-      	  For the ASPA PDU, the announce/withdraw Flag is set to 1 to
-      	  indicate either the announcement of a new ASPA record or a
-      	  replacement for a previously announced record from that cache
-      	  with the same Customer Autonomous System Number.  For an
-      	  announcement, the PDU MUST contain at least one Provider
-          Autonomous System Number or an Error PDU with code 9, ASPA
-          Provider List Error is returned. An ASPA announcement PDU
-          containing multiple Provider Autonomous System Numbers MUST NOT
-          contain AS 0 or an Error PDU with code 9 is returned.
+          For the ASPA PDU, the announce/withdraw flag is set to 1 to
+          indicate either the announcement of a new ASPA record or a
+          replacement for a previously announced record from that
+          cache with the same Customer Autonomous System Number.  For
+          an announcement, the PDU MUST contain at least one Provider
+          Autonomous System Number. If it does not, an Error PDU with
+          Error Code 9 ("ASPA Provider List Error") is returned by the
+          router. Also, an ASPA announcement PDU containing multiple
+          Provider Autonomous System Numbers MUST NOT contain AS 0. If
+          it does, an Error PDU with Error Code 9 is returned.
         </t>
 	<t>
-	  If the announce/withdraw flag is set to 0, the entire ASPA
-	  record from that cache for that Customer AS MUST be removed
-	  from the router.  In this case, the customer AS of the ASPA
-	  record MUST be provided, there MUST be no Provider list, and
-	  the PDU Length MUST be 12.
-	</t>
+          If the announce/withdraw flag is set to 0 in an ASPA PDU,
+          the customer AS of the ASPA record MUST be provided, there
+          MUST be no Provider list, and the PDU Length MUST be 12. A
+          router receiving this type of ASPA PDU (i.e., a withdrawal)
+          MUST remove the entire ASPA record from that cache for that
+          Customer AS.
+        </t>
 
       </section>
 
@@ -1318,8 +1324,8 @@
         Version once the above negotiation completes, that party MUST
         drop the session; unless the PDU containing the unexpected
         Protocol Version was itself an Error Report PDU, the party
-        dropping the session SHOULD send an Error Report with an error
-        code of 8 ("Unexpected Protocol Version").
+        dropping the session SHOULD send an Error Report with Error
+        Code 8 ("Unexpected Protocol Version").
       </t>
     </section>
 
@@ -1798,10 +1804,10 @@ Cache                         Router
         there may be multiple ASPA PDUs to consider for a single
         customer ASN. When combining ASPA data for further use
         locally, routers should take care to handle the case where one
-        ASPA PDU has only AS0 as a provider, while another ASPA PDU
-        has a provider list that does not include AS0. For example, to
+        ASPA PDU has only AS 0 as a provider, while another ASPA PDU
+        has a provider list that does not include AS 0. For example, to
         align with the behaviour that must be implemented by caches, a
-        router could exclude AS0 from the provider list that is
+        router could exclude AS 0 from the provider list that is
         synthesised when combining the relevant PDUs.
       </t>
     </section>
@@ -1883,7 +1889,7 @@ Cache                         Router
                 192.0.2.0/25-25 with an origin of AS64494.  If a
                 client receives a withdrawal PDU for the second VRP,
                 followed by an announcement PDU that acts to replace
-                the second VRP but with a greater max-length, then for
+                the second VRP but with a greater max length, then for
                 the time between receipt of those two PDUs, the BGP
                 announcement will be classified as invalid.
 
@@ -1969,8 +1975,8 @@ Cache                         Router
 
             <dt><tt>plen</tt></dt>
 
-            <dd>The length of the IP prefix appearing in the PDU, as an
-            integer value.</dd>
+            <dd>The prefix length of the IP prefix appearing in the
+            PDU, as an integer value.</dd>
 
             <dt><tt>mlen</tt></dt>
 
@@ -2023,9 +2029,10 @@ Cache                         Router
                   elements with a lower <tt>plen</tt> value.
               </li>
               <li>
-                  Data elements with a higher <tt>asn</tt> value precede data
-                  elements with a lower <tt>asn</tt> value.  This ensures that
-                  AS0 PDU announcements, which can be used to cause BGP
+                  Data elements with a higher <tt>asn</tt> value
+                  precede data elements with a lower <tt>asn</tt>
+                  value.  This ensures that AS0 IP Prefix PDU
+                  announcements, which can be used to cause BGP
                   announcements to become invalid under ROV, always
                   appear after all other relevant PDU announcements.
               </li>
@@ -2055,7 +2062,7 @@ Cache                         Router
               <li>
                   Data elements with a lower <tt>asn</tt> value precede data
                   elements with a higher <tt>asn</tt> value.  This ensures that
-                  AS0 PDU withdrawals always appear before all other
+                  AS0 IP Prefix PDU withdrawals always appear before all other
                   relevant PDU withdrawals.
               </li>
             </ol>
@@ -2416,14 +2423,14 @@ Cache                         Router
           </t>
           <t hangText="6: Withdrawal of Unknown Record (fatal):">
             The received PDU has Flag=0, but a matching record ({Prefix,
-            Len, Max-Len, AS} tuple for an IPvX PDU, or {SKI, AS,
+            Prefix Length, Max Length, ASN} tuple for an IPvX PDU, or {SKI, AS,
             Subject Public Key} tuple for a Router Key PDU), or Customer
             Autonomous System for an ASPA PDU does not exist in the
             receiver's database.
           </t>
           <t hangText="7: Duplicate Announcement Received (fatal):">
             The received PDU has Flag=1, but a matching record ({Prefix,
-            Len, Max-Len, AS} tuple for an IPvX PDU, or {SKI, AS,
+            Prefix Length, Max Length, ASN} tuple for an IPvX PDU, or {SKI, AS,
             Subject Public Key} tuple for a Router Key PDU), or Customer
             Autonomous System for an ASPA PDU is already active in the
             router.
