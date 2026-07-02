@@ -1498,6 +1498,76 @@ Cache                         Router
         </t>
       </section>
 
+      <section anchor="restart" title="Cache Restart">
+
+        <t>
+
+      The cache MUST send a "Cache Restart" error report to connected
+      client routers when two conditions are met:
+
+        </t>
+
+        <t><list style="symbols">
+        <t>the cache is about to become unavailable to connected client
+          routers; and</t>
+        <t>the operator intends to make the cache server available again
+          within the time required for the connected clients to avoid
+          reaching the end of the Expire Interval.</t>
+          </list>
+          </t>
+
+        <t>
+
+      This error code allows a client router to distinguish a cache
+      process restart from network problems or other unexpected failures.
+      Client routers SHOULD log this information.
+
+        </t>
+
+        <t>
+
+      Following a Cache Restart, client routers SHOULD retry periodically
+      using the Retry Interval (see <xref target="timing" />) previously provided by the
+      cache server, or the default Retry Interval otherwise.  Client
+      routers MUST flush all data learned from that cache if the session
+      could not be resumed or reinitialized within the Expire Interval
+      provided by the cache server, or the default Expire Interval
+      otherwise.
+
+        </t>
+    
+      </section>
+
+      <section anchor="shutdown" title="Cache Shutdown">
+
+        <t>
+      The cache MUST send a "Cache Shutdown" error report to connected
+      client routers when two conditions are met:
+        </t>
+
+        <t><list style="symbols">
+
+        <t>the cache is about to become unavailable to connected client
+          routers; and</t>
+
+        <t>the operator wishes all client routers to flush all data
+          learned from the cache.</t>
+        </list></t>
+
+        <t>
+      This error code allows a client router to distinguish a deliberate
+      cache shutdown from network problems or other unexpected failures.
+      Client routers SHOULD log this information.
+        </t>
+
+        <t>
+      Following a Cache Shutdown, client routers SHOULD retry
+      periodically using the default Retry Interval (<xref
+      target="timing" />).
+        </t>
+
+      </section>
+
     </section>
 
     <section anchor="Transport" title="Transport">
@@ -2451,6 +2521,12 @@ Cache                         Router
           <t hangText="11: Ordering Error (fatal):">
             The received PDU does not conform with the ordering
             defined in <xref target="ordering" />.
+          </t>
+          <t hangText="12: Cache Restart (non-fatal):">
+            The cache is restarting (see <xref target="restart" />).
+          </t>
+          <t hangText="13: Cache Shutdown (fatal):">
+            The cache has shut down deliberately (see <xref target="shutdown" />).
           </t>
         </list>
       </t>
