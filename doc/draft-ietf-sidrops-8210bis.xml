@@ -379,8 +379,9 @@
               as the other's in accordance with the behaviour in this
               paragraph, the party which detects the mismatch MUST
               immediately terminate the session with an Error Report
-              PDU with Error Code 0 ("Corrupt Data"), and the router MUST
-              flush all data learned from that cache.
+              PDU with Error Code 0 ("Corrupt Data").  As that error
+              code denotes a fatal error, the router will also at that
+              point flush all data learned from that cache.
             </t>
             <t>
               Note that sessions are specific to a particular protocol
