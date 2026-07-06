@@ -1051,13 +1051,13 @@ Internet-Draft            RPKI-Router Protocol                 July 2026
 
    This PDU is used by either party to report an error to the other.
 
-   Error reports are only sent as responses to other PDUs, not to report
-   errors in Error Report PDUs.
-
-   Error codes are described in Section 12.
+   Error codes and handling are described in Section 12.
 
    The Erroneous PDU field is a binary copy of the PDU causing the error
    condition, including all fields.
+
+
+
 
 
 
@@ -1070,10 +1070,11 @@ Internet-Draft            RPKI-Router Protocol                 July 2026
    with the PDU to which it is responding, the Erroneous PDU field MUST
    be empty and the Length of Encapsulated PDU field MUST be zero.
 
-   An Error Report PDU MUST NOT be sent for an Error Report PDU.  If an
-   erroneous Error Report PDU is received, the session SHOULD be
-   dropped.  If such a PDU is received by a router, the router SHOULD
-   also flush all data learned from that cache.
+   An Error Report PDU MUST NOT be sent as a response to an Error Report
+   PDU.  If an erroneous Error Report PDU is received, the session
+   SHOULD be dropped and the receiving party SHOULD log this
+   information.  If such a PDU is received by a router, the router
+   SHOULD also flush all data learned from that cache.
 
    If the entire erroneous PDU will not fit in the Erroneous PDU field,
    it MUST be truncated.  At a minimum, the first four octets MUST be
@@ -1110,10 +1111,9 @@ Internet-Draft            RPKI-Router Protocol                 July 2026
    The Customer Autonomous System Number is the 32-bit Autonomous System
    Number of the customer which authenticated the ASPA RPKI record(s).
 
-   There are zero or more 32-bit Provider Autonomous System Number
-   fields in increasing numeric order.  Each Provider Autonomous System
-   Number in a given ASPA PDU MUST be unique.  See
-   [I-D.ietf-sidrops-aspa-profile].
+
+
+
 
 
 
@@ -1121,6 +1121,11 @@ Bush, et al.             Expires 8 January 2027                [Page 20]
 
 Internet-Draft            RPKI-Router Protocol                 July 2026
 
+
+   There are zero or more 32-bit Provider Autonomous System Number
+   fields in increasing numeric order.  Each Provider Autonomous System
+   Number in a given ASPA PDU MUST be unique.  See
+   [I-D.ietf-sidrops-aspa-profile].
 
    The Flags field is as described in Section 5.
 
@@ -1165,11 +1170,6 @@ Internet-Draft            RPKI-Router Protocol                 July 2026
    three values that allow the cache to communicate timing parameters to
    the router:
 
-   Refresh Interval:  This parameter tells the router how long to wait
-      before next attempting to poll the cache and between subsequent
-      attempts, using a Serial Query or Reset Query PDU.  The router
-      SHOULD NOT poll the cache sooner than indicated by this parameter.
-      Note that receipt of a Serial Notify PDU overrides this interval
 
 
 
@@ -1178,6 +1178,11 @@ Bush, et al.             Expires 8 January 2027                [Page 21]
 Internet-Draft            RPKI-Router Protocol                 July 2026
 
 
+   Refresh Interval:  This parameter tells the router how long to wait
+      before next attempting to poll the cache and between subsequent
+      attempts, using a Serial Query or Reset Query PDU.  The router
+      SHOULD NOT poll the cache sooner than indicated by this parameter.
+      Note that receipt of a Serial Notify PDU overrides this interval
       and suggests that the router issue an immediate query without
       waiting for the Refresh Interval to expire.  Countdown for this
       timer starts upon receipt of the containing End Of Data PDU.
@@ -1221,11 +1226,6 @@ Internet-Draft            RPKI-Router Protocol                 July 2026
 
    Caches MUST set Expire Interval to a value larger than both the
    Refresh Interval and the Retry Interval.
-
-
-
-
-
 
 
 
