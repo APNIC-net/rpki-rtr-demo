@@ -1027,11 +1027,14 @@
           other.
         </t>
         <t>
-          Error reports are only sent as responses to other PDUs, not
-          to report errors in Error Report PDUs.
+          Error reports are only sent as responses to other PDUs, not to
+          report errors in Error Report PDUs. That is, an Error Report
+          PDU MUST NOT be sent for an Error Report PDU. If such an erroneous
+          Error Report PDU is received, the session SHOULD be dropped and       <!-- why SHOULD instead of MUST? -->
+          the receiving party SHOULD log this information.
         </t>
         <t>
-          Error codes are described in <xref target="errorcodes"/>.
+          Error codes and handling are described in <xref target="errorcodes"/>.
         </t>
 	<t>
 	  The Erroneous PDU field is a binary copy of the PDU causing
@@ -1042,11 +1045,6 @@
           associated with the PDU to which it is responding, the
           Erroneous PDU field MUST be empty and the Length of
           Encapsulated PDU field MUST be zero.
-        </t>
-        <t>
-          An Error Report PDU MUST NOT be sent for an Error Report PDU.
-          If an erroneous Error Report PDU is received, the session
-          SHOULD be dropped.
         </t>
         <t>
           If the entire erroneous PDU will not fit in the Erroneous PDU
