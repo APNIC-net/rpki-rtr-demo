@@ -325,16 +325,6 @@
         target="RFC6480"/>) with time dependent validity periods,
         servers' clocks MUST be correct within a tolerance of an hour.
       </t>
-      <t>
-	Barring errors, transport connections remain up as long as the
-	cache and router remain up and the router is not reconfigured to
-	no longer use the cache.
-      </t>
-      <t>
-	Should a transport connection be lost for unknown reasons, the
-	router SHOULD try to reestablish one; being careful to not abuse
-	the cache with two many failed requests.
-      </t>
     </section>
 
     <section anchor="pdus" title="Protocol Data Units (PDUs)">
@@ -1602,6 +1592,16 @@ Cache                         Router
       <t>
 	A cache SHOULD NOT use a separate TCP segment for each PDU, but
 	rather try to pack PDUs efficiently.
+      </t>
+      <t>
+	Barring errors, transport connections remain up as long as the
+	cache and router remain up and the router is not reconfigured to
+	no longer use the cache.
+      </t>
+      <t>
+	Should a transport connection be lost for unknown reasons, the
+	router SHOULD try to reestablish one; being careful to not abuse
+	the cache with two many failed requests.
       </t>
       <t>
         It is expected that, when the TCP Authentication Option
