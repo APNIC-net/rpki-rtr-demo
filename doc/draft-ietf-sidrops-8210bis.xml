@@ -2532,6 +2532,20 @@ Cache                         Router
         </list>
       </t>
 
+      <t>
+
+        Although there is a registry for error codes, implementations
+        MUST send errors only with error codes that were defined by
+        the specification that corresponds to the version of the
+        relevant session.  As documented in <xref target="error" />,
+        an implementation that receives an invalid Error Report PDU
+        should simply drop the session, rather than attempting to
+        respond with its own Error Repor PDU.  That behaviour also
+        covers the case where an implementation receives an Error
+        Report PDU with an error code that is invalid.
+
+      </t>
+
     </section>
 
     <section anchor="Security" title="Security Considerations">
@@ -2645,7 +2659,9 @@ Cache                         Router
 	      9   ASPA Provider List Error
 	     10   Transport Failure
 	     11   Ordering Error
-	 11-254   Unassigned
+	     12   Cache Restart
+	     13   Cache Shutdown
+	 14-254   Unassigned
 	    255   Reserved
         </artwork>
       </figure>
