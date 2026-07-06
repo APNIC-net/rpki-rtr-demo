@@ -1046,7 +1046,9 @@
         <t>
           An Error Report PDU MUST NOT be sent for an Error Report PDU.
           If an erroneous Error Report PDU is received, the session
-          SHOULD be dropped.
+          SHOULD be dropped.  If such a PDU is received by a router,
+          the router SHOULD also flush all data learned from that
+          cache.
         </t>
         <t>
           If the entire erroneous PDU will not fit in the Erroneous PDU
@@ -2539,10 +2541,12 @@ Cache                         Router
         the specification that corresponds to the version of the
         relevant session.  As documented in <xref target="error" />,
         an implementation that receives an invalid Error Report PDU
-        should simply drop the session, rather than attempting to
-        respond with its own Error Repor PDU.  That behaviour also
-        covers the case where an implementation receives an Error
-        Report PDU with an error code that is invalid.
+        should simply drop the session (and in the case of a router,
+        flush all data learned from that cache), rather than
+        attempting to respond with its own Error Repor PDU.  That
+        behaviour also covers the case where an implementation
+        receives an Error Report PDU with an error code that is
+        invalid.
 
       </t>
 
