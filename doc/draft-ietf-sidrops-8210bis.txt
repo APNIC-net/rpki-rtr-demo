@@ -1857,12 +1857,12 @@ Internet-Draft            RPKI-Router Protocol                 July 2026
    For a given BGP announcement, there may be multiple IP Prefix PDUs
    that intersect the BGP announcement's prefix.  If the client does not
    have all of these PDUs, it may classify the BGP announcement as
-   invalid under ROV.  For example, consider a scenario where there is a
-   BGP announcement for 192.0.2.0/25 with an origin of AS64494, an IPv4
-   VRP for 192.0.2.0/24-24 with an origin of AS64495, and an IPv4 VRP
-   for 192.0.2.0/25-25 with an origin of AS64494.  A client that has
-   received an announcement PDU for the first VRP only will classify the
-   BGP announcement as invalid.
+   invalid under origin validation.  For example, consider a scenario
+   where there is a BGP announcement for 192.0.2.0/25 with an origin of
+   AS64494, an IPv4 VRP for 192.0.2.0/24-24 with an origin of AS64495,
+   and an IPv4 VRP for 192.0.2.0/25-25 with an origin of AS64494.  A
+   client that has received an announcement PDU for the first VRP only
+   will classify the BGP announcement as invalid.
 
 11.1.3.  Withdrawal Before Announcement
 
@@ -1968,8 +1968,8 @@ Internet-Draft            RPKI-Router Protocol                 July 2026
    4.  Data elements with a higher asn value precede data elements with
        a lower asn value.  This ensures that AS0 IP Prefix PDU
        announcements, which can be used to cause BGP announcements to
-       become invalid under ROV, always appear after all other relevant
-       PDU announcements.
+       become invalid under origin validation, always appear after all
+       other relevant PDU announcements.
 
    The order of two IP Prefix PDUs with updt values of 0 is determined
    by the first non-equal comparison in the following list.
