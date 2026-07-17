@@ -29,7 +29,8 @@ use base qw(Exporter);
 our @EXPORT_OK = qw(parse_pdu
                     order_pdus
                     pdus_are_ordered
-                    error_type_to_string);
+                    error_type_to_string
+                    error_type_to_fatal);
 
 my %TYPE_TO_MODULE = (
     PDU_SERIAL_NOTIFY()  => 'SerialNotify',
@@ -57,6 +58,23 @@ my %ERROR_TYPE_TO_STRING = (
     ERR_DUPLICATE_ANNOUNCEMENT_RECEIVED() => 'Duplicate Announcement Received',
     ERR_UNEXPECTED_PROTOCOL_VERSION()     => 'Unexpected Protocol Version',
     ERR_ASPA_PROVIDER_LIST_ERROR()        => 'ASPA Provider List Error',
+    ERR_CACHE_RESTART()                   => 'Cache Restart',
+    ERR_CACHE_SHUTDOWN()                  => 'Cache Shutdown',
+);
+
+my %ERROR_TYPE_TO_FATAL = (
+    ERR_CORRUPT_DATA()                    => 1,
+    ERR_INTERNAL_ERROR()                  => 1,
+    ERR_NO_DATA()                         => 0,
+    ERR_INVALID_REQUEST()                 => 1,
+    ERR_UNSUPPORTED_VERSION()             => 0,
+    ERR_UNSUPPORTED_PDU_TYPE()            => 1,
+    ERR_WITHDRAWAL_OF_UNKNOWN_RECORD()    => 1,
+    ERR_DUPLICATE_ANNOUNCEMENT_RECEIVED() => 1,
+    ERR_UNEXPECTED_PROTOCOL_VERSION()     => 1,
+    ERR_ASPA_PROVIDER_LIST_ERROR()        => 1,
+    ERR_CACHE_RESTART()                   => 0,
+    ERR_CACHE_SHUTDOWN()                  => 1,
 );
 
 sub type_to_module
@@ -79,6 +97,17 @@ sub error_type_to_string
         die "Error type '$type' does not map to a string.";
     }
     return $ERROR_TYPE_TO_STRING{$type};
+}
+
+sub error_type_to_fatal
+{
+    my ($type) = @_;
+
+    my $string = exists $ERROR_TYPE_TO_FATAL{$type};
+    if (not $string) {
+        die "Error type '$type' does not have fatal/non-fatal data.";
+    }
+    return $ERROR_TYPE_TO_FATAL{$type};
 }
 
 sub parse_pdu

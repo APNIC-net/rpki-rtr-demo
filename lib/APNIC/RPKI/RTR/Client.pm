@@ -19,6 +19,7 @@ use APNIC::RPKI::RTR::State;
 use APNIC::RPKI::RTR::Socket::SSH;
 use APNIC::RPKI::RTR::PDU::Utils qw(parse_pdu
                                     error_type_to_string
+                                    error_type_to_fatal
                                     pdus_are_ordered);
 use APNIC::RPKI::RTR::PDU::Exit;
 use APNIC::RPKI::RTR::PDU::ResetQuery;
@@ -265,7 +266,7 @@ sub _send_serial_query
 
 sub _receive_cache_response
 {
-    my ($self) = @_;
+    my ($self, $restart_operation, $is_reset) = @_;
 
     dprint("client: receiving cache response");
     my $pdu = $self->_parse_pdu();
@@ -281,20 +282,28 @@ sub _receive_cache_response
     if ($type == PDU_CACHE_RESPONSE()) {
         dprint("client: received cache response PDU");
         my $state = $self->{'state'};
-        if ($state and ($pdu->session_id() != $state->{'session_id'})) {
-            # The version may not have been negotiated by this point,
-            # so default to zero in that case.
-            my $cv = $self->{'current_version'} || 0;
-            my $err_pdu =
-                APNIC::RPKI::RTR::PDU::ErrorReport->new(
-                    version          => $cv,
-                    error_code       => ERR_CORRUPT_DATA(),
-                    encapsulated_pdu => $pdu,
-                );
-            my $socket = $self->{'socket'};
-            $self->_send($socket, $err_pdu->serialise_binary());
-            $self->flush();
-            die "client: got PDU with unexpected session";
+        if ($state
+                and ($pdu->session_id() != $state->{'session_id'})) {
+            if ($is_reset) {
+                # It's fine to change the session ID on a reset
+                # request.  See section 5.1.
+                dprint("client: server has returned new session ID ".
+                       "on reset request");
+            } else {
+                # The version may not have been negotiated by this point,
+                # so default to zero in that case.
+                my $cv = $self->{'current_version'} || 0;
+                my $err_pdu =
+                    APNIC::RPKI::RTR::PDU::ErrorReport->new(
+                        version          => $cv,
+                        error_code       => ERR_CORRUPT_DATA(),
+                        encapsulated_pdu => $pdu,
+                    );
+                my $socket = $self->{'socket'};
+                $self->_send($socket, $err_pdu->serialise_binary());
+                $self->flush();
+                die "client: got PDU with unexpected session";
+            }
         }
         delete $self->{'last_failure'};
         return $pdu;
@@ -309,12 +318,22 @@ sub _receive_cache_response
             my $max_version = $pdu->version();
             die "Server does not support client version ".
                 "(maximum supported version is '$max_version')";
+        } elsif ($pdu->error_code() == ERR_CACHE_RESTART()) {
+            dprint("client: server is restarting");
+            sleep(5);
+            return $restart_operation->();
+        } elsif ($pdu->error_code() == ERR_CACHE_SHUTDOWN()) {
+            dprint("client: server is shutting down");
+            $self->flush();
+            sleep(5);
+            return $restart_operation->();
         } else {
             die "Got error response: ".$pdu->serialise_json();
         }
     } elsif ($type == PDU_SERIAL_NOTIFY()) {
         dprint("client: received serial notify, ignore");
-        return $self->_receive_cache_response();
+        return $self->_receive_cache_response($restart_operation,
+                                              $is_reset);
     } else {
         dprint("client: received unexpected PDU");
         $self->{'last_failure'} = time();
@@ -541,34 +560,78 @@ sub _process_eod
     return 1;
 }
 
+sub time_until_retry
+{
+    my ($self) = @_;
+
+    my $last_failure = $self->{'last_failure'};
+    if (not $last_failure) {
+        return 0;
+    }
+
+    my $eod = $self->{'eod'};
+    if (not ($eod and ($self->_current_version() > 0))) {
+        return 0;
+    }
+
+    my $retry_interval = $eod->retry_interval();
+    my $min_retry_time = $last_failure + $retry_interval;
+    my $time = time();
+    my $time_to_wait = $min_retry_time - $time;
+    return max($time_to_wait, 0);
+}
+
+sub time_until_refresh
+{
+    my ($self) = @_;
+
+    my $last_run = $self->{'last_run'};
+    if (not $last_run) {
+        return 0;
+    }
+
+    my $eod = $self->{'eod'};
+    if (not ($eod and ($self->_current_version() > 0))) {
+        return 0;
+    }
+
+    my $refresh_interval = $eod->refresh_interval();
+    my $min_refresh_time = $last_run + $refresh_interval;
+    my $time = time();
+    my $time_to_wait = $min_refresh_time - $time;
+    return max($time_to_wait, 0);
+}
+
 sub reset
 {
     my ($self, $force, $persist) = @_;
 
-    if (not $force) {
-        my $last_failure = $self->{'last_failure'};
-        if ($last_failure) {
-            my $eod = $self->{'eod'};
-            if ($eod and ($self->_current_version() > 0)) {
-                my $retry_interval = $eod->refresh_interval();
-                my $min_retry_time = $last_failure + $retry_interval;
-                if (time() < $min_retry_time) {
-                    dprint("client: not retrying, retry interval not reached");
-                    if ($persist) {
-                        my $sleep = $min_retry_time - time();
-                        dprint("client: sleeping for ${sleep}s before retrying");
-                        sleep($sleep);
-                        return $self->reset($force, $persist);
-                    }
-                }
+    if ((not $force) and $self->{'last_failure'}) {
+        my $time_until_retry = $self->time_until_retry();
+        if ($time_until_retry) {
+            dprint("client: not retrying, retry interval not reached ".
+                   "(${time_until_retry}s)");
+            if ($persist) {
+                dprint("client: sleeping until retry interval reached");
+                sleep($time_until_retry);
+                return $self->reset($force, $persist);
+            } else {
+                return;
             }
+        } else {
+            dprint("client: retrying, retry interval time reached");
         }
     }
 
     $self->_init_socket_if_not_exists();
     $self->_send_reset_query();
-    my $pdu = eval { $self->_receive_cache_response(); };
+    my $pdu = eval {
+        $self->_receive_cache_response(
+            sub { $self->reset($force, $persist); }, 1
+        );
+    };
     if (my $error = $@) {
+        dprint("client: error on receiving cache response: $error");
         delete $self->{'socket'};
         if ($error =~ /maximum supported version is '(\d+)'/) {
             my $version = $1;
@@ -576,11 +639,15 @@ sub reset
                 $self->_init_socket_if_not_exists();
                 $self->_send_reset_query($version);
                 # No point trying to catch the error here.
-                $pdu = $self->_receive_cache_response();
+                $pdu =
+                    $self->_receive_cache_response(
+                        sub { $self->reset($force, $persist); }, 1
+                    );
             } else {
                 die "Unsupported server version '$version'";
             }
         } else {
+            $self->{'last_failure'} = time();
             die $error;
         }
     }
@@ -733,7 +800,11 @@ sub refresh
 
     $self->_init_socket_if_not_exists();
     $self->_send_serial_query();
-    my $pdu = $self->_receive_cache_response();
+    my $pdu =
+        $self->_receive_cache_response(
+            sub { $self->refresh($force, $persist, $version_override,
+                                 $success_cb) }, 0
+        );
     my $version = $pdu->version();
     $self->{'current_version'} = $version_override || $version;
     # todo: negotiation checks needed here.

@@ -28,6 +28,8 @@ use constant {
     ERR_UNEXPECTED_PROTOCOL_VERSION     => 8,
     ERR_ASPA_PROVIDER_LIST_ERROR        => 9,
     ERR_UNORDERED_PDUS                  => 11,
+    ERR_CACHE_RESTART                   => 12,
+    ERR_CACHE_SHUTDOWN                  => 13,
 };
 
 use Exporter qw(import);
@@ -57,6 +59,8 @@ our @EXPORT = qw(
     ERR_UNEXPECTED_PROTOCOL_VERSION
     ERR_ASPA_PROVIDER_LIST_ERROR
     ERR_UNORDERED_PDUS
+    ERR_CACHE_RESTART
+    ERR_CACHE_SHUTDOWN
 );
 
 1;

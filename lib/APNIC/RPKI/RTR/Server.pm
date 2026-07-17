@@ -21,6 +21,13 @@ use APNIC::RPKI::RTR::Utils qw(dprint
                                socket_inet);
 use APNIC::RPKI::RTR::PDU::Utils qw(parse_pdu);
 
+# These work only when there is a single server running in the
+# process, unsurprisingly.
+my $restart  = 0;
+my $shutdown = 0;
+$SIG{'HUP'}  = sub { $restart  = 1; };
+$SIG{'TERM'} = sub { $shutdown = 1; };
+
 sub new
 {
     my $class = shift;
@@ -117,6 +124,8 @@ sub run
     my ($self) = @_;
 
     dprint("server: starting server");
+    $restart = 0;
+    $shutdown = 0;
     my $server = $self->{'server'};
     my $port = $self->{'port'};
 
@@ -240,6 +249,51 @@ sub run
                 }
             }
         }
+
+        if ($shutdown) {
+            dprint("server: shutting down");
+            for my $socket ($select->can_write(0)) {
+                my $pp = $socket->peerport();
+                if (not defined $pp) {
+                    dprint("server: socket no longer available");
+                    $self->flush($socket);
+                    next;
+                }
+                my $cv = $self->{'versions'}->{$pp};
+                my $err_pdu =
+                    APNIC::RPKI::RTR::PDU::ErrorReport->new(
+                        version    => $cv,
+                        error_code => ERR_CACHE_SHUTDOWN(),
+                    );
+                $self->_send($socket, $err_pdu->serialise_binary());
+                $self->flush($socket);
+            }
+            dprint("server: shut down clients, exiting");
+            return 0;
+        }
+
+        if ($restart) {
+            dprint("server: shutting down for restart");
+            for my $socket ($select->can_write(0)) {
+                my $pp = $socket->peerport();
+                if (not defined $pp) {
+                    dprint("server: socket no longer available");
+                    $self->flush($socket);
+                    next;
+                }
+                my $cv = $self->{'versions'}->{$pp};
+                my $err_pdu =
+                    APNIC::RPKI::RTR::PDU::ErrorReport->new(
+                        version    => $cv,
+                        error_code => ERR_CACHE_RESTART(),
+                    );
+                $self->_send($socket, $err_pdu->serialise_binary());
+                $self->flush($socket);
+            }
+            dprint("server: shut down clients for restart, exiting");
+            return 0;
+        }
+
         my $new_last_update = (stat("$data_dir/snapshot.json"))[7] || 0;
         if ($new_last_update > $last_update) {
             my $now = time();
