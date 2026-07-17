@@ -320,14 +320,13 @@ sub _receive_cache_response
                 "(maximum supported version is '$max_version')";
         } elsif ($pdu->error_code() == ERR_CACHE_RESTART()) {
             dprint("client: server is restarting");
-            sleep(5);
-            return $restart_operation->();
+            return $pdu;
         } elsif ($pdu->error_code() == ERR_CACHE_SHUTDOWN()) {
             dprint("client: server is shutting down");
             $self->flush();
-            sleep(5);
-            return $restart_operation->();
+            return $pdu;
         } else {
+            $self->{'error_pdu'} = $pdu;
             die "Got error response: ".$pdu->serialise_json();
         }
     } elsif ($type == PDU_SERIAL_NOTIFY()) {
@@ -630,6 +629,17 @@ sub reset
             sub { $self->reset($force, $persist); }, 1
         );
     };
+    if ($pdu
+            and ($pdu->type() == PDU_ERROR_REPORT())
+            and (($pdu->error_code() == ERR_CACHE_RESTART())
+                or ($pdu->error_code() == ERR_CACHE_SHUTDOWN()))) {
+        delete $self->{'socket'};
+        if ($persist) {
+            return $self->reset($force, $persist);
+        } else {
+            return;
+        }
+    }
     if (my $error = $@) {
         dprint("client: error on receiving cache response: $error");
         delete $self->{'socket'};
@@ -724,14 +734,16 @@ sub refresh
                        "(${time_until_retry}s)");
                 if ($persist) {
                     if (not $self->{'socket'}) {
-                        # Force refresh in order to get a socket.
+                        dprint("client: no socket, so sleeping until ".
+                               "retry interval reached");
+                        sleep($time_until_retry);
                         return $self->refresh(1, $persist,
                                               $version_override,
                                               $success_cb);
                     }
                     my $socket = $self->{'socket'};
                     dprint("client: blocking for ${time_until_retry}s ".
-                           "before refresh");
+                           "before retry");
                     my $select = IO::Select->new();
                     $select->add($socket);
                     my ($ready) = $select->can_read($time_until_retry);
@@ -742,12 +754,32 @@ sub refresh
                     $select->remove($socket);
                     if ($ready) {
                         my $pdu = $self->_parse_pdu();
-                        if ($pdu->type() != PDU_SERIAL_NOTIFY()) {
-                            die "Expected serial notify PDU";
+                        # The difference here is that serial notify
+                        # forces refresh, whereas restart and shutdown
+                        # do not.
+                        if (($pdu->type() == PDU_ERROR_REPORT())
+                                and (($pdu->error_code() == ERR_CACHE_RESTART())
+                                    or ($pdu->error_code() == ERR_CACHE_SHUTDOWN()))) {
+                            delete $self->{'socket'};
+                            $self->{'last_failure'} = time();
+                            my $err_str =
+                                error_type_to_string($pdu->error_code());
+                            dprint("client: got '$err_str' PDU, retrying");
+                            if ($pdu->error_code() == ERR_CACHE_RESTART()) {
+                                return $self->refresh($force, $persist,
+                                                      $version_override,
+                                                      $success_cb);
+                            } else {
+                                return $self->reset($force, $persist);
+                            }
+                        } elsif ($pdu->type() == PDU_SERIAL_NOTIFY()) {
+                            return $self->refresh(1, $persist,
+                                                  $version_override,
+                                                  $success_cb);
+                        } else {
+                            die "Expected serial notify, restart, ".
+                                "or shutdown PDU";
                         }
-                        return $self->refresh(1, $persist,
-                                              $version_override,
-                                              $success_cb);
                     }
                 }
                 return;
@@ -756,10 +788,13 @@ sub refresh
         my $current_time = time();
         my $time_until_refresh = $self->time_until_refresh();
         if ($time_until_refresh) {
-            dprint("client: not refreshing, refresh interval not reached");
+            dprint("client: not refreshing, refresh interval not ".
+                   "reached (${time_until_refresh}s)");
             if ($persist) {
                 if (not $self->{'socket'}) {
-                    # Force refresh in order to get a socket.
+                    dprint("client: no socket, so sleeping until ".
+                            "retry interval reached");
+                    sleep($time_until_refresh);
                     return $self->refresh(1, $persist,
                                           $version_override,
                                           $success_cb);
@@ -777,12 +812,32 @@ sub refresh
                 $select->remove($socket);
                 if ($ready) {
                     my $pdu = $self->_parse_pdu();
-                    if ($pdu->type() != PDU_SERIAL_NOTIFY()) {
-                        die "Expected serial notify PDU";
+                    # The difference here is that serial notify
+                    # forces refresh, whereas restart and shutdown
+                    # do not.
+                    if (($pdu->type() == PDU_ERROR_REPORT())
+                            and (($pdu->error_code() == ERR_CACHE_RESTART())
+                                or ($pdu->error_code() == ERR_CACHE_SHUTDOWN()))) {
+                        delete $self->{'socket'};
+                        $self->{'last_failure'} = time();
+                        my $err_str =
+                            error_type_to_string($pdu->error_code());
+                        dprint("client: got '$err_str' PDU, retrying");
+                        if ($pdu->error_code() == ERR_CACHE_RESTART()) {
+                            return $self->refresh($force, $persist,
+                                                  $version_override,
+                                                  $success_cb);
+                        } else {
+                            return $self->reset($force, $persist);
+                        }
+                    } elsif ($pdu->type() == PDU_SERIAL_NOTIFY()) {
+                        return $self->refresh(1, $persist,
+                                              $version_override,
+                                              $success_cb);
+                    } else {
+                        die "Expected serial notify, restart, ".
+                            "or shutdown PDU";
                     }
-                    return $self->refresh(1, $persist,
-                                          $version_override,
-                                          $success_cb);
                 }
             }
             return;
@@ -800,6 +855,18 @@ sub refresh
             sub { $self->refresh($force, $persist, $version_override,
                                  $success_cb) }, 0
         );
+    if ($pdu
+            and ($pdu->type() == PDU_ERROR_REPORT())
+            and (($pdu->error_code() == ERR_CACHE_RESTART())
+                or ($pdu->error_code() == ERR_CACHE_SHUTDOWN()))) {
+        delete $self->{'socket'};
+        if ($persist) {
+            return $self->refresh($force, $persist, $version_override,
+                                  $success_cb);
+        } else {
+            return;
+        }
+    }
     my $version = $pdu->version();
     $self->{'current_version'} = $version_override || $version;
     # todo: negotiation checks needed here.

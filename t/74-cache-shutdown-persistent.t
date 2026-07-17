@@ -1,0 +1,150 @@
+#!/usr/bin/perl
+
+use warnings;
+use strict;
+
+use APNIC::RPKI::RTR::Server;
+use APNIC::RPKI::RTR::Server::Maintainer;
+use APNIC::RPKI::RTR::Client;
+use APNIC::RPKI::RTR::PDU::IPv4Prefix;
+use APNIC::RPKI::RTR::Changeset;
+use APNIC::RPKI::RTR::Constants qw(ERR_CORRUPT_DATA);
+
+use File::Slurp qw(read_file write_file);
+use File::Temp qw(tempdir);
+use JSON::XS qw(decode_json);
+use List::MoreUtils qw(uniq);
+use Net::EmptyPort qw(empty_port);
+
+use Test::More tests => 5;
+
+my @pids;
+
+{
+    # Set up the server and clients.
+
+    my $data_dir = tempdir(CLEANUP => 1); 
+    my $mnt =
+        APNIC::RPKI::RTR::Server::Maintainer->new(
+            data_dir => $data_dir
+        );
+    my $port = empty_port();
+    my $server =
+        APNIC::RPKI::RTR::Server->new(
+            server         => '127.0.0.1',
+            port           => $port,
+            data_dir       => $data_dir,
+            retry_interval => 5,
+        );
+
+    if (my $ppid = fork()) {
+        push @pids, $ppid;
+    } else {
+        for (;;) {
+            my $server =
+                APNIC::RPKI::RTR::Server->new(
+                    server         => '127.0.0.1',
+                    port           => $port,
+                    data_dir       => $data_dir,
+                    retry_interval => 5
+                );
+            $server->run();
+            diag("Server exited, sleeping for 2s before restarting...");
+            sleep(2);
+        }
+        exit(0);
+    }
+    sleep(1);
+
+    my $changeset = APNIC::RPKI::RTR::Changeset->new();
+    my $pdu =
+        APNIC::RPKI::RTR::PDU::IPv4Prefix->new(
+            version       => 1,
+            flags         => 1,
+            asn           => 4608,
+            address       => '1.0.0.0',
+            prefix_length => 24,
+            max_length    => 32,
+        );
+    $changeset->add_pdu($pdu);
+    $mnt->apply_changeset($changeset);
+
+    my $state_path_ft = File::Temp->new();
+    my $state_path = $state_path_ft->filename();
+    my $client =
+        APNIC::RPKI::RTR::Client->new(
+            server     => '127.0.0.1',
+            port       => $port,
+            state_path => $state_path,
+        );
+
+    if (my $ppid = fork()) {
+        push @pids, $ppid;
+    } else {
+        $client->reset(undef, 1);
+        exit(0);
+    }
+
+    my $state_path2_ft = File::Temp->new();
+    my $state_path2 = $state_path2_ft->filename();
+    my $client2 =
+        APNIC::RPKI::RTR::Client->new(
+            server     => '127.0.0.1',
+            port       => $port,
+            state_path => $state_path2,
+        );
+
+    if (my $ppid = fork()) {
+        push @pids, $ppid;
+    } else {
+        $client2->reset(undef, 1);
+        exit(0);
+    }
+    sleep(1);
+
+    my @session_ids;
+    for my $sp ($state_path, $state_path2) {
+        my $state_data = read_file($state_path);
+        $state_data = decode_json($state_data);
+        $state_data = decode_json($state_data->{'state'});
+        push @session_ids, $state_data->{'session_id'};
+    }
+
+    # Send the shutdown signal to the server.  Because the clients are
+    # operating persistently, they should receive the cache shutdown
+    # PDU, block until the retry interval is reached, and then issue a
+    # reset.
+
+    kill('TERM', $pids[0]);
+    sleep(7);
+
+    my @new_session_ids;
+    for my $sp ($state_path, $state_path2) {
+        my $state_data = read_file($state_path);
+        $state_data = decode_json($state_data);
+        $state_data = decode_json($state_data->{'state'});
+        push @new_session_ids, $state_data->{'session_id'};
+    }
+
+    is(@session_ids, 2, 'Got session IDs from both clients');
+    my @unique_session_ids = uniq(@session_ids);
+    is(@unique_session_ids, 1, 'Got one unique session ID');
+    is(@new_session_ids, 2, 'Got new session IDs from both clients');
+    my @new_unique_session_ids = uniq(@new_session_ids);
+    is(@new_unique_session_ids, 1, 'Got one unique new session ID');
+    isnt($unique_session_ids[0],
+         $new_unique_session_ids[0],
+         'Session ID has changed');
+
+    for my $pid (@pids) {
+        kill('KILL', $pid);
+    }
+}
+
+END {
+    for my $pid (@pids) {
+        kill('KILL', $pid);
+    }
+}
+
+1;
