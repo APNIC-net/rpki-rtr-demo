@@ -716,15 +716,13 @@ sub refresh
 
     if (not $force) {
         my $last_failure = $self->{'last_failure'};
-        my $eod = $self->{'eod'};
-        if ($last_failure and $eod and ($self->_current_version() > 0)) {
-            my $retry_interval = $eod->refresh_interval();
-            my $min_retry_time = $last_failure + $retry_interval;
-            if (time() < $min_retry_time) {
-                dprint("client: not retrying, retry interval not reached");
+        if ($last_failure) {
+            my $current_time = time();
+            my $time_until_retry = $self->time_until_retry();
+            if ($time_until_retry) {
+                dprint("client: not retrying, retry interval not reached ".
+                       "(${time_until_retry}s)");
                 if ($persist) {
-                    my $current_time = time();
-                    my $sleep = $min_retry_time - $current_time;
                     if (not $self->{'socket'}) {
                         # Force refresh in order to get a socket.
                         return $self->refresh(1, $persist,
@@ -732,10 +730,11 @@ sub refresh
                                               $success_cb);
                     }
                     my $socket = $self->{'socket'};
-                    dprint("client: blocking for ${sleep}s before refresh");
+                    dprint("client: blocking for ${time_until_retry}s ".
+                           "before refresh");
                     my $select = IO::Select->new();
                     $select->add($socket);
-                    my ($ready) = $select->can_read($sleep);
+                    my ($ready) = $select->can_read($time_until_retry);
                     my $wake_time = time();
                     my $diff_time = $wake_time - $current_time;
                     dprint("client: blocked for ${diff_time}s ".
@@ -754,43 +753,39 @@ sub refresh
                 return;
             }
         }
-        if ($eod and ($self->_current_version() > 0)) {
-            my $last_run = $self->{'last_run'};
-            my $refresh_interval = $eod->refresh_interval();
-            my $min_refresh_time = $last_run + $refresh_interval;
-            if (time() < $min_refresh_time) {
-                dprint("client: not refreshing, refresh interval not reached");
-                if ($persist) {
-                    my $current_time = time();
-                    my $sleep = $min_refresh_time - $current_time;
-                    if (not $self->{'socket'}) {
-                        # Force refresh in order to get a socket.
-                        return $self->refresh(1, $persist,
-                                              $version_override,
-                                              $success_cb);
-                    }
-                    my $socket = $self->{'socket'};
-                    dprint("client: blocking for ${sleep}s before refresh");
-                    my $select = IO::Select->new();
-                    $select->add($socket);
-                    my ($ready) = $select->can_read($sleep);
-                    my $wake_time = time();
-                    my $diff_time = $wake_time - $current_time;
-                    dprint("client: blocked for ${diff_time}s ".
-                           "before server readable");
-                    $select->remove($socket);
-                    if ($ready) {
-                        my $pdu = $self->_parse_pdu();
-                        if ($pdu->type() != PDU_SERIAL_NOTIFY()) {
-                            die "Expected serial notify PDU";
-                        }
-                        return $self->refresh(1, $persist,
-                                              $version_override,
-                                              $success_cb);
-                    }
+        my $current_time = time();
+        my $time_until_refresh = $self->time_until_refresh();
+        if ($time_until_refresh) {
+            dprint("client: not refreshing, refresh interval not reached");
+            if ($persist) {
+                if (not $self->{'socket'}) {
+                    # Force refresh in order to get a socket.
+                    return $self->refresh(1, $persist,
+                                          $version_override,
+                                          $success_cb);
                 }
-                return;
+                my $socket = $self->{'socket'};
+                dprint("client: blocking for ${time_until_refresh}s ".
+                       "before refresh");
+                my $select = IO::Select->new();
+                $select->add($socket);
+                my ($ready) = $select->can_read($time_until_refresh);
+                my $wake_time = time();
+                my $diff_time = $wake_time - $current_time;
+                dprint("client: blocked for ${diff_time}s ".
+                        "before server readable");
+                $select->remove($socket);
+                if ($ready) {
+                    my $pdu = $self->_parse_pdu();
+                    if ($pdu->type() != PDU_SERIAL_NOTIFY()) {
+                        die "Expected serial notify PDU";
+                    }
+                    return $self->refresh(1, $persist,
+                                          $version_override,
+                                          $success_cb);
+                }
             }
+            return;
         }
     }
 
