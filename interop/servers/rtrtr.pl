@@ -326,7 +326,9 @@ EOF
     $client->reset();
 
     # rtrtr only retains 10 history entries, so adding 13 here will
-    # mean that the client can't refresh.
+    # mean that the client can't refresh.  (The check below assumes
+    # that this is what happens, which is the case at the moment at
+    # least, but the test could be more robust.)
     for my $i (3..15) {
         my $changeset = APNIC::RPKI::RTR::Changeset->new();
         my $pdu =
@@ -349,18 +351,10 @@ EOF
         $client->refresh(1);
     };
     $error = $@;
-    my $code = 0;
-    eval {
-        my ($json) = ($error =~ /({.*})/);
-        my $data = decode_json($json);
-        if (exists $data->{'type'}) {
-            $code = $data->{'type'};
-        }
-    };
-    if ($code == 8) {
+    if (not $error) {
         print "$preamble,reset_on_absence_of_history,success\n";
     } else {
-        warn "$error, $code";
+        warn "$error";
         print "$preamble,reset_on_absence_of_history,failure\n";
     }
 
