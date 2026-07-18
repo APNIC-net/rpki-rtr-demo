@@ -63,7 +63,10 @@ sub new
     }
 
     # Only overridable for tests.
-    my $serial_notify_period = $args{'serial_notify_period'} || 60;
+    my $serial_notify_period =
+        (defined $args{'serial_notify_period'})
+            ? $args{'serial_notify_period'}
+            : 60;
 
     my $session_id = int(rand(65535));
 
@@ -300,7 +303,8 @@ sub run
             if (($last_serial_notify + $serial_notify_period) > $now) {
                 dprint("server: state has been updated, but rate ".
                        "limit has been reached, so cannot send ".
-                       "serial notify");
+                       "serial notify ($last_serial_notify, ".
+                       "$serial_notify_period, $now)");
                 next;
             }
             $last_update = $new_last_update;
@@ -312,6 +316,7 @@ sub run
                 APNIC::RPKI::RTR::State->deserialise_json($data);
             $state->{'session_id'} = $self->{'session_id'};
             my $serial_number = $state->serial_number();
+            dprint("server: new serial number is '$serial_number'");
             for my $socket ($select->can_write(0)) {
                 my $pp = $socket->peerport();
                 if (not defined $pp) {
@@ -395,9 +400,11 @@ sub handle_client_connection
         }
         $version = $pdu->version();
         if ((defined $cv) and ($version != $cv)) {
+            my $msg = "wanted '$cv', got '$version'";
             if ($pdu->type() == PDU_ERROR_REPORT()) {
                 $self->flush($client);
-                dprint("server: got error report PDU with unexpected version");
+                dprint("server: got error report PDU with ".
+                       "unexpected version ($msg)");
                 $res = 0;
                 goto FINISHED;
             }
@@ -409,7 +416,8 @@ sub handle_client_connection
                 );
             $self->_send($client, $err_pdu->serialise_binary());
             $self->flush($client);
-            dprint("server: got PDU with unexpected version");
+            dprint("server: got PDU with unexpected ".
+                   "version ($msg)");
             $res = 0;
             goto FINISHED;
         }
@@ -494,7 +502,12 @@ sub handle_client_connection
         } elsif ($type == PDU_SERIAL_QUERY()) {
             dprint("server: got serial query");
             if (not $self->{'no_session_id_check'}) {
+                my $pdu_session_id = $pdu->session_id();
+                my $self_session_id = $self->session_id();
                 if ($pdu->session_id() ne $self->session_id()) {
+                    dprint("server: client session ID ($pdu_session_id) ".
+                           "does not match server session ID ".
+                           "($self_session_id)");
                     my $err_pdu =
                         APNIC::RPKI::RTR::PDU::ErrorReport->new(
                             version          => $version,

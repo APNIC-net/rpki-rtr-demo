@@ -8,6 +8,7 @@ use List::Util qw(max);
 
 use APNIC::RPKI::RTR::Changeset;
 use APNIC::RPKI::RTR::State;
+use APNIC::RPKI::RTR::Utils qw(dprint);
 
 sub new
 {
@@ -37,9 +38,12 @@ sub apply_changeset
             push @serials, $serial;
         }
     }
+    @serials = sort { $a <=> $b } @serials;
+    my $serial_str = join ", ", @serials;
+    dprint("maintainer: current serials are '$serial_str'");
     my $max_serial;
     if (@serials) {
-        @serials = sort @serials;
+        @serials = sort { $a <=> $b } @serials;
         $max_serial = $serials[$#serials];
         # If both the top serial value and 1 are present as serials,
         # then remove everything from the top of the list working
@@ -57,6 +61,7 @@ sub apply_changeset
     } else {
         $max_serial = 0;
     }
+    dprint("maintainer: max serial is '$max_serial'");
     if (defined $override_serial
             and $max_serial != $override_serial) {
         die "Override serial not used";
@@ -70,6 +75,7 @@ sub apply_changeset
     my $encoded = $changeset->serialise_json();
     write_file("$data_dir/changeset_${new_max_serial}.json",
                $encoded);
+    dprint("maintainer: new max serial is '$new_max_serial'");
 
     my $state;
     my $ss_path = "$data_dir/snapshot.json";

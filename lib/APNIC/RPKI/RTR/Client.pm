@@ -773,6 +773,7 @@ sub refresh
                                 return $self->reset($force, $persist);
                             }
                         } elsif ($pdu->type() == PDU_SERIAL_NOTIFY()) {
+                            dprint("client: received serial notify PDU, resyncing");
                             return $self->refresh(1, $persist,
                                                   $version_override,
                                                   $success_cb);
@@ -831,6 +832,7 @@ sub refresh
                             return $self->reset($force, $persist);
                         }
                     } elsif ($pdu->type() == PDU_SERIAL_NOTIFY()) {
+                        dprint("client: received serial notify PDU, resyncing");
                         return $self->refresh(1, $persist,
                                               $version_override,
                                               $success_cb);
