@@ -8,10 +8,15 @@ use APNIC::RPKI::RTR::Server;
 use APNIC::RPKI::RTR::Client;
 use APNIC::RPKI::RTR::Changeset;
 use APNIC::RPKI::RTR::PDU::IPv4Prefix;
+use APNIC::RPKI::RTR::PDU::IPv6Prefix;
+use APNIC::RPKI::RTR::PDU::ASPA;
+use APNIC::RPKI::RTR::PDU::RouterKey;
+use APNIC::RPKI::RTR::PDU::Utils qw(order_pdus);
 
 use File::Slurp qw(write_file read_file);
 use File::Temp qw(tempdir);
 use JSON::XS qw(decode_json encode_json);
+use List::Util qw(shuffle);
 use Net::EmptyPort qw(empty_port);
 
 ## rtrtr.
@@ -451,6 +456,153 @@ EOF
     } else {
         warn $error;
         print "$preamble,no_data_returned_correctly,failure\n";
+    }
+
+    # Multiple PDU types.
+    {
+        my $changeset = APNIC::RPKI::RTR::Changeset->new();
+
+        my $pdu1 =
+            APNIC::RPKI::RTR::PDU::IPv6Prefix->new(
+                version       => 1,
+                flags         => 1,
+                asn           => 4608,
+                address       => '1::',
+                prefix_length => 24,
+                max_length    => 32
+            );
+        $changeset->add_pdu($pdu1);
+
+        my $pdu2 =
+            APNIC::RPKI::RTR::PDU::ASPA->new(
+		version       => 2,
+		flags         => 1,
+		afi_flags     => 3,
+		customer_asn  => 4608,
+		provider_asns => [1, 2, 3, 4],
+            );
+        $changeset->add_pdu($pdu2);
+
+        my $pdu3 =
+            APNIC::RPKI::RTR::PDU::RouterKey->new(
+		version => 1,
+		flags   => 1,
+		ski     => '1234',
+		spki    => '1234',
+		asn     => 4608,
+            );
+        $changeset->add_pdu($pdu3);
+
+        $mnt->apply_changeset($changeset);
+        sleep(2);
+
+        my $client =
+            APNIC::RPKI::RTR::Client->new(
+                server => '127.0.0.1',
+                port   => $rtrtr_rtr_port,
+            );
+        eval { 
+            $client->reset();
+        };
+        $error = $@;
+        $state_data = $client->{'state'};
+        if (exists $state_data->{'vrps'}
+                            ->{'4608'}->{'1.0.0.0'}->{'24'}) {
+            print "$preamble,sends_ipv4,success\n";
+        } else {
+            print "$preamble,sends_ipv4,failure\n";
+        }
+
+        if (exists $state_data->{'vrps'}
+                            ->{'4608'}->{'1::'}->{'24'}) {
+            print "$preamble,sends_ipv6,success\n";
+        } else {
+            print "$preamble,sends_ipv6,failure\n";
+        }
+
+        if (exists $state_data->{'aspas'}->{4608}) {
+            print "$preamble,sends_aspa,success\n";
+        } else {
+            print "$preamble,sends_aspa,failure\n";
+        }
+
+        if (exists $state_data->{'rks'}->{4608}) {
+            print "$preamble,sends_router_key,success\n";
+        } else {
+            print "$preamble,sends_router_key,failure\n";
+        }
+    }
+
+    # Ordering.
+    {
+        my $changeset = APNIC::RPKI::RTR::Changeset->new();
+
+        my @pdus = (
+            APNIC::RPKI::RTR::PDU::IPv6Prefix->new(
+                version       => 1,
+                flags         => 1,
+                asn           => 4608,
+                address       => '3::',
+                prefix_length => 24,
+                max_length    => 32
+            ),
+            APNIC::RPKI::RTR::PDU::IPv6Prefix->new(
+                version       => 1,
+                flags         => 1,
+                asn           => 4608,
+                address       => '3::',
+                prefix_length => 16,
+                max_length    => 28
+            ),
+            APNIC::RPKI::RTR::PDU::IPv6Prefix->new(
+                version       => 1,
+                flags         => 1,
+                asn           => 4609,
+                address       => '3::',
+                prefix_length => 24,
+                max_length    => 32
+            ),
+            APNIC::RPKI::RTR::PDU::ASPA->new(
+		version       => 2,
+		flags         => 1,
+		afi_flags     => 3,
+		customer_asn  => 4609,
+		provider_asns => [1, 2, 3, 4],
+            )
+        );
+        for (;;) {
+            my @shuffled_pdus = shuffle(@pdus);
+            my @ordered_pdus = order_pdus(@pdus);
+            if (encode_json([ map { $_->serialise_json() } @shuffled_pdus ])
+                    ne encode_json([ map { $_->serialise_json() } @ordered_pdus ])) {
+                for my $pdu (@shuffled_pdus) {
+                    $changeset->add_pdu($pdu);
+                }
+                $mnt->apply_changeset($changeset);
+                sleep(2);
+                last;
+            }
+        }
+
+        my $client =
+            APNIC::RPKI::RTR::Client->new(
+                server         => '127.0.0.1',
+                port           => $rtrtr_rtr_port,
+                strict_receive => 1,
+            );
+        eval { 
+            $client->reset();
+        };
+        if ($error) {
+            if ($error =~ /got unordered PDUs/) {
+                print "$preamble,sends_ordered_pdus,failure\n";
+            } else {
+                warn "Expected unordered PDUs, got other error '$error'";
+                print "$preamble,sends_ordered_pdus,failure\n";
+            }
+        } else {
+            print "$preamble,sends_ordered_pdus,success\n";
+        }
     }
         
     for my $pid (@pids) {

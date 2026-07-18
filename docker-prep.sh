@@ -15,6 +15,7 @@ sudo apt-get update -y && \
         libio-socket-ssl-perl \
         libnet-ip-xs-perl \
         libjson-xs-perl \
+        libcarp-always-perl \
         openssh-server \
         netcat-traditional
 rustup default stable

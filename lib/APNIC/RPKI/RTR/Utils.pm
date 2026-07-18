@@ -31,7 +31,7 @@ sub inet_ntop
     my ($n, $version) = @_;
 
     my $bin = ip_inttobin($n, $version);
-    if (not $bin) {
+    if (not defined $bin) {
         die "Integer IP address '$n' is invalid ($version): ".
             $Net::IP::XS::ERROR;
     }
