@@ -535,18 +535,11 @@ sub handle_client_connection
                 $res = 0;
                 goto FINISHED;
             } else {
-                my $cr_pdu =
-                    APNIC::RPKI::RTR::PDU::CacheResponse->new(
-                        version    => $version,
-                        session_id => $self->session_id(),
-                    );
-                my $sb = $cr_pdu->serialise_binary();
-                dprint("server: sending cache response: ".$cr_pdu->serialise_json());
-                $self->_send($client, $sb);
-
                 # Serial query.
                 my $last_serial_number = $pdu->serial_number();
                 if (not -e "$data_dir/changeset_$last_serial_number.json") {
+                    dprint("server: client is requesting changeset ".
+                           "that no longer exists");
                     # Assuming that the absence of this changeset
                     # means that truncation has occurred such that the
                     # client can't be sure they'll get the right data.
@@ -563,6 +556,16 @@ sub handle_client_connection
                     $self->_send($client, $sb);
                     goto FINISHED;
                 }
+
+                my $cr_pdu =
+                    APNIC::RPKI::RTR::PDU::CacheResponse->new(
+                        version    => $version,
+                        session_id => $self->session_id(),
+                    );
+                my $sb = $cr_pdu->serialise_binary();
+                dprint("server: sending cache response: ".$cr_pdu->serialise_json());
+                $self->_send($client, $sb);
+
                 my @changeset_paths;
                 for (my $i = $last_serial_number + 1;; $i++) {
                     my $changeset_path = "$data_dir/changeset_$i.json";

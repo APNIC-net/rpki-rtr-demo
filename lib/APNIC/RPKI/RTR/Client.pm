@@ -266,7 +266,7 @@ sub _send_serial_query
 
 sub _receive_cache_response
 {
-    my ($self, $restart_operation, $is_reset) = @_;
+    my ($self, $restart_operation, $is_reset, $force, $persist) = @_;
 
     dprint("client: receiving cache response");
     my $pdu = $self->_parse_pdu();
@@ -332,7 +332,12 @@ sub _receive_cache_response
     } elsif ($type == PDU_SERIAL_NOTIFY()) {
         dprint("client: received serial notify, ignore");
         return $self->_receive_cache_response($restart_operation,
-                                              $is_reset);
+                                              $is_reset,
+                                              $force, $persist);
+    } elsif ($type == PDU_CACHE_RESET()) {
+        dprint("client: received cache reset");
+        $self->reset(1, $persist);
+        return $pdu;
     } else {
         dprint("client: received unexpected PDU");
         $self->{'last_failure'} = time();
@@ -626,7 +631,8 @@ sub reset
     $self->_send_reset_query();
     my $pdu = eval {
         $self->_receive_cache_response(
-            sub { $self->reset($force, $persist); }, 1
+            sub { $self->reset($force, $persist); }, 1,
+            $force, $persist
         );
     };
     if ($pdu
@@ -640,6 +646,9 @@ sub reset
             return;
         }
     }
+    if ($pdu and ($pdu->type() == PDU_CACHE_RESET())) {
+        return 1;
+    }
     if (my $error = $@) {
         dprint("client: error on receiving cache response: $error");
         delete $self->{'socket'};
@@ -651,7 +660,8 @@ sub reset
                 # No point trying to catch the error here.
                 $pdu =
                     $self->_receive_cache_response(
-                        sub { $self->reset($force, $persist); }, 1
+                        sub { $self->reset($force, $persist); }, 1,
+                        $force, $persist
                     );
             } else {
                 die "Unsupported server version '$version'";
@@ -855,7 +865,7 @@ sub refresh
     my $pdu =
         $self->_receive_cache_response(
             sub { $self->refresh($force, $persist, $version_override,
-                                 $success_cb) }, 0
+                                 $success_cb) }, 0, $force, $persist
         );
     if ($pdu
             and ($pdu->type() == PDU_ERROR_REPORT())
@@ -868,6 +878,9 @@ sub refresh
         } else {
             return;
         }
+    }
+    if ($pdu and ($pdu->type() == PDU_CACHE_RESET())) {
+        return 1;
     }
     my $version = $pdu->version();
     $self->{'current_version'} = $version_override || $version;

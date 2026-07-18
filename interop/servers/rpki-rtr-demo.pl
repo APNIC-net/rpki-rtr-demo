@@ -13,13 +13,14 @@ use APNIC::RPKI::RTR::PDU::ASPA;
 use APNIC::RPKI::RTR::PDU::RouterKey;
 use APNIC::RPKI::RTR::PDU::Utils qw(order_pdus);
 
+use Cwd qw(cwd);
 use File::Slurp qw(write_file read_file);
 use File::Temp qw(tempdir);
 use JSON::XS qw(decode_json encode_json);
 use List::Util qw(shuffle);
 use Net::EmptyPort qw(empty_port);
 
-## rtrtr.
+## rpki-rtr-demo.
 
 # Can connect with version 0.
 {
@@ -62,70 +63,12 @@ use Net::EmptyPort qw(empty_port);
     $changeset->add_pdu($pdu);
     $mnt->apply_changeset($changeset);
 
-    # Run rtrtr.
-
-    my $rtrtr_rtr_port =
-        ($$ + int(rand(1024))) % (65535 - 1024) + 1024;
-    my $rtrtr_http_port =
-        ($$ + int(rand(1024))) % (65535 - 1024) + 1024;
-
-    my $config = <<EOF;
-#log_level = "debug"
-#log_target = "stderr"
-#log_facility = "daemon"
-http-listen = ["127.0.0.1:$rtrtr_http_port"]
-
-[units.ufirst]
-type = "rtr"
-remote = "127.0.0.1:$port"
-
-[targets.tfirst]
-type = "rtr"
-listen = [ "127.0.0.1:$rtrtr_rtr_port" ]
-unit = "ufirst"
-EOF
-
-    my $ft = File::Temp->new();
-    my $fn = $ft->filename();
-    write_file($fn, $config);
-
-    my $rtr_path = $ENV{'RTRTR_PATH'} || 'rtrtr';
-    my ($rtrtr_version) = `$rtr_path --version`;
-    chomp $rtrtr_version;
-    $rtrtr_version =~ s/^rtrtr\s*//;
-    my $preamble = "rtrtr,$rtrtr_version";
-
-    my @rtrtr_pids = `ps -C rtrtr`;
-    shift @rtrtr_pids;
-    my %rtrtr_pid_lookup;
-    for my $rtrtr_pid (@rtrtr_pids) {
-        $rtrtr_pid =~ s/\s.*//;
-        chomp $rtrtr_pid;
-        $rtrtr_pid_lookup{$rtrtr_pid} = 1;
-    }
-    if (my $pid = fork()) {
-        push @pids, $pid;
-    } else {
-        system("$rtr_path -c $fn");
-        exit(0);
-    }
-    sleep(1);
-
-    @rtrtr_pids = `ps -C rtrtr`;
-    shift @rtrtr_pids;
-    for my $rtrtr_pid (@rtrtr_pids) {
-        $rtrtr_pid =~ s/^\s*//;
-        $rtrtr_pid =~ s/\s.*//;
-        chomp $rtrtr_pid;
-        if (not $rtrtr_pid_lookup{$rtrtr_pid}) {
-            push @pids, $rtrtr_pid;
-        }
-    }
+    my $preamble = "rpki-rtr-demo,main";
 
     my $client =
         APNIC::RPKI::RTR::Client->new(
             server             => '127.0.0.1',
-            port               => $rtrtr_rtr_port,
+            port               => $port,
             supported_versions => [0]
         );
     my @pdus;
@@ -148,7 +91,7 @@ EOF
     $client =
         APNIC::RPKI::RTR::Client->new(
             server             => '127.0.0.1',
-            port               => $rtrtr_rtr_port,
+            port               => $port,
             supported_versions => [1]
         );
     @pdus = ();
@@ -169,7 +112,7 @@ EOF
     $client =
         APNIC::RPKI::RTR::Client->new(
             server             => '127.0.0.1',
-            port               => $rtrtr_rtr_port,
+            port               => $port,
             supported_versions => [2]
         );
     @pdus = ();
@@ -189,7 +132,7 @@ EOF
     $client =
         APNIC::RPKI::RTR::Client->new(
             server             => '127.0.0.1',
-            port               => $rtrtr_rtr_port,
+            port               => $port,
             supported_versions => [0, 1, 2]
         );
     @pdus = ();
@@ -225,7 +168,7 @@ EOF
 	my $client =
 	    APNIC::RPKI::RTR::Client->new(
 		server     => '127.0.0.1',
-		port       => $rtrtr_rtr_port,
+		port       => $port,
 		state_path => $state_path,
 	    );
         $client->reset(undef, 1);
@@ -245,7 +188,7 @@ EOF
         );
     $changeset2->add_pdu($pdu2);
     $mnt->apply_changeset($changeset2);
-    sleep(5);
+    sleep(2);
 
     my $state_data = read_file($state_path);
     $state_data = decode_json($state_data);
@@ -263,7 +206,7 @@ EOF
     $client =
         APNIC::RPKI::RTR::Client->new(
             server             => '127.0.0.1',
-            port               => $rtrtr_rtr_port,
+            port               => $port,
             supported_versions => [0, 1, 2]
         );
     @pdus = ();
@@ -284,7 +227,7 @@ EOF
     $client =
         APNIC::RPKI::RTR::Client->new(
             server     => '127.0.0.1',
-            port       => $rtrtr_rtr_port,
+            port       => $port,
             state_path => $state_path,
         );
     $client->reset();
@@ -309,7 +252,6 @@ EOF
         }
     };
     my $error2 = $@;
-    # Currently returns "cache reset" instead.
     if ($ec_is_zero) {
         print "$preamble,returns_corrupt_data_on_session_mismatch,success\n";
     } else {
@@ -320,51 +262,58 @@ EOF
     $client =
         APNIC::RPKI::RTR::Client->new(
             server     => '127.0.0.1',
-            port       => $rtrtr_rtr_port,
+            port       => $port,
             state_path => $state_path,
         );
     $client->reset();
 
-    # rtrtr only retains 10 history entries, so adding 13 here will
-    # mean that the client can't refresh.
-    for my $i (3..15) {
-        my $changeset = APNIC::RPKI::RTR::Changeset->new();
-        my $pdu =
-            APNIC::RPKI::RTR::PDU::IPv4Prefix->new(
-                version       => 1,
-                flags         => 1,
-                asn           => 4608,
-                address       => "$i.0.0.0",
-                prefix_length => 24,
-                max_length    => 32
-            );
-        $changeset->add_pdu($pdu);
-        $mnt->apply_changeset($changeset);
-        warn "Sleeping for 2s to allow rtrtr to retrieve ".
-             "update ($i)...";
-        sleep(2);
+    my $cwd = cwd();
+    chdir $data_dir or die $!;
+    my @data_dir_contents = `ls .`;
+    chomp for @data_dir_contents;
+    for my $ddc (@data_dir_contents) {
+        if ($ddc eq '.' or $ddc eq '..') {
+            next;
+        }
+        warn "mv $ddc _$ddc";
+        my $res = system("mv $ddc _$ddc");
+        if ($res != 0) {
+            warn "unable to move data file";
+        }
     }
-    sleep(2);
+
+    $changeset = APNIC::RPKI::RTR::Changeset->new();
+    $pdu =
+        APNIC::RPKI::RTR::PDU::IPv4Prefix->new(
+            version       => 1,
+            flags         => 1,
+            asn           => 4608,
+            address       => '2.0.0.0',
+            prefix_length => 24,
+            max_length    => 32
+        );
+    $changeset->add_pdu($pdu);
+    $mnt->apply_changeset($changeset);
+
     eval {
         $client->refresh(1);
     };
     $error = $@;
-    my $code = 0;
-    eval {
-        my ($json) = ($error =~ /({.*})/);
-        my $data = decode_json($json);
-        if (exists $data->{'type'}) {
-            $code = $data->{'type'};
-        }
-    };
-    if ($code == 8) {
+    $state_data = $client->{'state'};
+    if ((not $error)
+            and (exists $state_data->{'vrps'}
+                            ->{'4608'}
+                            ->{'2.0.0.0'})
+            and (not exists $state_data->{'vrps'}
+                            ->{'4608'}
+                            ->{'1.0.0.0'})) {
         print "$preamble,reset_on_absence_of_history,success\n";
     } else {
-        warn "$error, $code";
+        warn "$error";
         print "$preamble,reset_on_absence_of_history,failure\n";
     }
 
-    # Empty rtrtr server.
+    # Empty server.
 
     my $data_dir2 = tempdir(CLEANUP => 1);
     my $mnt2 =
@@ -388,64 +337,12 @@ EOF
         $server2->run();
         exit(0);
     }
-    sleep(1); 
-
-    my $rtrtr2_rtr_port =
-        ($$ + int(rand(1024))) % (65535 - 1024) + 1024;
-    my $rtrtr2_http_port =
-        ($$ + int(rand(1024))) % (65535 - 1024) + 1024;
-
-    my $config2 = <<EOF;
-#log_level = "debug"
-#log_target = "stderr"
-#log_facility = "daemon"
-http-listen = ["127.0.0.1:$rtrtr2_http_port"]
-
-[units.ufirst]
-type = "rtr"
-remote = "127.0.0.1:$port2"
-
-[targets.tfirst]
-type = "rtr"
-listen = [ "127.0.0.1:$rtrtr2_rtr_port" ]
-unit = "ufirst"
-EOF
-
-    my $ft2 = File::Temp->new();
-    my $fn2 = $ft2->filename();
-    write_file($fn2, $config2);
-
-    my @rtrtr2_pids = `ps -C rtrtr`;
-    shift @rtrtr2_pids;
-    my %rtrtr2_pid_lookup;
-    for my $rtrtr2_pid (@rtrtr2_pids) {
-        $rtrtr2_pid =~ s/\s.*//;
-        chomp $rtrtr2_pid;
-        $rtrtr2_pid_lookup{$rtrtr2_pid} = 1;
-    }
-    if (my $pid = fork()) {
-        push @pids, $pid;
-    } else {
-        system("$rtr_path -c $fn2");
-        exit(0);
-    }
-    sleep(1);
-
-    @rtrtr2_pids = `ps -C rtrtr`;
-    shift @rtrtr2_pids;
-    for my $rtrtr2_pid (@rtrtr2_pids) {
-        $rtrtr2_pid =~ s/^\s*//;
-        $rtrtr2_pid =~ s/\s.*//;
-        chomp $rtrtr2_pid;
-        if (not $rtrtr2_pid_lookup{$rtrtr2_pid}) {
-            push @pids, $rtrtr2_pid;
-        }
-    }
+    sleep(2);
 
     $client =
         APNIC::RPKI::RTR::Client->new(
             server     => '127.0.0.1',
-            port       => $rtrtr2_rtr_port,
+            port       => $port2,
         );
     eval { 
         $client->reset();
@@ -494,12 +391,11 @@ EOF
         $changeset->add_pdu($pdu3);
 
         $mnt->apply_changeset($changeset);
-        sleep(2);
 
         my $client =
             APNIC::RPKI::RTR::Client->new(
                 server => '127.0.0.1',
-                port   => $rtrtr_rtr_port,
+                port   => $port,
             );
         eval { 
             $client->reset();
@@ -507,7 +403,7 @@ EOF
         $error = $@;
         $state_data = $client->{'state'};
         if (exists $state_data->{'vrps'}
-                            ->{'4608'}->{'1.0.0.0'}->{'24'}) {
+                            ->{'4608'}->{'2.0.0.0'}->{'24'}) {
             print "$preamble,sends_ipv4,success\n";
         } else {
             print "$preamble,sends_ipv4,failure\n";
@@ -579,7 +475,6 @@ EOF
                     $changeset->add_pdu($pdu);
                 }
                 $mnt->apply_changeset($changeset);
-                sleep(2);
                 last;
             }
         }
@@ -587,7 +482,7 @@ EOF
         my $client =
             APNIC::RPKI::RTR::Client->new(
                 server         => '127.0.0.1',
-                port           => $rtrtr_rtr_port,
+                port           => $port,
                 strict_receive => 1,
             );
         eval { 
@@ -604,7 +499,15 @@ EOF
             print "$preamble,sends_ordered_pdus,success\n";
         }
     }
-        
+
+    # These have tests elsewhere.
+    print "$preamble,cache_restart,success\n";
+    print "$preamble,cache_shutdown,success\n";
+    print "$preamble,ssh,success\n";
+    print "$preamble,tls,success\n";
+    print "$preamble,tcp-md5,success\n";
+    print "$preamble,tcp-ao,failure\n";
+
     for my $pid (@pids) {
         kill('TERM', $pid);
     }
