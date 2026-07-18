@@ -359,6 +359,100 @@ EOF
         print "$preamble,reset_on_absence_of_history,failure\n";
     }
 
+    # Empty rtrtr server.
+
+    my $data_dir2 = tempdir(CLEANUP => 1);
+    my $mnt2 =
+        APNIC::RPKI::RTR::Server::Maintainer->new(
+            data_dir => $data_dir
+        );
+    my $port2 = empty_port();
+    my $server2 =
+        APNIC::RPKI::RTR::Server->new(
+            server               => '127.0.0.1',
+            port                 => $port2,
+            data_dir             => $data_dir2,
+            # So that separate serial notify testing works as
+            # expected.
+            serial_notify_period => 0,
+        );
+
+    if (my $ppid = fork()) {
+        push @pids, $ppid;
+    } else {
+        $server2->run();
+        exit(0);
+    }
+    sleep(1); 
+
+    my $rtrtr2_rtr_port =
+        ($$ + int(rand(1024))) % (65535 - 1024) + 1024;
+    my $rtrtr2_http_port =
+        ($$ + int(rand(1024))) % (65535 - 1024) + 1024;
+
+    my $config2 = <<EOF;
+#log_level = "debug"
+#log_target = "stderr"
+#log_facility = "daemon"
+http-listen = ["127.0.0.1:$rtrtr2_http_port"]
+
+[units.ufirst]
+type = "rtr"
+remote = "127.0.0.1:$port2"
+
+[targets.tfirst]
+type = "rtr"
+listen = [ "127.0.0.1:$rtrtr2_rtr_port" ]
+unit = "ufirst"
+EOF
+
+    my $ft2 = File::Temp->new();
+    my $fn2 = $ft2->filename();
+    write_file($fn2, $config2);
+
+    my @rtrtr2_pids = `ps -C rtrtr`;
+    shift @rtrtr2_pids;
+    my %rtrtr2_pid_lookup;
+    for my $rtrtr2_pid (@rtrtr2_pids) {
+        $rtrtr2_pid =~ s/\s.*//;
+        chomp $rtrtr2_pid;
+        $rtrtr2_pid_lookup{$rtrtr2_pid} = 1;
+    }
+    if (my $pid = fork()) {
+        push @pids, $pid;
+    } else {
+        system("$rtr_path -c $fn2");
+        exit(0);
+    }
+    sleep(1);
+
+    @rtrtr2_pids = `ps -C rtrtr`;
+    shift @rtrtr2_pids;
+    for my $rtrtr2_pid (@rtrtr2_pids) {
+        $rtrtr2_pid =~ s/^\s*//;
+        $rtrtr2_pid =~ s/\s.*//;
+        chomp $rtrtr2_pid;
+        if (not $rtrtr2_pid_lookup{$rtrtr2_pid}) {
+            push @pids, $rtrtr2_pid;
+        }
+    }
+
+    $client =
+        APNIC::RPKI::RTR::Client->new(
+            server     => '127.0.0.1',
+            port       => $rtrtr2_rtr_port,
+        );
+    eval { 
+        $client->reset();
+    };
+    $error = $@;
+    if ($error =~ /Server has no data/) {
+        print "$preamble,no_data_returned_correctly,success\n";
+    } else {
+        warn $error;
+        print "$preamble,no_data_returned_correctly,failure\n";
+    }
+        
     for my $pid (@pids) {
         kill('TERM', $pid);
     }
