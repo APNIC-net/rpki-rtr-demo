@@ -1,0 +1,367 @@
+#!/usr/bin/perl
+
+use warnings;
+use strict;
+
+use APNIC::RPKI::RTR::Server::Maintainer;
+use APNIC::RPKI::RTR::Server;
+use APNIC::RPKI::RTR::Client;
+use APNIC::RPKI::RTR::Changeset;
+use APNIC::RPKI::RTR::PDU::IPv4Prefix;
+
+use File::Slurp qw(write_file read_file);
+use File::Temp qw(tempdir);
+use JSON::XS qw(decode_json encode_json);
+use Net::EmptyPort qw(empty_port);
+
+## rtrtr.
+
+# Can connect with version 0.
+{
+    my @pids;
+
+    my $data_dir = tempdir(CLEANUP => 1);
+    my $mnt =
+        APNIC::RPKI::RTR::Server::Maintainer->new(
+            data_dir => $data_dir
+        );
+    my $port = empty_port();
+    my $server =
+        APNIC::RPKI::RTR::Server->new(
+            server               => '127.0.0.1',
+            port                 => $port,
+            data_dir             => $data_dir,
+            # So that separate serial notify testing works as
+            # expected.
+            serial_notify_period => 0,
+        );
+
+    if (my $ppid = fork()) {
+        push @pids, $ppid;
+    } else {
+        $server->run();
+        exit(0);
+    }
+    sleep(1); 
+
+    my $changeset = APNIC::RPKI::RTR::Changeset->new();
+    my $pdu =
+        APNIC::RPKI::RTR::PDU::IPv4Prefix->new(
+            version       => 1,
+            flags         => 1,
+            asn           => 4608,
+            address       => '1.0.0.0',
+            prefix_length => 24,
+            max_length    => 32
+        );
+    $changeset->add_pdu($pdu);
+    $mnt->apply_changeset($changeset);
+
+    # Run rtrtr.
+
+    my $rtrtr_rtr_port =
+        ($$ + int(rand(1024))) % (65535 - 1024) + 1024;
+    my $rtrtr_http_port =
+        ($$ + int(rand(1024))) % (65535 - 1024) + 1024;
+
+    my $config = <<EOF;
+#log_level = "debug"
+#log_target = "stderr"
+#log_facility = "daemon"
+http-listen = ["127.0.0.1:$rtrtr_http_port"]
+
+[units.ufirst]
+type = "rtr"
+remote = "127.0.0.1:$port"
+
+[targets.tfirst]
+type = "rtr"
+listen = [ "127.0.0.1:$rtrtr_rtr_port" ]
+unit = "ufirst"
+EOF
+
+    my $ft = File::Temp->new();
+    my $fn = $ft->filename();
+    write_file($fn, $config);
+
+    my $rtr_path = $ENV{'RTRTR_PATH'} || 'rtrtr';
+    my ($rtrtr_version) = `$rtr_path --version`;
+    chomp $rtrtr_version;
+    $rtrtr_version =~ s/^rtrtr\s*//;
+    my $preamble = "rtrtr,$rtrtr_version";
+
+    my @rtrtr_pids = `ps -C rtrtr`;
+    shift @rtrtr_pids;
+    my %rtrtr_pid_lookup;
+    for my $rtrtr_pid (@rtrtr_pids) {
+        $rtrtr_pid =~ s/\s.*//;
+        chomp $rtrtr_pid;
+        $rtrtr_pid_lookup{$rtrtr_pid} = 1;
+    }
+    if (my $pid = fork()) {
+        push @pids, $pid;
+    } else {
+        system("$rtr_path -c $fn");
+        exit(0);
+    }
+    sleep(1);
+
+    @rtrtr_pids = `ps -C rtrtr`;
+    shift @rtrtr_pids;
+    for my $rtrtr_pid (@rtrtr_pids) {
+        $rtrtr_pid =~ s/^\s*//;
+        $rtrtr_pid =~ s/\s.*//;
+        chomp $rtrtr_pid;
+        if (not $rtrtr_pid_lookup{$rtrtr_pid}) {
+            push @pids, $rtrtr_pid;
+        }
+    }
+
+    my $client =
+        APNIC::RPKI::RTR::Client->new(
+            server             => '127.0.0.1',
+            port               => $rtrtr_rtr_port,
+            supported_versions => [0]
+        );
+    my @pdus;
+    eval {
+        $client->reset();
+        @pdus = $client->{'state'}->pdus();
+    };
+    my $error = $@;
+    if ((@pdus == 1)
+            and ($pdus[0]->address() eq '1.0.0.0')
+            and ($client->_current_version() == 0)) {
+        print "$preamble,v0_connect,success\n";
+    } else {
+        warn $error;
+        use Data::Dumper;
+        warn Dumper(\@pdus, $client->_current_version());
+        print "$preamble,v0_connect,failure\n";
+    }
+
+    $client =
+        APNIC::RPKI::RTR::Client->new(
+            server             => '127.0.0.1',
+            port               => $rtrtr_rtr_port,
+            supported_versions => [1]
+        );
+    @pdus = ();
+    eval {
+        $client->reset();
+        @pdus = $client->{'state'}->pdus();
+    };
+    $error = $@;
+    if ((@pdus == 1)
+            and ($pdus[0]->address() eq '1.0.0.0')
+            and ($client->_current_version() == 1)) {
+        print "$preamble,v1_connect,success\n";
+    } else {
+        warn $error;
+        print "$preamble,v1_connect,failure\n";
+    }
+
+    $client =
+        APNIC::RPKI::RTR::Client->new(
+            server             => '127.0.0.1',
+            port               => $rtrtr_rtr_port,
+            supported_versions => [2]
+        );
+    @pdus = ();
+    eval {
+        $client->reset();
+        @pdus = $client->{'state'}->pdus();
+    };
+    $error = $@;
+    if ((@pdus == 1)
+            and ($pdus[0]->address() eq '1.0.0.0')
+            and ($client->_current_version() == 2)) {
+        print "$preamble,v2_connect,success\n";
+    } else {
+        print "$preamble,v2_connect,failure\n";
+    }
+
+    $client =
+        APNIC::RPKI::RTR::Client->new(
+            server             => '127.0.0.1',
+            port               => $rtrtr_rtr_port,
+            supported_versions => [0, 1, 2]
+        );
+    @pdus = ();
+    eval {
+        $client->reset();
+        @pdus = $client->{'state'}->pdus();
+    };
+    $error = $@;
+    if ((@pdus == 1)
+            and ($pdus[0]->address() eq '1.0.0.0')
+            and ($client->_current_version() == 2)) {
+        print "$preamble,v2_connect,success\n";
+        print "$preamble,accepts_reset_query,success\n";
+        print "$preamble,sends_cache_response,success\n";
+    } else {
+        warn $error;
+        print "$preamble,v2_connect,failure\n";
+        print "$preamble,accepts_reset_query,failure\n";
+        print "$preamble,sends_cache_response,failure\n";
+    }
+    if ($client->{'eod'}) {
+        print "$preamble,sends_end_of_data,success\n";
+    } else {
+        print "$preamble,sends_end_of_data,failure\n";
+    }
+
+    my $state_path_ft = File::Temp->new();
+    my $state_path = $state_path_ft->filename();
+
+    if (my $pid = fork()) {
+        push @pids, $pid;
+    } else {
+	my $client =
+	    APNIC::RPKI::RTR::Client->new(
+		server     => '127.0.0.1',
+		port       => $rtrtr_rtr_port,
+		state_path => $state_path,
+	    );
+        $client->reset(undef, 1);
+        exit(0);
+    }
+    sleep(1);
+
+    my $changeset2 = APNIC::RPKI::RTR::Changeset->new();
+    my $pdu2 =
+        APNIC::RPKI::RTR::PDU::IPv4Prefix->new(
+            version       => 1,
+            flags         => 1,
+            asn           => 4608,
+            address       => '2.0.0.0',
+            prefix_length => 24,
+            max_length    => 32
+        );
+    $changeset2->add_pdu($pdu2);
+    $mnt->apply_changeset($changeset2);
+    sleep(5);
+
+    my $state_data = read_file($state_path);
+    $state_data = decode_json($state_data);
+    $state_data = decode_json($state_data->{'state'});
+    if (exists $state_data->{'vrps'}
+			  ->{'4608'}->{'2.0.0.0'}->{'24'}) {
+        print "$preamble,sends_serial_notify,success\n";
+    } else {
+        print "$preamble,sends_serial_notify,failure\n";
+    }
+
+    my $persistent_pid = pop @pids;
+    kill('TERM', $persistent_pid);
+
+    $client =
+        APNIC::RPKI::RTR::Client->new(
+            server             => '127.0.0.1',
+            port               => $rtrtr_rtr_port,
+            supported_versions => [0, 1, 2]
+        );
+    @pdus = ();
+    my $res;
+    eval {
+        $client->reset();
+        $res = $client->refresh(1);
+        @pdus = $client->{'state'}->pdus();
+    };
+    $error = $@;
+    if (($res == 1) and (@pdus == 2)) {
+        print "$preamble,accepts_serial_query_no_op,success\n";
+    } else {
+        warn $error;
+        print "$preamble,accepts_serial_query_no_op,failure\n";
+    }
+
+    $client =
+        APNIC::RPKI::RTR::Client->new(
+            server     => '127.0.0.1',
+            port       => $rtrtr_rtr_port,
+            state_path => $state_path,
+        );
+    $client->reset();
+    $client->{'state'}->{'session_id'}++;
+    $client->{'state'}->{'session_id'} &= 0xFFFF;
+
+    eval {
+        $client->refresh(1);
+    };
+    $error = $@;
+    my $error_data = "";
+    my $ec;
+    my $ec_is_zero = 0;
+    eval {
+        my ($error_json) = ($error =~ /({.*})/);
+        $error_data = decode_json($error_json);
+        if (exists $error_data->{'error_code'}) {
+            $ec = $error_data->{'error_code'};
+            if ($ec == 0) {
+                $ec_is_zero = 1;
+            }
+        }
+    };
+    my $error2 = $@;
+    # Currently returns "cache reset" instead.
+    if ($ec_is_zero) {
+        print "$preamble,returns_corrupt_data_on_session_mismatch,success\n";
+    } else {
+        warn "$error, $error_data, $error2";
+        print "$preamble,returns_corrupt_data_on_session_mismatch,failure\n";
+    }
+
+    $client =
+        APNIC::RPKI::RTR::Client->new(
+            server     => '127.0.0.1',
+            port       => $rtrtr_rtr_port,
+            state_path => $state_path,
+        );
+    $client->reset();
+
+    # rtrtr only retains 10 history entries, so adding 13 here will
+    # mean that the client can't refresh.
+    for my $i (3..15) {
+        my $changeset = APNIC::RPKI::RTR::Changeset->new();
+        my $pdu =
+            APNIC::RPKI::RTR::PDU::IPv4Prefix->new(
+                version       => 1,
+                flags         => 1,
+                asn           => 4608,
+                address       => "$i.0.0.0",
+                prefix_length => 24,
+                max_length    => 32
+            );
+        $changeset->add_pdu($pdu);
+        $mnt->apply_changeset($changeset);
+        warn "Sleeping for 2s to allow rtrtr to retrieve ".
+             "update ($i)...";
+        sleep(2);
+    }
+    sleep(2);
+    eval {
+        $client->refresh(1);
+    };
+    $error = $@;
+    my $code = 0;
+    eval {
+        my ($json) = ($error =~ /({.*})/);
+        my $data = decode_json($json);
+        if (exists $data->{'type'}) {
+            $code = $data->{'type'};
+        }
+    };
+    if ($code == 8) {
+        print "$preamble,reset_on_absence_of_history,success\n";
+    } else {
+        warn "$error, $code";
+        print "$preamble,reset_on_absence_of_history,failure\n";
+    }
+
+    for my $pid (@pids) {
+        kill('TERM', $pid);
+    }
+}
+
+1;
