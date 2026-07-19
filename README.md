@@ -96,6 +96,18 @@ To run tests, including basic integration tests against
     # All tests:
     docker run --env-file docker-env -it rpki-rtr-demo make test
 
+To run interoperability tests:
+
+    docker run --env-file docker-env -it rpki-rtr-demo perl -Mblib interop/...
+
+For example:
+
+    docker run --env-file docker-env -it rpki-rtr-demo perl -Mblib interop/servers/openrtrd.pl
+
+To produce a table for each type of interoperability test:
+
+    docker run --env-file docker-env -it rpki-rtr-demo perl -Mblib interop/all-servers.pl
+
 ### Todo
 
  - Documentation/tidying of code.

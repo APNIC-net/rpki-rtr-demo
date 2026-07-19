@@ -274,12 +274,10 @@ EOF
     if ((@pdus == 1)
             and ($pdus[0]->address() eq '1.0.0.0')
             and ($client->_current_version() == 2)) {
-        print "$preamble,v2_connect,success\n";
         print "$preamble,accepts_reset_query,success\n";
         print "$preamble,sends_cache_response,success\n";
     } else {
         warn $error;
-        print "$preamble,v2_connect,failure\n";
         print "$preamble,accepts_reset_query,failure\n";
         print "$preamble,sends_cache_response,failure\n";
     }
