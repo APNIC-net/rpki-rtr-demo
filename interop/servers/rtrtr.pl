@@ -606,8 +606,10 @@ EOF
 
     # Hardcoded, for now at least.
     print "$preamble,cache_restart_repopulated,failure\n";
+    print "$preamble,cache_restart_pdu_received,failure\n";
     print "$preamble,cache_restart_correct_error,failure\n";
     print "$preamble,cache_shutdown_repopulated,failure\n";
+    print "$preamble,cache_shutdown_pdu_received,failure\n";
     print "$preamble,cache_shutdown_correct_error,failure\n";
     print "$preamble,ssh,failure\n";
     print "$preamble,tls,failure,server certificate verification only\n";

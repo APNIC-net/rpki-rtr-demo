@@ -502,8 +502,10 @@ use Net::EmptyPort qw(empty_port);
 
     # These have tests elsewhere.
     print "$preamble,cache_restart_repopulated,success\n";
+    print "$preamble,cache_restart_pdu_received,success\n";
     print "$preamble,cache_restart_correct_error,success\n";
     print "$preamble,cache_shutdown_repopulated,success\n";
+    print "$preamble,cache_shutdown_pdu_received,success\n";
     print "$preamble,cache_shutdown_correct_error,success\n";
     print "$preamble,ssh,success\n";
     print "$preamble,tls,success\n";
