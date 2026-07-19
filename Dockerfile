@@ -9,6 +9,9 @@ COPY ./docker-mkcert.sh .
 RUN ./docker-mkcert.sh
 COPY ./docker-rtrlib.sh .
 RUN ./docker-rtrlib.sh
+COPY openrtrd.patch /
+COPY ./docker-openrtrd.sh .
+RUN ./docker-openrtrd.sh
 COPY . /root/rpki-rtr-demo
 WORKDIR /root/rpki-rtr-demo
 RUN sudo cpanm -v -n --installdeps .

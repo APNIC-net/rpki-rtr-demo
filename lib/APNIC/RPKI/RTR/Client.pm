@@ -74,6 +74,7 @@ sub new
         key_file              => $args{'key_file'},
         known_hosts           => $args{'known_hosts'},
         ssh_key               => $args{'ssh_key'},
+        retry_interval        => $args{'retry_interval'},
     };
     bless $self, $class;
     return $self;
@@ -130,6 +131,8 @@ sub _init_socket
     if (not $socket) {
         die "Unable to connect to '$server:$port': $!";
     }
+    dprint("client: new socket local port is '".
+           $socket->sockport()."'");
 
     $self->{'socket'} = $socket;
 
@@ -540,7 +543,7 @@ sub _process_eod
 
     if ($eod->version() > 0) {
         my $refresh_interval = $eod->refresh_interval();
-        my $retry_interval   = $eod->retry_interval();
+        my $retry_interval   = $self->{'retry_interval'} || $eod->retry_interval();
         my $expire_interval  = $eod->expire_interval();
 
         if ($self->{'strict_receive'}) {
@@ -578,7 +581,7 @@ sub time_until_retry
         return 0;
     }
 
-    my $retry_interval = $eod->retry_interval();
+    my $retry_interval = $self->{'retry_interval'} || $eod->retry_interval();
     my $min_retry_time = $last_failure + $retry_interval;
     my $time = time();
     my $time_to_wait = $min_retry_time - $time;
@@ -747,6 +750,7 @@ sub refresh
                         dprint("client: no socket, so sleeping until ".
                                "retry interval reached");
                         sleep($time_until_retry);
+                        dprint("client: retry interval reached");
                         return $self->refresh(1, $persist,
                                               $version_override,
                                               $success_cb);
@@ -764,6 +768,9 @@ sub refresh
                     $select->remove($socket);
                     if ($ready) {
                         my $pdu = $self->_parse_pdu();
+                        if ($self->{'pdu_cb'}) {
+                            $self->{'pdu_cb'}->($pdu);
+                        }
                         # The difference here is that serial notify
                         # forces refresh, whereas restart and shutdown
                         # do not.
@@ -804,8 +811,9 @@ sub refresh
             if ($persist) {
                 if (not $self->{'socket'}) {
                     dprint("client: no socket, so sleeping until ".
-                            "retry interval reached");
+                            "refresh interval reached");
                     sleep($time_until_refresh);
+                    dprint("client: refresh interval reached");
                     return $self->refresh(1, $persist,
                                           $version_override,
                                           $success_cb);
@@ -823,6 +831,9 @@ sub refresh
                 $select->remove($socket);
                 if ($ready) {
                     my $pdu = $self->_parse_pdu();
+                    if ($self->{'pdu_cb'}) {
+                        $self->{'pdu_cb'}->($pdu);
+                    }
                     # The difference here is that serial notify
                     # forces refresh, whereas restart and shutdown
                     # do not.

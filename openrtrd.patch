@@ -1,0 +1,103 @@
+--- sockets.c	2026-07-19 10:26:18.854960744 +0200
++++ sockets.c-new	2026-07-19 11:44:21.606814265 +0200
+@@ -325,6 +325,10 @@
+ 		max_sockets = 1024;
+ 	}
+
++	if (max_sockets > 1024) {
++		max_sockets = 1024;
++	}
++
+ 	max_clients = max_sockets - 32;
+
+ 	rtr_socket_table = calloc(max_sockets,
+@@ -358,6 +362,12 @@
+ 		return 1;
+ 	}
+
++	int opt = 1;
++	if (setsockopt(listener, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt))) {
++		fprintf(fp, "error: unable to set reuse port on socket\n");
++		return 1;
++	}
++
+ 	val = fcntl(listener, F_GETFL, 0);
+ 	fcntl(listener, F_SETFL, val | O_NONBLOCK);
+
+@@ -927,6 +937,9 @@
+
+ 	logx(0, "%s\n", reason);
+
++        logx(0, "Client count at shutdown is '%d'\n",
++             poll_table_count);
++
+ 	for (i = 0; i < poll_table_count; i++) {
+ 		fd = poll_table[i].fd;
+ 		s = fd_to_socket(fd);
+@@ -937,8 +950,12 @@
+ 		    is_listener(fd) ||
+ 		    !TestSocketFlag(s, RTR_SOCKET_FLAG_INUSE) ||
+ 		    s->type != RTR_SOCKET_TYPE_CLIENT ||
+-		    !TestSocketFlag(s, RTR_SOCKET_FLAG_REGISTERED))
++		    !TestSocketFlag(s, RTR_SOCKET_FLAG_REGISTERED)) {
++                        logx(0, "Unable to send error to client '%d'\n", i);
+ 			continue;
++                } else {
++                        logx(0, "Able to send error to client '%d'\n", i);
++                }
+
+ 		if (s->version >= RTR_VERSION_2)
+ 			error_code = restart ? CACHE_RESTART : CACHE_SHUTDOWN;
+--- Makefile	2026-07-04 16:26:28.103603319 +0200
++++ Makefile-new	2026-07-19 07:10:37.971328005 +0200
+@@ -1,12 +1,13 @@
+ LDADD+= -lc
+
+-CFLAGS+= -O2 -pipe
++CFLAGS+= -pipe
+ CFLAGS+= -Wall
+ CFLAGS+= -Wmissing-prototypes -Wmissing-declarations
+ CFLAGS+= -Wshadow -Wpointer-arith -Wsign-compare
+ CFLAGS+= -Werror=implicit
+ CFLAGS+= -Wextra -Wpedantic
+ CFLAGS+= -MD -MP
++CFLAGS+= -g
+
+ all: rtrd rtr-import rtr-stats
+
+--- rtr-import.c	2026-07-19 07:20:35.855309302 +0200
++++ rtr-import.c-new	2026-07-19 07:20:15.103309952 +0200
+@@ -319,6 +319,10 @@
+ 			s_expire = strtok(NULL, " \t\n");
+ 			s_prefix = strtok(s_cidr, "/");
+ 			s_len = strtok(NULL, "/");
++                        if (s_maxlen == NULL) {
++                                fprintf(stderr, "unable to parse maxlen\n");
++                                exit(1);
++                        }
+ 		} else {
+ 			s_asn = strtok(NULL, " \t\n");
+ 			strtok(NULL, " \t\n");
+@@ -327,6 +331,22 @@
+ 			s_len = strtok(NULL, "/");
+ 			s_maxlen = s_len;
+ 		}
++                if (s_asn == NULL) {
++                        fprintf(stderr, "unable to parse asn\n");
++                        exit(1);
++                }
++                if (s_expire == NULL) {
++                        fprintf(stderr, "unable to parse expire\n");
++                        exit(1);
++                }
++                if (s_prefix == NULL) {
++                        fprintf(stderr, "unable to parse prefix\n");
++                        exit(1);
++                }
++                if (s_len == NULL) {
++                        fprintf(stderr, "unable to parse len\n");
++                        exit(1);
++                }
+
+ 		if (strchr(s_prefix, '.')) {
+ 			if (inet_pton(AF_INET, s_prefix, &ip4.prefix) == 1) {

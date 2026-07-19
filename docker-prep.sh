@@ -17,6 +17,7 @@ sudo apt-get update -y && \
         libjson-xs-perl \
         libcarp-always-perl \
         openssh-server \
-        netcat-traditional
+        netcat-traditional \
+        gdb
 rustup default stable
 cargo install rtrtr

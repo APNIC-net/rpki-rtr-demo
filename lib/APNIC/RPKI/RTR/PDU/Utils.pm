@@ -135,16 +135,6 @@ sub order_pdus
 {
     my (@pdus) = @_;
 
-    # The ordering algorithm here is slightly different from that in
-    # -21:
-    #
-    #  - Addition IP PDUs are ordered from larger address to smaller
-    #    address, rather than smaller to larger, because the ordering
-    #    will lead to incorrect results otherwise.
-    #  - Addition IP PDU max length ordering (larger to smaller)
-    #    occurs before prefix length ordering, because the ordering
-    #    will lead to incorrect results otherwise.
-
     my @add_ip_pdus =
         map  { $_->[0] }
             # Order from larger address to smaller address, so that
@@ -299,8 +289,11 @@ sub pdus_are_ordered
                     dprint("$msg: addition of larger max length");
                     return 0;
                 } elsif (($pdu->asn() || $SENTINEL_ASN)
-                            < ($last_pdu->asn() || $SENTINEL_ASN)) {
-                    dprint("$msg: addition with incorrect ASN ordering");
+                            > ($last_pdu->asn() || $SENTINEL_ASN)) {
+                    my $pdu_asn = $pdu->asn();
+                    my $last_pdu_asn = $last_pdu->asn();
+                    dprint("$msg: addition with incorrect ASN ordering ".
+                           "(current: '$pdu_asn', last: '$last_pdu_asn')");
                     return 0;
                 }
             } elsif ($pdu->address_as_number()
@@ -316,7 +309,7 @@ sub pdus_are_ordered
                 dprint("$msg: withdrawal of smaller max length");
                 return 0;
             } elsif (($pdu->asn() || $SENTINEL_ASN)
-                        > ($last_pdu->asn() || $SENTINEL_ASN)) {
+                        < ($last_pdu->asn() || $SENTINEL_ASN)) {
                 dprint("$msg: withdrawal with incorrect ASN ordering");
                 return 0;
             }

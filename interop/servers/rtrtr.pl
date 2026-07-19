@@ -325,7 +325,7 @@ EOF
         );
     $client->reset();
 
-    # rtrtr only retains 10 history entries, so adding 13 here will
+    # rtrtr retains only 10 history entries, so adding 13 here will
     # mean that the client can't refresh.  (The check below assumes
     # that this is what happens, which is the case at the moment at
     # least, but the test could be more robust.)
@@ -600,8 +600,10 @@ EOF
     }
 
     # Hardcoded, for now at least.
-    print "$preamble,cache_restart,failure\n";
-    print "$preamble,cache_shutdown,failure\n";
+    print "$preamble,cache_restart_repopulated,failure\n";
+    print "$preamble,cache_restart_correct_error,failure\n";
+    print "$preamble,cache_shutdown_repopulated,failure\n";
+    print "$preamble,cache_shutdown_correct_error,failure\n";
     print "$preamble,ssh,failure\n";
     print "$preamble,tls,failure,server certificate verification only\n";
     print "$preamble,tcp-md5,failure\n";
