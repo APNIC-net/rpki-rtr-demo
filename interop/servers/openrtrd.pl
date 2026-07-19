@@ -851,7 +851,7 @@ EOF
 {
     print "$preamble,ssh,failure\n";
     print "$preamble,tls,failure\n";
-    print "$preamble,tcp-md5,success\n";
+    print "$preamble,tcp-md5,failure\n";
     print "$preamble,tcp-ao,failure\n";
 }
 
