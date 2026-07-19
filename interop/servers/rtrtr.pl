@@ -326,9 +326,7 @@ EOF
     $client->reset();
 
     # rtrtr retains only 10 history entries, so adding 13 here will
-    # mean that the client can't refresh.  (The check below assumes
-    # that this is what happens, which is the case at the moment at
-    # least, but the test could be more robust.)
+    # mean that the client can't refresh.
     for my $i (3..15) {
         my $changeset = APNIC::RPKI::RTR::Changeset->new();
         my $pdu =
@@ -347,14 +345,21 @@ EOF
         sleep(2);
     }
     sleep(2);
+    my $got_reset = 0;
+    $client->{'pdu_cb'} = sub {
+        my ($pdu) = @_;
+        if ($pdu->type() == PDU_CACHE_RESET()) {
+            $got_reset = 1;
+        }
+    };
     eval {
         $client->refresh(1);
     };
     $error = $@;
-    if (not $error) {
+    if (not $error and $got_reset) {
         print "$preamble,reset_on_absence_of_history,success\n";
     } else {
-        warn "$error";
+        warn "$error, '$got_reset'";
         print "$preamble,reset_on_absence_of_history,failure\n";
     }
 

@@ -432,6 +432,7 @@ EOF
     stop_server($pids);
 }
 
+# Reset on absence of history.
 {
     my $pids = start_server();
 
@@ -455,9 +456,7 @@ EOF
     $client->reset();
 
     # openrtrd retains only 10 history entries, so adding 13 here will
-    # mean that the client can't refresh.  (The check below assumes
-    # that this is what happens, which is the case at the moment at
-    # least, but the test could be more robust.)
+    # mean that the client can't refresh.
     my $common = "0.0.0/24 maxlen 32 source-as 4608 expires $expiry";
     my @current = (
         "1.$common",
@@ -475,15 +474,22 @@ EOF
         write_state($state);
         sleep(0.25);
     }
-
+    
+    my $got_reset = 0;
+    $client->{'pdu_cb'} = sub {
+        my ($pdu) = @_;
+        if ($pdu->type() == PDU_CACHE_RESET()) {
+            $got_reset = 1;
+        }
+    };
     eval {
         $client->refresh(1);
     };
     my $error = $@;
-    if (not $error) {
+    if (not $error and $got_reset) {
         print "$preamble,reset_on_absence_of_history,success\n";
     } else {
-        warn "$error";
+        warn "$error, '$got_reset'";
         print "$preamble,reset_on_absence_of_history,failure\n";
     }
 
