@@ -264,6 +264,10 @@ sub run
                     next;
                 }
                 my $cv = $self->{'versions'}->{$pp};
+                if (not defined $cv) {
+                    dprint("server: no version recorded for socket ($pp)");
+                    $cv = 2;
+                }
                 my $err_pdu =
                     APNIC::RPKI::RTR::PDU::ErrorReport->new(
                         version    => $cv,
@@ -286,6 +290,10 @@ sub run
                     next;
                 }
                 my $cv = $self->{'versions'}->{$pp};
+                if (not defined $cv) {
+                    dprint("server: no version recorded for socket ($pp)");
+                    $cv = 2;
+                }
                 my $err_pdu =
                     APNIC::RPKI::RTR::PDU::ErrorReport->new(
                         version    => $cv,
