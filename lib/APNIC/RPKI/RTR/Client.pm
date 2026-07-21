@@ -131,8 +131,11 @@ sub _init_socket
     if (not $socket) {
         die "Unable to connect to '$server:$port': $!";
     }
-    dprint("client: new socket local port is '".
-           $socket->sockport()."'");
+    my $sockport =
+        ($socket->can('sockport'))
+            ? $socket->sockport();
+            : "(unknown)";
+    dprint("client: new socket local port is '$sockport'");
 
     $self->{'socket'} = $socket;
 

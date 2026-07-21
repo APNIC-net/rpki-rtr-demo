@@ -288,8 +288,7 @@ sub pdus_are_ordered
                             > $last_pdu->max_length()) {
                     dprint("$msg: addition of larger max length");
                     return 0;
-                } elsif (($pdu->asn() || $SENTINEL_ASN)
-                            > ($last_pdu->asn() || $SENTINEL_ASN)) {
+                } elsif ($pdu->asn() > $last_pdu->asn()) {
                     my $pdu_asn = $pdu->asn();
                     my $last_pdu_asn = $last_pdu->asn();
                     dprint("$msg: addition with incorrect ASN ordering ".
@@ -308,8 +307,7 @@ sub pdus_are_ordered
                         < $last_pdu->max_length()) {
                 dprint("$msg: withdrawal of smaller max length");
                 return 0;
-            } elsif (($pdu->asn() || $SENTINEL_ASN)
-                        < ($last_pdu->asn() || $SENTINEL_ASN)) {
+            } elsif ($pdu->asn() < $last_pdu->asn()) {
                 dprint("$msg: withdrawal with incorrect ASN ordering");
                 return 0;
             }

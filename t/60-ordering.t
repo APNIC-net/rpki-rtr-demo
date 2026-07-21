@@ -124,11 +124,11 @@ my @tests = (
       [ make_v4_add("11.0.0.0", 24, 24, 1),
         make_v6_add("::", 24, 24, 1) ], ],
 
-    [ "ASNs are ordered",
+    [ "Larger ASN comes first",
       [ make_v4_add("10.0.0.0", 24, 24, 2),
-        make_v4_add("11.0.0.0", 24, 24, 1) ],
-      [ make_v4_add("11.0.0.0", 24, 24, 1),
-        make_v4_add("10.0.0.0", 24, 24, 2) ], ],
+        make_v4_add("10.0.0.0", 24, 24, 1) ],
+      [ make_v4_add("10.0.0.0", 24, 24, 2),
+        make_v4_add("10.0.0.0", 24, 24, 1) ], ],
 
     # IP withdraw tests.
 
