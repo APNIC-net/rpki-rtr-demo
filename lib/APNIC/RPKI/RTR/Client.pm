@@ -133,7 +133,7 @@ sub _init_socket
     }
     my $sockport =
         ($socket->can('sockport'))
-            ? $socket->sockport();
+            ? $socket->sockport()
             : "(unknown)";
     dprint("client: new socket local port is '$sockport'");
 
