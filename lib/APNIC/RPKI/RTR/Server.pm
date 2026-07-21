@@ -89,6 +89,7 @@ sub new
         no_session_id_check   => $args{'no_session_id_check'},
         no_ss_exists_check    => $args{'no_ss_exists_check'},
         session_id            => $session_id,
+        next_session_id       => $args{'next_session_id'},
         supported_versions    => \@svs,
         sv_lookup             => { map { $_ => 1 } @svs },
         max_supported_version => (max @svs),
@@ -498,6 +499,9 @@ sub handle_client_connection
                     );
                 dprint("server: sending end of data PDU: ".$eod_pdu->serialise_json());
                 $self->_send($client, $eod_pdu->serialise_binary());
+                if (my $next = delete $self->{'next_session_id'}) {
+                    $self->{'session_id'} = $next;
+                }
             }
         } elsif ($type == PDU_SERIAL_QUERY()) {
             dprint("server: got serial query");
@@ -620,6 +624,9 @@ sub handle_client_connection
                     );
                 dprint("server: sending end of data PDU: ".$eod_pdu->serialise_json());
                 $self->_send($client, $eod_pdu->serialise_binary());
+                if (my $next = delete $self->{'next_session_id'}) {
+                    $self->{'session_id'} = $next;
+                }
             }
         } elsif ($pdu->type() == PDU_EXIT()) {
             dprint("server: client triggered exit");
