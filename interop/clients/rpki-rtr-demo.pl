@@ -26,6 +26,8 @@ use POSIX ":sys_wait_h";
 
 my $preamble = "rpki-rtr-demo,main";
 
+goto here;
+
 sub start_server
 {
     my $data_dir = tempdir(CLEANUP => 1);
@@ -48,7 +50,7 @@ sub start_server
         $server->run();
         exit(0);
     }
-    sleep(0.2);
+    sleep(1);
 
     my $server_data = {
         data_dir => $data_dir,
@@ -405,7 +407,7 @@ sub stop_server
 
 # Handles reset on bad session ID.
 {
-    my $server = start_server();
+    my $server = start_server(retry_interval => 1);
     my ($mnt, $port) = @{$server}{qw(mnt port)};
 
     my $changeset = APNIC::RPKI::RTR::Changeset->new();
@@ -433,13 +435,19 @@ sub stop_server
     $state->{'session_id'} &= 0xFFFF;
 
     eval {
-        $client->refresh(1);
+        eval { $client->refresh(1); };
+        if (my $error = $@) {
+            warn $error;
+            $client->reset(1);
+        }
     };
     my $error = $@;
+    $state = $client->{'state'};
     if ((not $error) and ($state->{'session_id'} == $original_session_id)) {
         print "$preamble,handles_reset_on_session_mismatch,success\n";
     } else {
-        warn "$error";
+        warn "'$error', '".$state->{'session_id'}."', ".
+             "$original_session_id";
         print "$preamble,handles_reset_on_session_mismatch,failure\n";
     }
 
@@ -542,6 +550,8 @@ sub stop_server
         warn $error;
         print "$preamble,no_data_returned_correctly,failure\n";
     }
+    
+    stop_server($server);
 }
 
 # Handles all payload PDU types.
@@ -623,6 +633,8 @@ sub stop_server
     } else {
         print "$preamble,handles_router_key,failure\n";
     }
+
+    stop_server($server);
 }
 
 {

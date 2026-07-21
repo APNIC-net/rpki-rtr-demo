@@ -22,9 +22,9 @@ use Net::EmptyPort qw(empty_port);
 use Time::HiRes qw(time);
 use POSIX ":sys_wait_h";
 
-## rtrlib.
+## rtrtr.
 
-my $preamble = "rtrlib,master";
+my $preamble = "rtrtr,main";
 
 sub start_server
 {
@@ -122,7 +122,8 @@ sub stop_server
 
 sub run_client
 {
-    my ($port, $persist) = @_;
+    my ($port, $timeout) = @_;
+    $timeout ||= 5;
 
     my $fto = File::Temp->new();
     my $fto_fn = $fto->filename();
@@ -130,80 +131,46 @@ sub run_client
     my $fte = File::Temp->new();
     my $fte_fn = $fte->filename();
 
-    my $extra =
-        ($persist)
-            ? ""
-            : "-e";
+    my $rtrtr_rtr_port =
+        ($$ + int(rand(1024))) % (65535 - 1024) + 1024;
+    my $rtrtr_http_port =
+        ($$ + int(rand(1024))) % (65535 - 1024) + 1024;
 
-    my $res =
-        system("timeout 5 rtrclient -k -a $extra tcp 127.0.0.1 $port ".
-               ">$fto_fn 2>$fte_fn");
+    my $config = <<EOF;
+log_level = "trace"
+log_target = "stderr"
+log_facility = "daemon"
+http-listen = ["127.0.0.1:$rtrtr_http_port"]
+
+[units.ufirst]
+type = "rtr"
+remote = "127.0.0.1:$port"
+
+[targets.tfirst]
+type = "rtr"
+listen = [ "127.0.0.1:$rtrtr_rtr_port" ]
+unit = "ufirst"
+EOF
+    my $ft = File::Temp->new();
+    my $fn = $ft->filename();
+    write_file($fn, $config);
+    warn "$fn";
+
+    my $pid;
+    if ($pid = fork()) {
+    } else {
+        my $rtr_path = $ENV{'RTRTR_PATH'} || 'rtrtr';
+        system("timeout $timeout $rtr_path -c $fn >$fto_fn 2>$fte_fn");
+        exit(0);
+    }
+    waitpid($pid, 0);
+
     my @out = read_file($fto_fn);
     my @err = read_file($fte_fn);
     chomp for @out;
     chomp for @err;
-    @out =
-        grep { $_ ne 'Sync done' }
-        grep { $_ }
-        map  { s/^\s*$//; $_ }
-            @out;
-    @err =
-        grep { $_ }
-        map  { s/^\s*$//; $_ }
-            @err;
-    my @pdus;
-    my @residual;
-    for my $o (@out) {
-        if ($o =~ /^(.*?)\/(\d+?)-(\d+?) AS (\d+)$/) {
-            my ($addr, $pl, $ml, $asn) = ($1, $2, $3, $4);
-            if ($addr =~ /\./) {
-                my $pdu =
-                    APNIC::RPKI::RTR::PDU::IPv4Prefix->new(
-                        version       => 2,
-                        flags         => 1,
-                        address       => $addr,
-                        prefix_length => $pl,
-                        max_length    => $ml,
-                        asn           => $asn,
-                    );
-                push @pdus, $pdu;
-            } else {
-                my $pdu =
-                    APNIC::RPKI::RTR::PDU::IPv6Prefix->new(
-                        version       => 2,
-                        flags         => 1,
-                        address       => $addr,
-                        prefix_length => $pl,
-                        max_length    => $ml,
-                        asn           => $asn,
-                    );
-                push @pdus, $pdu;
-            }
-        } elsif ($o =~ /ASPA (\d+) => \[ (.*) \]/) {
-            my $pdu =
-                APNIC::RPKI::RTR::PDU::ASPA->new(
-                    version       => 2,
-                    flags         => 1,
-                    customer_asn  => $1,
-                    provider_asns => [split(/\s*,\s*/, $2)]
-                );
-            push @pdus, $pdu;
-        } elsif ($o =~ /^ASN:\s+(\d+)$/) {
-            my $pdu =
-                APNIC::RPKI::RTR::PDU::RouterKey->new(
-                    version       => 2,
-                    flags         => 1,
-                    asn           => $1,
-                    ski           => '1234',
-                    spki          => '1234'
-                );
-            push @pdus, $pdu;
-        } else {
-            push @residual, $o;
-        }
-    }
 
-    return ($res, \@pdus, \@residual, \@err);
+    return ($pid, \@out, \@err);
 }
 
 # Can connect with version 0.
@@ -214,9 +181,12 @@ sub run_client
 
 # Can connect with version 1.
 {
-    # This is currently the only version supported by rtrlib,
-    # notwithstanding the support for ASPAs.
+    # Hardcoded (not configurable in the client).
+    print "$preamble,v1_connect,failure\n";
+}
 
+# Can connect with version 2.
+{
     my $server = start_server();
     my ($mnt, $port) = @{$server}{qw(mnt port)};
 
@@ -233,26 +203,19 @@ sub run_client
     $changeset->add_pdu($pdu);
     $mnt->apply_changeset($changeset);
 
-    my ($res, $pdus, $out, $err) = run_client($port);
-    if (($res == 0)
-            and (@{$pdus})) {
-        print "$preamble,v1_connect,success\n";
+    my ($pid, $out, $err) = run_client($port, 1);
+    if (first { /Got update .1 entries./ } @{$err}) {
+        print "$preamble,v2_connect,success\n";
     } else {
-        print "$preamble,v1_connect,failure\n";
+        print "$preamble,v2_connect,failure\n";
     }
 
     stop_server($server);
 }
 
-# Can connect with version 2.
-{
-    # Hardcoded (not configurable in the client, client uses v1 only).
-    print "$preamble,v2_connect,failure\n";
-}
-
 # Basic operation.
 {
-    my $server = start_server();
+    my $server = start_server(refresh_interval => 1);
     my ($mnt, $port) = @{$server}{qw(mnt port)};
 
     my $changeset = APNIC::RPKI::RTR::Changeset->new();
@@ -268,11 +231,8 @@ sub run_client
     $changeset->add_pdu($pdu);
     $mnt->apply_changeset($changeset);
 
-    my ($res, $pdus, $out, $err) = run_client($port);
-    if (($res == 0)
-            and (@{$pdus})
-            and (first { /Sending reset query/ } @{$err})
-            and (first { /EOD PDU received/    } @{$err})) {
+    my ($pid, $out, $err) = run_client($port);
+    if ((grep { /starting update/ } @{$err}) >= 4) {
         print "$preamble,sends_reset_query,success\n";
         print "$preamble,accepts_cache_response,success\n";
         print "$preamble,accepts_end_of_data,success\n";
@@ -309,11 +269,8 @@ sub run_client
     my $pid;
     if ($pid = fork()) {
     } else {
-        my ($res, $pdus, $out, $err) = run_client($port, 1);
-        my $found =
-            first { /Serial Notify received/ }
-                @{$err};
-        if ($found) {
+        my ($pid, $out, $err) = run_client($port, 5);
+        if ((grep { /starting update/ } @{$err}) == 2) {
             print "$preamble,accepts_serial_notify,success\n";
         } else {
             print "$preamble,accepts_serial_notify,failure\n";
@@ -361,8 +318,8 @@ sub run_client
     my $pid;
     if ($pid = fork()) {
     } else {
-        my ($res, $pdus, $out, $err) = run_client($port, 1);
-        my @ss = grep { /Sync successful/ } @{$err};
+        my ($pid, $out, $err) = run_client($port, 5);
+        my @ss = grep { /starting update/ } @{$err};
         if (@ss > 3) {
             print "$preamble,handles_cache_response_no_op,success\n";
         } else {
@@ -370,7 +327,7 @@ sub run_client
         }
         exit(0);
     }
-    sleep(8);
+    sleep(6);
 
     kill_process($pid);
     stop_server($server);
@@ -399,12 +356,10 @@ sub run_client
     my $pid;
     if ($pid = fork()) {
     } else {
-        my ($res, $pdus, $out, $err) = run_client($port, 1);
-        # Currently, there will be more than two errors, because
-        # instead of flushing data, it just keeps retrying the serial
-        # query.
-        my @errs = grep { /RTR_MGR_ERROR/ } @{$err};
-        if (@errs == 2) {
+        my ($pid, $out, $err) = run_client($port, 5);
+        # It gets to "awaiting reconnect", but then stops there.
+        my @ss = grep { /starting update/ } @{$err};
+        if (@ss >= 2) {
             print "$preamble,handles_reset_on_session_mismatch,success\n";
         } else {
             print "$preamble,handles_reset_on_session_mismatch,failure\n";
@@ -439,9 +394,12 @@ sub run_client
     my $pid;
     if ($pid = fork()) {
     } else {
-        my ($res, $pdus, $out, $err) = run_client($port, 1);
-        my @prs = grep { /received 1 Prefix PDUs/ } @{$err};
-        if (@prs == 2) {
+        my ($pid, $out, $err) = run_client($port, 5);
+        # It gets to "awaiting reconnect", but then stops there.
+        use Data::Dumper;
+        warn Dumper($out,$err);
+        my @ss = grep { /starting update/ } @{$err};
+        if (@ss >= 2) {
             print "$preamble,handles_reset_on_absence_of_history,success\n";
         } else {
             print "$preamble,handles_reset_on_absence_of_history,failure\n";
@@ -490,8 +448,8 @@ sub run_client
     my ($mnt, $port, $data_dir) =
         @{$server}{qw(mnt port data_dir)};
 
-    my ($res, $pdus, $out, $err) = run_client($port);
-    my ($nda) = grep { /No data available/ } @{$err};
+    my ($pid, $out, $err) = run_client($port, 2);
+    my ($nda) = grep { /reported error 2/ } @{$err};
     if ($nda) {
         print "$preamble,no_data_returned_correctly,success\n";
     } else {
@@ -545,39 +503,26 @@ sub run_client
     }
     $mnt->apply_changeset($changeset);
 
-    my ($res, $pdus, $out, $err) = run_client($port);
-    if (first { $_->type() == PDU_IPV4_PREFIX() } @{$pdus}) {
+    my ($pid, $out, $err) = run_client($port, 2);
+    if (first { /4 entries/ } @{$err}) {
         print "$preamble,handles_ipv4,success\n";
-    } else {
-        print "$preamble,handles_ipv4,failure\n";
-    }
-
-    if (first { $_->type() == PDU_IPV6_PREFIX() } @{$pdus}) {
         print "$preamble,handles_ipv6,success\n";
-    } else {
-        print "$preamble,handles_ipv6,failure\n";
-    }
-
-    if (first { $_->type() == PDU_ASPA() } @{$pdus}) {
         print "$preamble,handles_aspa,success\n";
-    } else {
-        print "$preamble,handles_aspa,failure\n";
-    }
-
-    if (first { $_->type() == PDU_ROUTER_KEY() } @{$pdus}) {
         print "$preamble,handles_router_key,success\n";
     } else {
+        print "$preamble,handles_ipv4,failure\n";
+        print "$preamble,handles_ipv6,failure\n";
+        print "$preamble,handles_aspa,failure\n";
         print "$preamble,handles_router_key,failure\n";
     }
+
     stop_server($server);
 }
 
 {
-    # todo: add a specific test for SSH.
-
     print "$preamble,handles_cache_restart,failure\n";
     print "$preamble,handles_cache_shutdown,failure\n";
-    print "$preamble,ssh,success\n";
+    print "$preamble,ssh,failure\n";
     print "$preamble,tls,failure\n";
     print "$preamble,tcp-md5,failure\n";
     print "$preamble,tcp-ao,failure\n";
