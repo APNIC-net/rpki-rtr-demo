@@ -7,7 +7,7 @@
 <?rfc compact="yes"?>
 <?rfc subcompact="no"?>
 
-<rfc category="std" docName="draft-ietf-sidrops-8210bis-27"
+<rfc category="std" docName="draft-ietf-sidrops-8210bis-28"
      submissionType="IETF" ipr="trust200902" version="2" consensus="yes">
 
   <front>
@@ -1125,9 +1125,7 @@
         </t>
         <t>
           There are zero or more 32-bit Provider Autonomous System
-          Number fields in increasing numeric order. Each Provider
-          Autonomous System Number in a given ASPA PDU MUST be unique.
-          See <xref target="I-D.ietf-sidrops-aspa-profile"/>.
+          Number fields in increasing numeric order.
         </t>
         <t>
           The Flags field is as described in <xref target="pdus"/>.
@@ -1151,22 +1149,47 @@
 	</t>
 
         <t>
+
           For the ASPA PDU, the announce/withdraw flag is set to 1 to
           indicate either the announcement of a new ASPA record or a
           replacement for a previously announced record from that
           cache with the same Customer Autonomous System Number.  For
-          an announcement, the PDU MUST contain at least one Provider
-          Autonomous System Number. If it does not, an Error Report PDU with
-          Error Code 9 ("ASPA Provider List Error") MUST be returned by the
-          router. Also, an ASPA announcement PDU containing multiple
-          Provider Autonomous System Numbers MUST NOT contain AS 0. If
-          it does, an Error Report PDU with Error Code 9 MUST be returned.
+          an announcement, the PDU MUST:
+
+          <t><list>
+
+            <t>
+              contain at least one Provider Autonomous System Number;
+            </t>
+
+            <t>
+              encode the Provider Autonomous System Numbers in
+              increasing numerical order;
+            </t>
+
+            <t>
+              not include AS0 alongside other Provider Autonomous
+              System Numbers; and
+            </t>
+
+            <t>
+              not include duplicate Provider Autonomous System
+              Numbers.
+            </t>
+          </list></t>
+
+          If any of these requirements is not met, an Error Report PDU
+          with Error Code 9 ("ASPA Provider List Error") MUST be
+          returned by the router.  See <xref
+          target="I-D.ietf-sidrops-aspa-profile"/> more generally as
+          to these requirements.
+
         </t>
 
 	<t>
           If the announce/withdraw flag is set to 0 in an ASPA PDU,
           the customer AS of the ASPA record MUST be provided, there
-          MUST be no Provider list, and the PDU Length MUST be 12. A
+          MUST be no provider list, and the PDU Length MUST be 12. A
           router receiving this type of ASPA PDU (i.e., a withdrawal)
           MUST remove the entire ASPA record from that cache for that
           Customer AS.
@@ -2831,11 +2854,11 @@ Cache                         Router
         Borchert, Mohamed Boucadair, Tim Bruijnzeels, Ralph Covelli,
         Roman Danyliw, Rex Fernando, Richard Hansen, Martin Hoffmann,
         Paul Hoffman, Fabian Holler, Russ Housley, Claudio Jeker,
-        Pradosh Mohapatra, Keyur Patel, David Mandelberg, Sandy Murphy,
-        Robert Raszuk, Andreas Reuter, Thomas Schmidt, John Scudder, Job
-        Snijders, Ruediger Volk, Matthias Waehlisch, and David Ward.
-        Particular thanks go to Hannes Gredler for showing us the
-        dangers of unnecessary fields.
+        Serge Krier, Pradosh Mohapatra, Keyur Patel, David Mandelberg,
+        Sandy Murphy, Robert Raszuk, Andreas Reuter, Thomas Schmidt,
+        John Scudder, Job Snijders, Ruediger Volk, Matthias Waehlisch,
+        and David Ward.  Particular thanks go to Hannes Gredler for
+        showing us the dangers of unnecessary fields.
       </t>
       <t>
         No doubt this list is incomplete.  We apologize to any

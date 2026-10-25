@@ -5,15 +5,15 @@
 Network Working Group                                            R. Bush
 Internet-Draft                               Arrcus, DRL, & IIJ Research
 Intended status: Standards Track                              R. Austein
-Expires: 4 February 2027                            Dragon Research Labs
+Expires: 29 April 2027                              Dragon Research Labs
                                                              T. Harrison
                                                                    APNIC
-                                                           3 August 2026
+                                                         26 October 2026
 
 
    The Resource Public Key Infrastructure (RPKI) to Router Protocol,
                                Version 2
-                     draft-ietf-sidrops-8210bis-26
+                     draft-ietf-sidrops-8210bis-28
 
 Abstract
 
@@ -43,7 +43,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 4 February 2027.
+   This Internet-Draft will expire on 29 April 2027.
 
 Copyright Notice
 
@@ -53,9 +53,9 @@ Copyright Notice
 
 
 
-Bush, et al.             Expires 4 February 2027                [Page 1]
+Bush, et al.              Expires 29 April 2027                 [Page 1]
 
-Internet-Draft            RPKI-Router Protocol               August 2026
+Internet-Draft            RPKI-Router Protocol              October 2026
 
 
    This document is subject to BCP 78 and the IETF Trust's Legal
@@ -94,31 +94,31 @@ Table of Contents
      8.1.  Start or Restart  . . . . . . . . . . . . . . . . . . . .  25
      8.2.  Typical Exchange  . . . . . . . . . . . . . . . . . . . .  26
      8.3.  No Incremental Update Available . . . . . . . . . . . . .  27
-     8.4.  Cache Has No Data Available . . . . . . . . . . . . . . .  27
-     8.5.  Cache Restart . . . . . . . . . . . . . . . . . . . . . .  28
+     8.4.  Cache Has No Data Available . . . . . . . . . . . . . . .  28
+     8.5.  Cache Restart . . . . . . . . . . . . . . . . . . . . . .  29
      8.6.  Cache Shutdown  . . . . . . . . . . . . . . . . . . . . .  29
    9.  Transport . . . . . . . . . . . . . . . . . . . . . . . . . .  29
      9.1.  SSH Transport . . . . . . . . . . . . . . . . . . . . . .  31
-     9.2.  TLS Transport . . . . . . . . . . . . . . . . . . . . . .  31
+     9.2.  TLS Transport . . . . . . . . . . . . . . . . . . . . . .  32
      9.3.  TCP MD5 Transport . . . . . . . . . . . . . . . . . . . .  32
-     9.4.  TCP-AO Transport  . . . . . . . . . . . . . . . . . . . .  32
+     9.4.  TCP-AO Transport  . . . . . . . . . . . . . . . . . . . .  33
    10. Router-Cache Setup  . . . . . . . . . . . . . . . . . . . . .  33
-   11. Races, Ordering, and Transactions . . . . . . . . . . . . . .  34
-     11.1.  Races  . . . . . . . . . . . . . . . . . . . . . . . . .  34
+   11. Races, Ordering, and Transactions . . . . . . . . . . . . . .  35
+     11.1.  Races  . . . . . . . . . . . . . . . . . . . . . . . . .  35
        11.1.1.  IPv4/IPv6 PDUs with Different Origins  . . . . . . .  35
 
 
 
-Bush, et al.             Expires 4 February 2027                [Page 2]
+Bush, et al.              Expires 29 April 2027                 [Page 2]
 
-Internet-Draft            RPKI-Router Protocol               August 2026
+Internet-Draft            RPKI-Router Protocol              October 2026
 
 
        11.1.2.  IPv4/IPv6 PDUs for More-Specific Prefixes  . . . . .  35
        11.1.3.  Withdrawal Before Announcement . . . . . . . . . . .  35
-     11.2.  Ordering . . . . . . . . . . . . . . . . . . . . . . . .  35
+     11.2.  Ordering . . . . . . . . . . . . . . . . . . . . . . . .  36
        11.2.1.  IP Prefix PDUs . . . . . . . . . . . . . . . . . . .  36
-       11.2.2.  Router Key PDUs  . . . . . . . . . . . . . . . . . .  37
+       11.2.2.  Router Key PDUs  . . . . . . . . . . . . . . . . . .  38
        11.2.3.  ASPA PDUs  . . . . . . . . . . . . . . . . . . . . .  38
      11.3.  Transactions . . . . . . . . . . . . . . . . . . . . . .  39
      11.4.  Other Considerations . . . . . . . . . . . . . . . . . .  39
@@ -165,9 +165,9 @@ Internet-Draft            RPKI-Router Protocol               August 2026
 
 
 
-Bush, et al.             Expires 4 February 2027                [Page 3]
+Bush, et al.              Expires 29 April 2027                 [Page 3]
 
-Internet-Draft            RPKI-Router Protocol               August 2026
+Internet-Draft            RPKI-Router Protocol              October 2026
 
 
    The protocol is extensible in order to support new PDUs with new
@@ -221,9 +221,9 @@ Internet-Draft            RPKI-Router Protocol               August 2026
 
 
 
-Bush, et al.             Expires 4 February 2027                [Page 4]
+Bush, et al.              Expires 29 April 2027                 [Page 4]
 
-Internet-Draft            RPKI-Router Protocol               August 2026
+Internet-Draft            RPKI-Router Protocol              October 2026
 
 
       published Global RPKI data, periodically fetched or refreshed,
@@ -277,9 +277,9 @@ Internet-Draft            RPKI-Router Protocol               August 2026
 
 
 
-Bush, et al.             Expires 4 February 2027                [Page 5]
+Bush, et al.              Expires 29 April 2027                 [Page 5]
 
-Internet-Draft            RPKI-Router Protocol               August 2026
+Internet-Draft            RPKI-Router Protocol              October 2026
 
 
       described in this document.  It is said to be a client of the
@@ -333,9 +333,9 @@ Internet-Draft            RPKI-Router Protocol               August 2026
 
 
 
-Bush, et al.             Expires 4 February 2027                [Page 6]
+Bush, et al.              Expires 29 April 2027                 [Page 6]
 
-Internet-Draft            RPKI-Router Protocol               August 2026
+Internet-Draft            RPKI-Router Protocol              October 2026
 
 
    Strictly speaking, a router could track a cache simply by asking for
@@ -389,9 +389,9 @@ Internet-Draft            RPKI-Router Protocol               August 2026
 
 
 
-Bush, et al.             Expires 4 February 2027                [Page 7]
+Bush, et al.              Expires 29 April 2027                 [Page 7]
 
-Internet-Draft            RPKI-Router Protocol               August 2026
+Internet-Draft            RPKI-Router Protocol              October 2026
 
 
       [re]started (i.e., its data are not a continuation of the previous
@@ -445,9 +445,9 @@ Internet-Draft            RPKI-Router Protocol               August 2026
 
 
 
-Bush, et al.             Expires 4 February 2027                [Page 8]
+Bush, et al.              Expires 29 April 2027                 [Page 8]
 
-Internet-Draft            RPKI-Router Protocol               August 2026
+Internet-Draft            RPKI-Router Protocol              October 2026
 
 
       the router already has.  In such cases, a router will detect the
@@ -501,9 +501,9 @@ Internet-Draft            RPKI-Router Protocol               August 2026
 
 
 
-Bush, et al.             Expires 4 February 2027                [Page 9]
+Bush, et al.              Expires 29 April 2027                 [Page 9]
 
-Internet-Draft            RPKI-Router Protocol               August 2026
+Internet-Draft            RPKI-Router Protocol              October 2026
 
 
    Prefix Length:  An 8-bit unsigned integer denoting the shortest
@@ -557,9 +557,9 @@ Internet-Draft            RPKI-Router Protocol               August 2026
 
 
 
-Bush, et al.             Expires 4 February 2027               [Page 10]
+Bush, et al.              Expires 29 April 2027                [Page 10]
 
-Internet-Draft            RPKI-Router Protocol               August 2026
+Internet-Draft            RPKI-Router Protocol              October 2026
 
 
                0          8          16         24        31
@@ -613,9 +613,9 @@ Internet-Draft            RPKI-Router Protocol               August 2026
 
 
 
-Bush, et al.             Expires 4 February 2027               [Page 11]
+Bush, et al.              Expires 29 April 2027                [Page 11]
 
-Internet-Draft            RPKI-Router Protocol               August 2026
+Internet-Draft            RPKI-Router Protocol              October 2026
 
 
                0          8          16         24        31
@@ -669,9 +669,9 @@ Internet-Draft            RPKI-Router Protocol               August 2026
 
 
 
-Bush, et al.             Expires 4 February 2027               [Page 12]
+Bush, et al.              Expires 29 April 2027                [Page 12]
 
-Internet-Draft            RPKI-Router Protocol               August 2026
+Internet-Draft            RPKI-Router Protocol              October 2026
 
 
    If the cache is not able to provide the data required for the
@@ -725,9 +725,9 @@ Internet-Draft            RPKI-Router Protocol               August 2026
 
 
 
-Bush, et al.             Expires 4 February 2027               [Page 13]
+Bush, et al.              Expires 29 April 2027                [Page 13]
 
-Internet-Draft            RPKI-Router Protocol               August 2026
+Internet-Draft            RPKI-Router Protocol              October 2026
 
 
                           Figure 4: Cache Response
@@ -781,9 +781,9 @@ Internet-Draft            RPKI-Router Protocol               August 2026
 
 
 
-Bush, et al.             Expires 4 February 2027               [Page 14]
+Bush, et al.              Expires 29 April 2027                [Page 14]
 
-Internet-Draft            RPKI-Router Protocol               August 2026
+Internet-Draft            RPKI-Router Protocol              October 2026
 
 
                0          8          16         24        31
@@ -837,9 +837,9 @@ Internet-Draft            RPKI-Router Protocol               August 2026
 
 
 
-Bush, et al.             Expires 4 February 2027               [Page 15]
+Bush, et al.              Expires 29 April 2027                [Page 15]
 
-Internet-Draft            RPKI-Router Protocol               August 2026
+Internet-Draft            RPKI-Router Protocol              October 2026
 
 
 5.8.  Error Report
@@ -893,9 +893,9 @@ Internet-Draft            RPKI-Router Protocol               August 2026
 
 
 
-Bush, et al.             Expires 4 February 2027               [Page 16]
+Bush, et al.              Expires 29 April 2027                [Page 16]
 
-Internet-Draft            RPKI-Router Protocol               August 2026
+Internet-Draft            RPKI-Router Protocol              October 2026
 
 
    An Error Report PDU MUST NOT be sent as a response to an Error Report
@@ -949,9 +949,9 @@ Internet-Draft            RPKI-Router Protocol               August 2026
 
 
 
-Bush, et al.             Expires 4 February 2027               [Page 17]
+Bush, et al.              Expires 29 April 2027                [Page 17]
 
-Internet-Draft            RPKI-Router Protocol               August 2026
+Internet-Draft            RPKI-Router Protocol              October 2026
 
 
    In the RPKI, there is an actual need for what might appear to a
@@ -1005,9 +1005,9 @@ Internet-Draft            RPKI-Router Protocol               August 2026
 
 
 
-Bush, et al.             Expires 4 February 2027               [Page 18]
+Bush, et al.              Expires 29 April 2027                [Page 18]
 
-Internet-Draft            RPKI-Router Protocol               August 2026
+Internet-Draft            RPKI-Router Protocol              October 2026
 
 
                0          8          16         24        31
@@ -1061,9 +1061,9 @@ Internet-Draft            RPKI-Router Protocol               August 2026
 
 
 
-Bush, et al.             Expires 4 February 2027               [Page 19]
+Bush, et al.              Expires 29 April 2027                [Page 19]
 
-Internet-Draft            RPKI-Router Protocol               August 2026
+Internet-Draft            RPKI-Router Protocol              October 2026
 
 
                0          8          16         24        31
@@ -1117,9 +1117,9 @@ Internet-Draft            RPKI-Router Protocol               August 2026
 
 
 
-Bush, et al.             Expires 4 February 2027               [Page 20]
+Bush, et al.              Expires 29 April 2027                [Page 20]
 
-Internet-Draft            RPKI-Router Protocol               August 2026
+Internet-Draft            RPKI-Router Protocol              October 2026
 
 
    Note that a particular AS may appear in multiple Router Key PDUs with
@@ -1166,19 +1166,17 @@ Internet-Draft            RPKI-Router Protocol               August 2026
    from the underlying ASPA object(s).
 
    There are zero or more 32-bit Provider Autonomous System Number
-   fields in increasing numeric order.  Each Provider Autonomous System
-   Number in a given ASPA PDU MUST be unique.  See
-   [I-D.ietf-sidrops-aspa-profile].
-
-
-
-
-Bush, et al.             Expires 4 February 2027               [Page 21]
-
-Internet-Draft            RPKI-Router Protocol               August 2026
-
+   fields in increasing numeric order.
 
    The Flags field is as described in Section 5.
+
+
+
+
+Bush, et al.              Expires 29 April 2027                [Page 21]
+
+Internet-Draft            RPKI-Router Protocol              October 2026
+
 
    The router MUST see at most one ASPA from a particular cache for a
    particular Customer Autonomous System Number active at any time.  As
@@ -1196,16 +1194,26 @@ Internet-Draft            RPKI-Router Protocol               August 2026
    For the ASPA PDU, the announce/withdraw flag is set to 1 to indicate
    either the announcement of a new ASPA record or a replacement for a
    previously announced record from that cache with the same Customer
-   Autonomous System Number.  For an announcement, the PDU MUST contain
-   at least one Provider Autonomous System Number.  If it does not, an
-   Error Report PDU with Error Code 9 ("ASPA Provider List Error") MUST
-   be returned by the router.  Also, an ASPA announcement PDU containing
-   multiple Provider Autonomous System Numbers MUST NOT contain AS 0.
-   If it does, an Error Report PDU with Error Code 9 MUST be returned.
+   Autonomous System Number.  For an announcement, the PDU MUST:
+
+      contain at least one Provider Autonomous System Number;
+
+      encode the Provider Autonomous System Numbers in increasing
+      numerical order;
+
+      not include AS0 alongside other Provider Autonomous System
+      Numbers; and
+
+      not include duplicate Provider Autonomous System Numbers.
+
+   If any of these requirements is not met, an Error Report PDU with
+   Error Code 9 ("ASPA Provider List Error") MUST be returned by the
+   router.  See [I-D.ietf-sidrops-aspa-profile] more generally as to
+   these requirements.
 
    If the announce/withdraw flag is set to 0 in an ASPA PDU, the
    customer AS of the ASPA record MUST be provided, there MUST be no
-   Provider list, and the PDU Length MUST be 12.  A router receiving
+   provider list, and the PDU Length MUST be 12.  A router receiving
    this type of ASPA PDU (i.e., a withdrawal) MUST remove the entire
    ASPA record from that cache for that Customer AS.
 
@@ -1218,6 +1226,14 @@ Internet-Draft            RPKI-Router Protocol               August 2026
    are likely to remain valid (or, at least, not significantly changed).
    For this reason, as well as to allow the cache some control over the
    load placed on it by its client routers, the End Of Data PDU includes
+
+
+
+Bush, et al.              Expires 29 April 2027                [Page 22]
+
+Internet-Draft            RPKI-Router Protocol              October 2026
+
+
    three values that allow the cache to communicate timing parameters to
    the router:
 
@@ -1226,14 +1242,6 @@ Internet-Draft            RPKI-Router Protocol               August 2026
       attempts, using a Serial Query or Reset Query PDU.  The router
       SHOULD NOT poll the cache sooner than indicated by this parameter.
       Note that receipt of a Serial Notify PDU overrides this interval
-
-
-
-Bush, et al.             Expires 4 February 2027               [Page 22]
-
-Internet-Draft            RPKI-Router Protocol               August 2026
-
-
       and suggests that the router issue an immediate query without
       waiting for the Refresh Interval to expire.  Countdown for this
       timer starts upon receipt of the containing End Of Data PDU.
@@ -1275,20 +1283,15 @@ Internet-Draft            RPKI-Router Protocol               August 2026
    particular cache, it SHOULD retry periodically using the default
    Retry Interval, above.
 
+
+
+Bush, et al.              Expires 29 April 2027                [Page 23]
+
+Internet-Draft            RPKI-Router Protocol              October 2026
+
+
    Caches MUST set Expire Interval to a value larger than both the
    Refresh Interval and the Retry Interval.
-
-
-
-
-
-
-
-
-Bush, et al.             Expires 4 February 2027               [Page 23]
-
-Internet-Draft            RPKI-Router Protocol               August 2026
-
 
 7.  Protocol Version Negotiation
 
@@ -1334,18 +1337,19 @@ Internet-Draft            RPKI-Router Protocol               August 2026
    Error Report PDU with Error Code 4 ("Unsupported Protocol Version")
    unless the received PDU is itself an Error Report PDU.
 
+
+
+
+
+Bush, et al.              Expires 29 April 2027                [Page 24]
+
+Internet-Draft            RPKI-Router Protocol              October 2026
+
+
    The router MUST ignore any Serial Notify PDUs it might receive from
    the cache during this initial startup period, regardless of the
    Protocol Version field in the Serial Notify PDU.  Since Session ID
    and Serial Number values are specific to a particular protocol
-
-
-
-Bush, et al.             Expires 4 February 2027               [Page 24]
-
-Internet-Draft            RPKI-Router Protocol               August 2026
-
-
    version, the values in the notification are not useful to the router.
    Even if these values were meaningful, the only effect that processing
    the notification would have would be to trigger exactly the same
@@ -1383,6 +1387,21 @@ Internet-Draft            RPKI-Router Protocol               August 2026
 
 8.1.  Start or Restart
 
+
+
+
+
+
+
+
+
+
+
+Bush, et al.              Expires 29 April 2027                [Page 25]
+
+Internet-Draft            RPKI-Router Protocol              October 2026
+
+
     Cache                         Router
       ~                             ~
       | <----- Reset Query -------- | R requests data (or Serial Query)
@@ -1394,13 +1413,6 @@ Internet-Draft            RPKI-Router Protocol               August 2026
       | ------- End of Data ------> | C sends End of Data
       |                             |   and sends new serial
       ~                             ~
-
-
-
-Bush, et al.             Expires 4 February 2027               [Page 25]
-
-Internet-Draft            RPKI-Router Protocol               August 2026
-
 
                         Figure 12: Start or Restart
 
@@ -1429,6 +1441,23 @@ Internet-Draft            RPKI-Router Protocol               August 2026
 
 8.2.  Typical Exchange
 
+
+
+
+
+
+
+
+
+
+
+
+
+Bush, et al.              Expires 29 April 2027                [Page 26]
+
+Internet-Draft            RPKI-Router Protocol              October 2026
+
+
        Cache                         Router
          ~                             ~
          | -------- Notify ----------> |  (optional)
@@ -1450,13 +1479,6 @@ Internet-Draft            RPKI-Router Protocol               August 2026
    router MAY then issue a Serial Query earlier than it otherwise might.
    This is analogous to DNS NOTIFY in [RFC1996].  The cache MUST rate-
    limit Serial Notifies to no more frequently than one per minute.
-
-
-
-Bush, et al.             Expires 4 February 2027               [Page 26]
-
-Internet-Draft            RPKI-Router Protocol               August 2026
-
 
    When the transport layer is up and either a timer has gone off in the
    router or the cache has sent a Notify PDU, the router queries for new
@@ -1485,6 +1507,13 @@ Internet-Draft            RPKI-Router Protocol               August 2026
 
                  Figure 14: No Incremental Update Available
 
+
+
+Bush, et al.              Expires 29 April 2027                [Page 27]
+
+Internet-Draft            RPKI-Router Protocol              October 2026
+
+
    The cache may respond to a Serial Query with a Cache Reset, informing
    the router that the cache cannot supply an incremental update from
    the Serial Number specified by the router.  This might be because the
@@ -1499,20 +1528,6 @@ Internet-Draft            RPKI-Router Protocol               August 2026
    Query and get an entire new load from the cache.
 
 8.4.  Cache Has No Data Available
-
-
-
-
-
-
-
-
-
-
-Bush, et al.             Expires 4 February 2027               [Page 27]
-
-Internet-Draft            RPKI-Router Protocol               August 2026
-
 
            Cache                         Router
              ~                             ~
@@ -1544,6 +1559,17 @@ Internet-Draft            RPKI-Router Protocol               August 2026
    cache; maybe once a minute or less frequently so as not to DoS the
    cache.
 
+
+
+
+
+
+
+Bush, et al.              Expires 29 April 2027                [Page 28]
+
+Internet-Draft            RPKI-Router Protocol              October 2026
+
+
 8.5.  Cache Restart
 
    The cache MUST send a "Cache Restart" error report to connected
@@ -1559,16 +1585,6 @@ Internet-Draft            RPKI-Router Protocol               August 2026
    This error code allows a client router to distinguish a cache process
    restart from network problems or other unexpected failures.  Client
    routers SHOULD log this information.
-
-
-
-
-
-
-Bush, et al.             Expires 4 February 2027               [Page 28]
-
-Internet-Draft            RPKI-Router Protocol               August 2026
-
 
    Following a Cache Restart, client routers SHOULD retry periodically
    using the Retry Interval (see Section 6) previously provided by the
@@ -1601,6 +1617,15 @@ Internet-Draft            RPKI-Router Protocol               August 2026
    The transport-layer session between a router and a cache carries the
    binary PDUs in a persistent, reliable session.
 
+
+
+
+
+Bush, et al.              Expires 29 April 2027                [Page 29]
+
+Internet-Draft            RPKI-Router Protocol              October 2026
+
+
    To prevent cache spoofing and DoS attacks by illegitimate routers, it
    is highly desirable that the router and the cache be authenticated to
    each other.  Integrity protection for payloads is also desirable to
@@ -1613,18 +1638,6 @@ Internet-Draft            RPKI-Router Protocol               August 2026
    To reduce exposure to dropped but non-terminated sessions, both
    caches and routers SHOULD enable keep-alives when available in the
    chosen transport protocol.
-
-
-
-
-
-
-
-
-Bush, et al.             Expires 4 February 2027               [Page 29]
-
-Internet-Draft            RPKI-Router Protocol               August 2026
-
 
    Should the cache or the router experience a transport stall (e.g.,
    the peer advertised a TCP RCV.WND [RFC793] [RFC9293] of zero) for
@@ -1662,6 +1675,13 @@ Internet-Draft            RPKI-Router Protocol               August 2026
    *  Caches and routers SHOULD use TCP-AO transport [RFC5925] over the
       rpki-rtr port (323).
 
+
+
+Bush, et al.              Expires 29 April 2027                [Page 30]
+
+Internet-Draft            RPKI-Router Protocol              October 2026
+
+
    *  Caches and routers MAY use Secure Shell version 2 (SSHv2)
       transport [RFC4252] using the normal SSH port (22).  For an
       example, see Section 9.1.
@@ -1672,15 +1692,6 @@ Internet-Draft            RPKI-Router Protocol               August 2026
 
    *  Caches and routers MAY use TCP over IPsec transport [RFC4301]
       using the rpki-rtr port (323).
-
-
-
-
-
-Bush, et al.             Expires 4 February 2027               [Page 30]
-
-Internet-Draft            RPKI-Router Protocol               August 2026
-
 
    *  Caches and routers MAY use Transport Layer Security (TLS)
       transport [RFC8446] using port rpki-rtr-tls (324); see Section 14.
@@ -1717,6 +1728,16 @@ Internet-Draft            RPKI-Router Protocol               August 2026
    MUST NOT be used.  Client routers SHOULD verify the public key of the
    cache to avoid MITM attacks.
 
+
+
+
+
+
+Bush, et al.              Expires 29 April 2027                [Page 31]
+
+Internet-Draft            RPKI-Router Protocol              October 2026
+
+
 9.2.  TLS Transport
 
    Client routers using TLS transport MUST present client-side
@@ -1728,15 +1749,6 @@ Internet-Draft            RPKI-Router Protocol               August 2026
    certificates to each authorized router.  This simplifies credential
    rollover; any unrevoked, unexpired certificate from the proper CA may
    be used.
-
-
-
-
-
-Bush, et al.             Expires 4 February 2027               [Page 31]
-
-Internet-Draft            RPKI-Router Protocol               August 2026
-
 
    Certificates used to authenticate client routers in this protocol
    MUST include a subjectAltName extension [RFC5280] containing one or
@@ -1775,6 +1787,13 @@ Internet-Draft            RPKI-Router Protocol               August 2026
    Implementations MUST also support hexadecimal sequences of at least
    32 characters, i.e., 128 bits.
 
+
+
+Bush, et al.              Expires 29 April 2027                [Page 32]
+
+Internet-Draft            RPKI-Router Protocol              October 2026
+
+
    Key rollover with TCP MD5 is problematic.  Cache servers SHOULD
    support [RFC4808].
 
@@ -1785,14 +1804,6 @@ Internet-Draft            RPKI-Router Protocol               August 2026
    sequences of at least 32 characters, i.e., 128 bits.  Message
    Authentication Code (MAC) lengths of at least 96 bits MUST be
    supported, per Section 5.1 of [RFC5925].
-
-
-
-
-Bush, et al.             Expires 4 February 2027               [Page 32]
-
-Internet-Draft            RPKI-Router Protocol               August 2026
-
 
    The cryptographic algorithms and associated parameters described in
    [RFC5926] MUST be supported.
@@ -1830,6 +1841,15 @@ Internet-Draft            RPKI-Router Protocol               August 2026
    but MUST keep the data marked as to source, as later updates MUST
    affect the correct data.
 
+
+
+
+
+Bush, et al.              Expires 29 April 2027                [Page 33]
+
+Internet-Draft            RPKI-Router Protocol              October 2026
+
+
    If data from multiple caches are held, implementations MUST NOT
    distinguish between data sources when performing validation of BGP
    announcements.
@@ -1840,15 +1860,6 @@ Internet-Draft            RPKI-Router Protocol               August 2026
    The router SHOULD attempt to maintain at least one set of data,
    regardless of whether it has chosen a different cache or established
    a new connection to the previous cache.
-
-
-
-
-
-Bush, et al.             Expires 4 February 2027               [Page 33]
-
-Internet-Draft            RPKI-Router Protocol               August 2026
-
 
    A client MAY drop the data from a particular cache when it is fully
    in sync with one or more other caches.
@@ -1881,6 +1892,20 @@ Internet-Draft            RPKI-Router Protocol               August 2026
    implemented by caches, a router could exclude AS 0 from the provider
    list that is synthesised when combining the relevant PDUs.
 
+
+
+
+
+
+
+
+
+
+Bush, et al.              Expires 29 April 2027                [Page 34]
+
+Internet-Draft            RPKI-Router Protocol              October 2026
+
+
 11.  Races, Ordering, and Transactions
 
    If a client applies individual PDUs as they are received from the
@@ -1895,16 +1920,6 @@ Internet-Draft            RPKI-Router Protocol               August 2026
    Section 11.3 for client implementation approaches to these problems.
 
 11.1.  Races
-
-
-
-
-
-
-Bush, et al.             Expires 4 February 2027               [Page 34]
-
-Internet-Draft            RPKI-Router Protocol               August 2026
-
 
 11.1.1.  IPv4/IPv6 PDUs with Different Origins
 
@@ -1939,6 +1954,14 @@ Internet-Draft            RPKI-Router Protocol               August 2026
    AS64494, an IPv4 VRP for 192.0.2.0/24-24 with an origin of AS64495,
    and an IPv4 VRP for 192.0.2.0/25-25 with an origin of AS64494.  If a
    client receives a withdrawal PDU for the second VRP, followed by an
+
+
+
+Bush, et al.              Expires 29 April 2027                [Page 35]
+
+Internet-Draft            RPKI-Router Protocol              October 2026
+
+
    announcement PDU that acts to replace the second VRP but with a
    greater max length, then for the time between receipt of those two
    PDUs, the BGP announcement will be classified as invalid.
@@ -1954,14 +1977,6 @@ Internet-Draft            RPKI-Router Protocol               August 2026
    are the same for those earlier versions.  An example scenario where
    an implementor would use another ordering for earlier protocol
    versions is where the implementation has an existing ordering it uses
-
-
-
-Bush, et al.             Expires 4 February 2027               [Page 35]
-
-Internet-Draft            RPKI-Router Protocol               August 2026
-
-
    for those versions, and the implementor knows of clients that
    inadvertently depend on that ordering for some reason.
 
@@ -1996,6 +2011,13 @@ Internet-Draft            RPKI-Router Protocol               August 2026
 
    mlen  The max length appearing in the PDU, as an integer value.
 
+
+
+Bush, et al.              Expires 29 April 2027                [Page 36]
+
+Internet-Draft            RPKI-Router Protocol              October 2026
+
+
    asn  The origin ASN appearing in the PDU, as an integer value.
 
    updt  The integer 1, if the PDU is an announcement, and the integer
@@ -2010,13 +2032,6 @@ Internet-Draft            RPKI-Router Protocol               August 2026
 
    The order of two IP Prefix PDUs with updt values of 1 is determined
    by the first non-equal comparison in the following list.
-
-
-
-Bush, et al.             Expires 4 February 2027               [Page 36]
-
-Internet-Draft            RPKI-Router Protocol               August 2026
-
 
    1.  Data elements with a higher addr value precede data elements with
        a lower addr value.
@@ -2050,6 +2065,15 @@ Internet-Draft            RPKI-Router Protocol               August 2026
        withdrawals always appear before all other relevant PDU
        withdrawals.
 
+
+
+
+
+Bush, et al.              Expires 29 April 2027                [Page 37]
+
+Internet-Draft            RPKI-Router Protocol              October 2026
+
+
    For both announcement and withdrawal PDUs, the first three
    comparisons are included so as to address the problem described in
    Section 11.1.2.
@@ -2066,13 +2090,6 @@ Internet-Draft            RPKI-Router Protocol               August 2026
       encoded data.
 
    spkinfolen  The number of octets in spkinfo.
-
-
-
-Bush, et al.             Expires 4 February 2027               [Page 37]
-
-Internet-Draft            RPKI-Router Protocol               August 2026
-
 
    asn  The ASN appearing in the PDU, as an integer value.
 
@@ -2105,6 +2122,14 @@ Internet-Draft            RPKI-Router Protocol               August 2026
    In order to semantically compare and sort ASPA PDUs, each PDU is
    mapped to an abstract data element comprising two integer values:
 
+
+
+
+Bush, et al.              Expires 29 April 2027                [Page 38]
+
+Internet-Draft            RPKI-Router Protocol              October 2026
+
+
    casn  The customer ASN appearing in the PDU, as an integer value.
 
    updt  The integer 1, if the PDU is an announcement, and the integer
@@ -2119,16 +2144,6 @@ Internet-Draft            RPKI-Router Protocol               August 2026
 
    2.  Data elements with a lower casn value precede data elements with
        a higher casn value.
-
-
-
-
-
-
-Bush, et al.             Expires 4 February 2027               [Page 38]
-
-Internet-Draft            RPKI-Router Protocol               August 2026
-
 
 11.3.  Transactions
 
@@ -2164,6 +2179,13 @@ Internet-Draft            RPKI-Router Protocol               August 2026
    is especially important when initiating or resetting a session, since
    it may take some time to receive all relevant data from the cache.
 
+
+
+Bush, et al.              Expires 29 April 2027                [Page 39]
+
+Internet-Draft            RPKI-Router Protocol              October 2026
+
+
    A client MAY verify the ordering of PDUs, and when an ordering error
    is encountered, send an Error Report PDU with Error Code 11
    ("Ordering Error") to the server and terminate the session.  However,
@@ -2178,14 +2200,6 @@ Internet-Draft            RPKI-Router Protocol               August 2026
    of PDUs can cause problems, depending on the order in which they are
    returned.  A related problem is where an RPKI CA operator makes non-
    atomic changes to RPKI objects in such a way that the same ordering
-
-
-
-Bush, et al.             Expires 4 February 2027               [Page 39]
-
-Internet-Draft            RPKI-Router Protocol               August 2026
-
-
    problem occurs, due to the cache receiving the updates at different
    times.  However, RPKI CAs are able to make groups of changes take
    effect atomically, so in the common case where this problem arises,
@@ -2220,6 +2234,14 @@ Internet-Draft            RPKI-Router Protocol               August 2026
    Errors which are considered fatal MUST cause the session to be
    dropped, and the router MUST flush all data learned from that cache.
 
+
+
+
+Bush, et al.              Expires 29 April 2027                [Page 40]
+
+Internet-Draft            RPKI-Router Protocol              October 2026
+
+
    0: Corrupt Data (fatal):  The receiver believes the received PDU to
       be corrupt in a manner not specified by another error code.
 
@@ -2228,20 +2250,6 @@ Internet-Draft            RPKI-Router Protocol               August 2026
       out of memory, a coding assertion failed, et cetera).
 
    2: No Data Available (non-fatal):  The cache believes itself to be in
-
-
-
-
-
-
-
-
-
-Bush, et al.             Expires 4 February 2027               [Page 40]
-
-Internet-Draft            RPKI-Router Protocol               August 2026
-
-
       good working order but is unable to answer either a Serial Query
       or a Reset Query because it has no useful data available at this
       time.  This is likely to be a temporary error and most likely
@@ -2282,6 +2290,14 @@ Internet-Draft            RPKI-Router Protocol               August 2026
    10: Transport Error (fatal):  An error such as a stall (see
       Section 9) or other transport layer failure occurred.
 
+
+
+
+Bush, et al.              Expires 29 April 2027                [Page 41]
+
+Internet-Draft            RPKI-Router Protocol              October 2026
+
+
    11: Ordering Error (fatal):  The received PDU does not conform with
       the ordering defined in Section 11.2.
 
@@ -2290,13 +2306,6 @@ Internet-Draft            RPKI-Router Protocol               August 2026
 
    13: Cache Shutdown (fatal):  The cache has shut down deliberately
       (see Section 8.6).
-
-
-
-Bush, et al.             Expires 4 February 2027               [Page 41]
-
-Internet-Draft            RPKI-Router Protocol               August 2026
-
 
    Although there is a registry for error codes, implementations MUST
    send errors only with error codes that were defined by the
@@ -2337,6 +2346,14 @@ Internet-Draft            RPKI-Router Protocol               August 2026
       lightly protected.
 
       However, this protocol assumes that the routers cannot do the
+
+
+
+Bush, et al.              Expires 29 April 2027                [Page 42]
+
+Internet-Draft            RPKI-Router Protocol              October 2026
+
+
       validation cryptography.  Hence, the last link, from cache to
       router, SHOULD be secured by server authentication and transport-
       level security to prevent monkey-in-the-middle attacks; though it
@@ -2345,15 +2362,6 @@ Internet-Draft            RPKI-Router Protocol               August 2026
       models than object security.
 
       So, the strength of the trust relationship and the transport
-
-
-
-
-Bush, et al.             Expires 4 February 2027               [Page 42]
-
-Internet-Draft            RPKI-Router Protocol               August 2026
-
-
       between the router(s) and the cache(s) are critical.  You're
       betting your routing on this.
 
@@ -2397,17 +2405,9 @@ Internet-Draft            RPKI-Router Protocol               August 2026
 
 
 
-
-
-
-
-
-
-
-
-Bush, et al.             Expires 4 February 2027               [Page 43]
+Bush, et al.              Expires 29 April 2027                [Page 43]
 
-Internet-Draft            RPKI-Router Protocol               August 2026
+Internet-Draft            RPKI-Router Protocol              October 2026
 
 
              Error
@@ -2461,9 +2461,9 @@ Internet-Draft            RPKI-Router Protocol               August 2026
 
 
 
-Bush, et al.             Expires 4 February 2027               [Page 44]
+Bush, et al.              Expires 29 April 2027                [Page 44]
 
-Internet-Draft            RPKI-Router Protocol               August 2026
+Internet-Draft            RPKI-Router Protocol              October 2026
 
 
    assist the IETF in its decision processes in progressing drafts to
@@ -2517,9 +2517,9 @@ Internet-Draft            RPKI-Router Protocol               August 2026
 
 
 
-Bush, et al.             Expires 4 February 2027               [Page 45]
+Bush, et al.              Expires 29 April 2027                [Page 45]
 
-Internet-Draft            RPKI-Router Protocol               August 2026
+Internet-Draft            RPKI-Router Protocol              October 2026
 
 
               Moriarty, K. and S. Farrell, "Deprecating TLS 1.0 and TLS
@@ -2533,12 +2533,12 @@ Internet-Draft            RPKI-Router Protocol               August 2026
               2022, <https://www.rfc-editor.org/info/rfc9325>.
 
    [I-D.ietf-sidrops-aspa-profile]
-              Azimov, A., Uskov, E., Bush, R., Snijders, J., Housley,
+              Snijders, J., Azimov, A., Uskov, E., Bush, R., Housley,
               R., and B. Maddison, "A Profile for Autonomous System
               Provider Authorization", Work in Progress, Internet-Draft,
-              draft-ietf-sidrops-aspa-profile-19, 6 January 2025,
+              draft-ietf-sidrops-aspa-profile-29, 29 July 2026,
               <https://datatracker.ietf.org/doc/html/draft-ietf-sidrops-
-              aspa-profile-19>.
+              aspa-profile-29>.
 
    [iana-err] IANA, "rpki-rtr-error",
               <https://www.iana.org/assignments/rpki#rpki-rtr-error>.
@@ -2573,9 +2573,9 @@ Internet-Draft            RPKI-Router Protocol               August 2026
 
 
 
-Bush, et al.             Expires 4 February 2027               [Page 46]
+Bush, et al.              Expires 29 April 2027                [Page 46]
 
-Internet-Draft            RPKI-Router Protocol               August 2026
+Internet-Draft            RPKI-Router Protocol              October 2026
 
 
    [RFC5280]  Cooper, D., Santesson, S., Farrell, S., Boeyen, S.,
@@ -2629,9 +2629,9 @@ Internet-Draft            RPKI-Router Protocol               August 2026
 
 
 
-Bush, et al.             Expires 4 February 2027               [Page 47]
+Bush, et al.              Expires 29 April 2027                [Page 47]
 
-Internet-Draft            RPKI-Router Protocol               August 2026
+Internet-Draft            RPKI-Router Protocol              October 2026
 
 
    [RFC8446]  Rescorla, E., "The Transport Layer Security (TLS) Protocol
@@ -2671,7 +2671,7 @@ Internet-Draft            RPKI-Router Protocol               August 2026
               <https://www.rfc-editor.org/info/rfc6481>.
 
    [RFC793]   Postel, J., "Transmission Control Protocol", RFC 793,
-              DOI 10.17487/RFC0793, September 1981,
+              DOI 10.17487/RFC793, September 1981,
               <https://www.rfc-editor.org/info/rfc793>.
 
    [RFC7942]  Sheffer, Y. and A. Farrel, "Improving Awareness of Running
@@ -2685,9 +2685,9 @@ Internet-Draft            RPKI-Router Protocol               August 2026
 
 
 
-Bush, et al.             Expires 4 February 2027               [Page 48]
+Bush, et al.              Expires 29 April 2027                [Page 48]
 
-Internet-Draft            RPKI-Router Protocol               August 2026
+Internet-Draft            RPKI-Router Protocol              October 2026
 
 
    [RFC9293]  Eddy, W., Ed., "Transmission Control Protocol (TCP)",
@@ -2704,11 +2704,11 @@ Acknowledgements
    The authors wish to thank Nils Bars, Steve Bellovin, Oliver Borchert,
    Mohamed Boucadair, Tim Bruijnzeels, Ralph Covelli, Roman Danyliw, Rex
    Fernando, Richard Hansen, Martin Hoffmann, Paul Hoffman, Fabian
-   Holler, Russ Housley, Claudio Jeker, Pradosh Mohapatra, Keyur Patel,
-   David Mandelberg, Sandy Murphy, Robert Raszuk, Andreas Reuter, Thomas
-   Schmidt, John Scudder, Job Snijders, Ruediger Volk, Matthias
-   Waehlisch, and David Ward.  Particular thanks go to Hannes Gredler
-   for showing us the dangers of unnecessary fields.
+   Holler, Russ Housley, Claudio Jeker, Serge Krier, Pradosh Mohapatra,
+   Keyur Patel, David Mandelberg, Sandy Murphy, Robert Raszuk, Andreas
+   Reuter, Thomas Schmidt, John Scudder, Job Snijders, Ruediger Volk,
+   Matthias Waehlisch, and David Ward.  Particular thanks go to Hannes
+   Gredler for showing us the dangers of unnecessary fields.
 
    No doubt this list is incomplete.  We apologize to any contributor
    whose name we missed.
@@ -2741,4 +2741,4 @@ Authors' Addresses
 
 
 
-Bush, et al.             Expires 4 February 2027               [Page 49]
+Bush, et al.              Expires 29 April 2027                [Page 49]
