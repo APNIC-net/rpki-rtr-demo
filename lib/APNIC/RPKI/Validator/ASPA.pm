@@ -38,6 +38,7 @@ sub upstream
     dprint("validation-aspa: min_up_ramp: $min_up_ramp");
     dprint("validation-aspa: max_down_ramp: $max_down_ramp");
     dprint("validation-aspa: min_down_ramp: $min_down_ramp");
+    dprint("validation-aspa: N: ".(scalar @{$as_path}));
 
     # 1.  If the AS_PATH is empty, then the procedure halts with the
     #     outcome "Invalid".
@@ -64,6 +65,8 @@ sub upstream
     if ($max_up_ramp < @{$as_path}) {
         dprint("validation-aspa: max_up_ramp < N: invalid");
         return 0;
+    } else {
+        dprint("validation-aspa: max_up_ramp >= N: ok");
     }
 
     # 5.  If min_up_ramp < N, the procedure halts with the outcome
@@ -72,6 +75,8 @@ sub upstream
     if ($min_up_ramp < @{$as_path}) {
         dprint("validation-aspa: min_up_ramp < N: unknown");
         return 1;
+    } else {
+        dprint("validation-aspa: min_up_ramp >= N: ok");
     }
 
     # 6.  Else, the procedure halts with the outcome "Valid". 
@@ -90,6 +95,7 @@ sub downstream
     dprint("validation-aspa: min_up_ramp: $min_up_ramp");
     dprint("validation-aspa: max_down_ramp: $max_down_ramp");
     dprint("validation-aspa: min_down_ramp: $min_down_ramp");
+    dprint("validation-aspa: N: ".(scalar @{$as_path}));
 
     # 1.  If the AS_PATH is empty, then the procedure halts with the
     #     outcome "Invalid".
@@ -115,6 +121,8 @@ sub downstream
     if (($max_up_ramp + $max_down_ramp) < @{$as_path}) {
         dprint("validation-aspa: max_up_ramp + max_down_ramp < N: invalid");
         return 0;
+    } else {
+        dprint("validation-aspa: max_up_ramp + max_down_ramp >= N: ok");
     }
 
     # 5.  If min_up_ramp + min_down_ramp < N, the procedure halts with the
@@ -123,6 +131,8 @@ sub downstream
     if (($min_up_ramp + $min_down_ramp) < @{$as_path}) {
         dprint("validation-aspa: min_up_ramp + min_down_ramp < N: unknown");
         return 1;
+    } else {
+        dprint("validation-aspa: min_up_ramp + min_down_ramp >= N: ok");
     }
 
     # 6.  Else, the procedure halts with the outcome "Valid".
