@@ -323,8 +323,11 @@
       </t>
       <t>
         As cache servers must evaluate signed objects (see <xref
-        target="RFC6480"/>) with time dependent validity periods,
-        servers' clocks MUST be correct within a tolerance of an hour.
+        target="RFC6480"/>) with time-dependent validity periods,
+        servers' clocks must be capable of providing a reasonable
+        approximation of the current instant in UTC.  A clock
+        implementation ought to use NTP (<xref target="RFC5905" />),
+        or some similar protocol, to synchronize with UTC.
       </t>
     </section>
 
@@ -2839,6 +2842,7 @@ Cache                         Router
       <?rfc include="reference.RFC.1996.xml"?>
       <?rfc include="reference.RFC.4808.xml"?>
       <?rfc include="reference.RFC.5781.xml"?>
+      <?rfc include="reference.RFC.5905.xml"?>
       <?rfc include="reference.RFC.6480.xml"?>
       <?rfc include="reference.RFC.6481.xml"?>
       <?rfc include="reference.RFC.7942.xml"?>

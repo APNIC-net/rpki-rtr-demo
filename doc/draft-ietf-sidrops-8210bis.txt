@@ -353,8 +353,10 @@ Internet-Draft            RPKI-Router Protocol              October 2026
    service.
 
    As cache servers must evaluate signed objects (see [RFC6480]) with
-   time dependent validity periods, servers' clocks MUST be correct
-   within a tolerance of an hour.
+   time-dependent validity periods, servers' clocks must be capable of
+   providing a reasonable approximation of the current instant in UTC.
+   A clock implementation ought to use NTP ([RFC5905]), or some similar
+   protocol, to synchronize with UTC.
 
 5.  Protocol Data Units (PDUs)
 
@@ -382,8 +384,6 @@ Internet-Draft            RPKI-Router Protocol              October 2026
       cache or the Global RPKI.
 
    Session ID:  A 16-bit unsigned integer.  When a cache server is
-
-
 
 
 
@@ -2661,6 +2661,11 @@ Internet-Draft            RPKI-Router Protocol              October 2026
               Scheme", RFC 5781, DOI 10.17487/RFC5781, February 2010,
               <https://www.rfc-editor.org/info/rfc5781>.
 
+   [RFC5905]  Mills, D., Martin, J., Ed., Burbank, J., and W. Kasch,
+              "Network Time Protocol Version 4: Protocol and Algorithms
+              Specification", RFC 5905, DOI 10.17487/RFC5905, June 2010,
+              <https://www.rfc-editor.org/info/rfc5905>.
+
    [RFC6480]  Lepinski, M. and S. Kent, "An Infrastructure to Support
               Secure Internet Routing", RFC 6480, DOI 10.17487/RFC6480,
               February 2012, <https://www.rfc-editor.org/info/rfc6480>.
@@ -2674,6 +2679,17 @@ Internet-Draft            RPKI-Router Protocol              October 2026
               DOI 10.17487/RFC793, September 1981,
               <https://www.rfc-editor.org/info/rfc793>.
 
+
+
+
+
+
+
+Bush, et al.              Expires 29 April 2027                [Page 48]
+
+Internet-Draft            RPKI-Router Protocol              October 2026
+
+
    [RFC7942]  Sheffer, Y. and A. Farrel, "Improving Awareness of Running
               Code: The Implementation Status Section", BCP 205,
               RFC 7942, DOI 10.17487/RFC7942, July 2016,
@@ -2682,13 +2698,6 @@ Internet-Draft            RPKI-Router Protocol              October 2026
    [RFC8654]  Bush, R., Patel, K., and D. Ward, "Extended Message
               Support for BGP", RFC 8654, DOI 10.17487/RFC8654, October
               2019, <https://www.rfc-editor.org/info/rfc8654>.
-
-
-
-Bush, et al.              Expires 29 April 2027                [Page 48]
-
-Internet-Draft            RPKI-Router Protocol              October 2026
-
 
    [RFC9293]  Eddy, W., Ed., "Transmission Control Protocol (TCP)",
               STD 7, RFC 9293, DOI 10.17487/RFC9293, August 2022,
@@ -2725,6 +2734,18 @@ Authors' Addresses
    Email: sra@hactrn.net
 
 
+
+
+
+
+
+
+
+Bush, et al.              Expires 29 April 2027                [Page 49]
+
+Internet-Draft            RPKI-Router Protocol              October 2026
+
+
    Tom Harrison
    Asia Pacific Network Information Centre
    6 Cordelia St
@@ -2741,4 +2762,39 @@ Authors' Addresses
 
 
 
-Bush, et al.              Expires 29 April 2027                [Page 49]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Bush, et al.              Expires 29 April 2027                [Page 50]
