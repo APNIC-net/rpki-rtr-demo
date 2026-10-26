@@ -1198,7 +1198,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
       contain at least one Provider Autonomous System Number;
 
-      encode the Provider Autonomous System Numbers in increasing
+      list the Provider Autonomous System Numbers in increasing
       numerical order;
 
       not include AS0 alongside other Provider Autonomous System
@@ -2277,8 +2277,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
    7: Duplicate Announcement Received (fatal):  The received PDU has
       Flag=1, but a matching record ({Prefix, Prefix Length, Max Length,
       ASN} tuple for an IPv4/IPv6 PDU, or {SKI, AS, Subject Public Key}
-      tuple for a Router Key PDU), or Customer Autonomous System for an
-      ASPA PDU is already active in the router.
+      tuple for a Router Key PDU) is already active in the router.
 
    8: Unexpected Protocol Version (fatal):  The received PDU has a
       Protocol Version field that differs from the protocol version
@@ -2290,6 +2289,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
    10: Transport Error (fatal):  An error such as a stall (see
       Section 9) or other transport layer failure occurred.
 
+   11: Ordering Error (fatal):  The received PDU does not conform with
 
 
 
@@ -2298,7 +2298,6 @@ Bush, et al.              Expires 29 April 2027                [Page 41]
 Internet-Draft            RPKI-Router Protocol              October 2026
 
 
-   11: Ordering Error (fatal):  The received PDU does not conform with
       the ordering defined in Section 11.2.
 
    12: Cache Restart (non-fatal):  The cache is restarting (see
@@ -2346,6 +2345,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
       lightly protected.
 
       However, this protocol assumes that the routers cannot do the
+
 
 
 

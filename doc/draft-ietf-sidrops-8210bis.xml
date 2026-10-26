@@ -1163,7 +1163,7 @@
             </t>
 
             <t>
-              encode the Provider Autonomous System Numbers in
+              list the Provider Autonomous System Numbers in
               increasing numerical order;
             </t>
 
@@ -2563,10 +2563,9 @@ Cache                         Router
           </t>
           <t hangText="7: Duplicate Announcement Received (fatal):">
             The received PDU has Flag=1, but a matching record ({Prefix,
-            Prefix Length, Max Length, ASN} tuple for an IPv4/IPv6 PDU, or {SKI, AS,
-            Subject Public Key} tuple for a Router Key PDU), or Customer
-            Autonomous System for an ASPA PDU is already active in the
-            router.
+            Prefix Length, Max Length, ASN} tuple for an IPv4/IPv6
+            PDU, or {SKI, AS, Subject Public Key} tuple for a Router
+            Key PDU) is already active in the router.
           </t>
           <t hangText="8: Unexpected Protocol Version (fatal):">
             The received PDU has a Protocol Version field that differs
