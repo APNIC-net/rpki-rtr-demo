@@ -886,9 +886,9 @@ Internet-Draft            RPKI-Router Protocol              October 2026
    with the PDU to which it is responding, the Erroneous PDU field MUST
    be empty and the Length of Encapsulated PDU field MUST be zero.
 
-
-
-
+   If the entire erroneous PDU will not fit in the Erroneous PDU field,
+   then the Erroneous PDU field MUST be empty and the Length of
+   Encapsulated PDU field MUST be zero.
 
 
 
@@ -898,20 +898,16 @@ Bush, et al.              Expires 30 April 2027                [Page 16]
 Internet-Draft            RPKI-Router Protocol              October 2026
 
 
+   The Arbitrary Text field is optional; if not present, the Length of
+   Arbitrary text field MUST be zero.  If Arbitrary Text is present, it
+   MUST be a string in UTF-8 encoding (see [RFC3629]) in the Queen's
+   English.
+
    An Error Report PDU MUST NOT be sent as a response to an Error Report
    PDU.  If an erroneous Error Report PDU is received, the session
    SHOULD be dropped and the receiving party SHOULD log this
    information.  If such a PDU is received by a router, the router
    SHOULD also flush all data learned from that cache.
-
-   If the entire erroneous PDU will not fit in the Erroneous PDU field,
-   it MUST be truncated.  At a minimum, the first four octets MUST be
-   included.  Beware any attempts to parse an Erroneous PDU.
-
-   The Arbitrary Text field is optional; if not present, the Length of
-   Arbitrary text field MUST be zero.  If Arbitrary Text is present, it
-   MUST be a string in UTF-8 encoding (see [RFC3629]) in the Queen's
-   English.
 
 5.9.  IPv4 Prefix
 
@@ -944,6 +940,10 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
    The lowest-order bit of the Flags field is 1 for an announcement and
    0 for a withdrawal.
+
+
+
+
 
 
 

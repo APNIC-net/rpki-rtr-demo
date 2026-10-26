@@ -867,24 +867,23 @@
           Encapsulated PDU field MUST be zero.
         </t>
         <t>
-          An Error Report PDU MUST NOT be sent as a response to an
-          Error Report PDU.  If an erroneous Error Report PDU is
-          received, the session SHOULD be dropped and the receiving
-          party SHOULD log this information.  If such a PDU is
-          received by a router, the router SHOULD also flush all data
-          learned from that cache.
-        </t>
-        <t>
-          If the entire erroneous PDU will not fit in the Erroneous PDU
-          field, it MUST be truncated.  At a minimum, the first four
-          octets MUST be included.  Beware any attempts to parse an
-          Erroneous PDU.
+          If the entire erroneous PDU will not fit in the Erroneous
+          PDU field, then the Erroneous PDU field MUST be empty and
+          the Length of Encapsulated PDU field MUST be zero.
         </t>
         <t>
           The Arbitrary Text field is optional; if not present, the
           Length of Arbitrary text field MUST be zero.  If Arbitrary
           Text is present, it MUST be a string in UTF-8 encoding (see
           <xref target="RFC3629"/>) in the Queen's English.
+        </t>
+        <t>
+          An Error Report PDU MUST NOT be sent as a response to an
+          Error Report PDU.  If an erroneous Error Report PDU is
+          received, the session SHOULD be dropped and the receiving
+          party SHOULD log this information.  If such a PDU is
+          received by a router, the router SHOULD also flush all data
+          learned from that cache.
         </t>
       </section>
 
