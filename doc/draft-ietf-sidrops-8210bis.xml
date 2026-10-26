@@ -176,12 +176,6 @@
             (NIRs), and ISPs in which the authoritative data of the
             RPKI are published.  See <xref target="RFC6481"/>.
           </t>
-          <t hangText="CA:">
-	    The authoritative data of the RPKI are meant to be published
-	    by a distributed set of Certification Authorities (CAs) at
-	    the IANA, RIRs, NIRs, and ISPs (see <xref
-	    target="RFC6481"/>).
-	  </t>
           <t hangText="Cache:">
             A Cache, AKA Relying Party Cache, is a coalesced copy of the
             published Global RPKI data, periodically fetched or
