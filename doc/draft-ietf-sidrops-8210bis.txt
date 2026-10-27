@@ -651,8 +651,8 @@ Internet-Draft           RPKI-to-Router Protocol            October 2026
    and the cache's current Serial Number, the cache MUST merge those
    changes to present the simplest possible view of those changes to the
    router.  In general, this means that, for any particular prefix/AS,
-   Router Key. or ASPA/Customer, the data stream will include at most
-   one withdrawal followed by at most one announcement, and if all of
+   Router Key, or ASPA/Customer, the data stream will include at most
+   one announcement followed by at most one withdrawal, and if all of
    the changes cancel out, the data stream will not mention the prefix/
    AS, Router Key, or ASPA/Customer at all.
 
@@ -1219,7 +1219,7 @@ Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 6.  Protocol Timing Parameters
 
-   Since the data the cache distributed via the RPKI-to-Router protocol
+   Since the data the cache distributes via the RPKI-to-Router protocol
    are retrieved from the Global RPKI system at intervals which are only
    known to the cache, only the cache can really know how frequently it
    makes sense for the router to poll the cache, or how long the data
@@ -1297,7 +1297,7 @@ Internet-Draft           RPKI-to-Router Protocol            October 2026
 
    Once a router has established a transport connection to a cache, it
    MUST attempt to open an RPKI-to-Router 'session' by issuing either a
-   Reset Query Section 5.4) or a Serial Query (Section 5.3) with the
+   Reset Query (Section 5.4) or a Serial Query (Section 5.3) with the
    highest version of this protocol the router implements in the
    Protocol Version field.  If the cache supports that version, it
    responds with a Cache Response (Section 5.5) of that version and the
@@ -1467,7 +1467,7 @@ Internet-Draft           RPKI-to-Router Protocol            October 2026
          | ----- Cache Response -----> | C confirms request
          | ------- Payload PDU ------> | C sends zero or more
          | ------- Payload PDU ------> |   IPv4 Prefix, IPv6 Prefix,
-         | ------- Payload PDU ------> |   ASPA. or Router Key PDUs
+         | ------- Payload PDU ------> |   ASPA, or Router Key PDUs
          | ------- End of Data ------> | C sends End of Data
          |                             |   containing the new serial
          ~                             ~
@@ -1654,7 +1654,7 @@ Internet-Draft           RPKI-to-Router Protocol            October 2026
    use the cache.
 
    Should a transport connection be lost for unknown reasons, the router
-   SHOULD try to reestablish one; being careful to not abuse the cache
+   SHOULD try to reestablish one; being careful not to abuse the cache
    with too many failed requests.
 
    It is expected that, when the TCP Authentication Option (TCP-AO)
@@ -2278,7 +2278,7 @@ Internet-Draft           RPKI-to-Router Protocol            October 2026
    9: ASPA Provider List Error (fatal):  The received ASPA PDU has an
       incorrect list of Provider Autonomous System Numbers.
 
-   10: Transport Error (fatal):  An error such as a stall (see
+   10: Transport Failure (fatal):  An error such as a stall (see
       Section 9) or other transport layer failure occurred.
 
    11: Ordering Error (fatal):  The received PDU does not conform with
@@ -2304,7 +2304,7 @@ Internet-Draft           RPKI-to-Router Protocol            October 2026
    session.  As documented in Section 5.8, an implementation that
    receives an invalid Error Report PDU should simply drop the session
    (and in the case of a router, flush all data learned from that
-   cache), rather than attempting to respond with its own Error Repor
+   cache), rather than attempting to respond with its own Error Report
    PDU.  That behaviour also covers the case where an implementation
    receives an Error Report PDU with an error code that is invalid.
 
@@ -2339,10 +2339,10 @@ Internet-Draft           RPKI-to-Router Protocol            October 2026
       However, this protocol assumes that the routers cannot do the
       validation cryptography.  Hence, the last link, from cache to
       router, SHOULD be secured by server authentication and transport-
-      level security to prevent monkey-in-the-middle attacks; though it
-      might not be.  Not using transport security is dangerous, as
-      server authentication and transport have very different threat
-      models than object security.
+      level security to prevent on-path attacks; though it might not be.
+      Not using transport security is dangerous, as server
+      authentication and transport have very different threat models
+      than object security.
 
       So, the strength of the trust relationship and the transport
 
@@ -2390,7 +2390,7 @@ Internet-Draft           RPKI-to-Router Protocol            October 2026
    in protocol versions 0 and 1 are also allowed in protocol version 2,
    with the addition of the new ASPA PDU.
 
-   The "rpki-rtr-error: registry [iana-err] should be updated as
+   The "rpki-rtr-error" registry [iana-err] should be updated as
    follows:
 
 
