@@ -12,7 +12,7 @@
 
   <front>
 
-    <title abbrev="RPKI-Router Protocol">
+    <title abbrev="RPKI-to-Router Protocol">
       The Resource Public Key Infrastructure (RPKI) to Router
       Protocol, Version 2
     </title>
@@ -57,7 +57,7 @@
         describes a protocol to deliver them.
       </t>
       <t>
-        This document describes version 2 of the RPKI-Router protocol.
+        This document describes version 2 of the RPKI-to-Router protocol.
         <xref target="RFC6810"/> describes version 0, and <xref
         target="RFC8210"/> describes version 1.  This document is
         compatible with both.
@@ -82,7 +82,7 @@
       </t>
 
       <t>
-        This specification documents version 2 of the RPKI-RTR protocol.
+        This specification documents version 2 of the RPKI-to-Router (RTR) protocol.
         Earlier versions are documented in <xref target="RFC6810"/> and
         <xref target="RFC8210"/>.  Though this version is, of course,
         preferred, the earlier versions are expected to continue to be
@@ -634,7 +634,7 @@
 	</t>
         <t>
           The rationale for this approach is that the entire purpose of
-          the RPKI-Router protocol is to offload work from the router
+          the RPKI-to-Router protocol is to offload work from the router
           to the cache, and it should therefore be the cache's job to
           simplify the change set, thus reducing work for the router.
         </t>
@@ -1197,7 +1197,7 @@
 
     <section anchor="timing" title="Protocol Timing Parameters">
       <t>
-        Since the data the cache distributed via the RPKI-Router
+        Since the data the cache distributed via the RPKI-to-Router
         protocol are retrieved from the Global RPKI system at intervals
         which are only known to the cache, only the cache can really
         know how frequently it makes sense for the router to poll the
@@ -1271,7 +1271,7 @@
     <section anchor="version" title="Protocol Version Negotiation">
       <t>
         Once a router has established a transport connection to a cache,
-        it MUST attempt to open an RPKI-Router 'session' by issuing
+        it MUST attempt to open an RPKI-to-Router 'session' by issuing
         either a Reset Query <xref target="resetquery"/>) or a Serial
         Query (<xref target="serialquery"/>) with the highest version of
         this protocol the router implements in the Protocol Version
@@ -1293,7 +1293,7 @@
         the cache MUST establish the session at protocol version Q,
         <xref target="RFC6810"/> or <xref target="RFC8210"/>, and
         respond with a Cache Response (<xref target="cacheresponse"/>)
-        of that Protocol Version, Q.  The RPKI-Router session is
+        of that Protocol Version, Q.  The RPKI-to-Router session is
         then considered open.
       </t>
       <t>
@@ -1353,7 +1353,7 @@
         Session ID.
       </t>
       <t>
-	The configured transport security, the negotiated RPKI-Router
+	The configured transport security, the negotiated RPKI-to-Router
 	version, etc., MAY NOT be changed once a session has been
 	established.  If one side or the other wishes to try a different
 	transport, protocol version, etc., it MUST terminate the
