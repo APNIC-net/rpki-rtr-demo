@@ -1893,25 +1893,17 @@ Cache                         Router
         from that cache.
       </t>
       <t>
-        The router SHOULD attempt to maintain at least one set of data,
-        regardless of whether it has chosen a different cache or
-        established a new connection to the previous cache.
-      </t>
-      <t>
-        A client MAY drop the data from a particular cache when it is
-        fully in sync with one or more other caches.
-      </t>
-      <t>
         See <xref target="timing"/> for details on what to do when the
         client is not able to refresh from a particular cache.
       </t>
       <t>
         If a client loses connectivity to a cache it is using or
-        otherwise decides to switch to a new cache, it SHOULD retain the
-        data from the previous cache until it has a full set of data
-        from one or more other caches.  Note that this may already be
-        true at the point of connection loss if the client has
-        connections to more than one cache.
+        otherwise decides to switch to a new cache, it SHOULD retain
+        the data from the previous cache until it has a full set of
+        data from one or more other caches.  Retaining this data
+        avoids the overhead associated with transient reclassification
+        of routes while the data from the new cache is being
+        retrieved. 
       </t>
       <t>
         To keep load on Global RPKI services from unnecessary peaks, it
