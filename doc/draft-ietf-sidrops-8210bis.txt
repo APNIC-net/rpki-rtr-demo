@@ -24,7 +24,7 @@ Abstract
    data from a trusted cache.  This document describes a protocol to
    deliver them.
 
-   This document describes version 2 of the RPKI-Router protocol.
+   This document describes version 2 of the RPKI-to-Router protocol.
    [RFC6810] describes version 0, and [RFC8210] describes version 1.
    This document is compatible with both.
 
@@ -55,7 +55,7 @@ Copyright Notice
 
 Bush, et al.              Expires 30 April 2027                 [Page 1]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
    This document is subject to BCP 78 and the IETF Trust's Legal
@@ -111,7 +111,7 @@ Table of Contents
 
 Bush, et al.              Expires 30 April 2027                 [Page 2]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
        11.1.2.  IPv4/IPv6 PDUs for More-Specific Prefixes  . . . . .  35
@@ -144,12 +144,12 @@ Internet-Draft            RPKI-Router Protocol              October 2026
    to deliver them.  The design is intentionally constrained to be
    usable on much of the current generation of ISP router platforms.
 
-   This specification documents version 2 of the RPKI-RTR protocol.
-   Earlier versions are documented in [RFC6810] and [RFC8210].  Though
-   this version is, of course, preferred, the earlier versions are
-   expected to continue to be productively deployed indefinitely, and
-   Section 7 details how to downgrade from this version to earlier
-   versions as needed in order to interoperate.
+   This specification documents version 2 of the RPKI-to-Router (RTR)
+   protocol.  Earlier versions are documented in [RFC6810] and
+   [RFC8210].  Though this version is, of course, preferred, the earlier
+   versions are expected to continue to be productively deployed
+   indefinitely, and Section 7 details how to downgrade from this
+   version to earlier versions as needed in order to interoperate.
 
    Section 3 describes the deployment structure, and Section 4 then
    presents an operational overview.  The binary payloads of the
@@ -167,7 +167,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                 [Page 3]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
    The protocol is extensible in order to support new PDUs with new
@@ -223,7 +223,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                 [Page 4]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
       published Global RPKI data, periodically fetched or refreshed,
@@ -279,7 +279,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                 [Page 5]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
       described in this document.  It is said to be a client of the
@@ -335,7 +335,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                 [Page 6]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
    Strictly speaking, a router could track a cache simply by asking for
@@ -391,7 +391,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                 [Page 7]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
       [re]started (i.e., its data are not a continuation of the previous
@@ -447,7 +447,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                 [Page 8]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
       the router already has.  In such cases, a router will detect the
@@ -503,7 +503,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                 [Page 9]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
    Prefix Length:  An 8-bit unsigned integer denoting the shortest
@@ -559,7 +559,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 10]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
                0          8          16         24        31
@@ -615,7 +615,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 11]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
                0          8          16         24        31
@@ -661,9 +661,9 @@ Internet-Draft            RPKI-Router Protocol              October 2026
    Error with Error Code 7 ("Duplicate Announcement Received").
 
    The rationale for this approach is that the entire purpose of the
-   RPKI-Router protocol is to offload work from the router to the cache,
-   and it should therefore be the cache's job to simplify the change
-   set, thus reducing work for the router.
+   RPKI-to-Router protocol is to offload work from the router to the
+   cache, and it should therefore be the cache's job to simplify the
+   change set, thus reducing work for the router.
 
 
 
@@ -671,7 +671,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 12]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
    If the cache is not able to provide the data required for the
@@ -727,7 +727,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 13]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
                           Figure 4: Cache Response
@@ -783,7 +783,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 14]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
                0          8          16         24        31
@@ -839,7 +839,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 15]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
 5.8.  Error Report
@@ -895,7 +895,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 16]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
    The Arbitrary Text field is optional; if not present, the Length of
@@ -951,7 +951,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 17]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
    In the RPKI, there is an actual need for what might appear to a
@@ -1007,7 +1007,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 18]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
                0          8          16         24        31
@@ -1063,7 +1063,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 19]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
                0          8          16         24        31
@@ -1119,7 +1119,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 20]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
    Note that a particular AS may appear in multiple Router Key PDUs with
@@ -1175,7 +1175,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 21]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
    The router MUST see at most one ASPA from a particular cache for a
@@ -1219,8 +1219,8 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 6.  Protocol Timing Parameters
 
-   Since the data the cache distributed via the RPKI-Router protocol are
-   retrieved from the Global RPKI system at intervals which are only
+   Since the data the cache distributed via the RPKI-to-Router protocol
+   are retrieved from the Global RPKI system at intervals which are only
    known to the cache, only the cache can really know how frequently it
    makes sense for the router to poll the cache, or how long the data
    are likely to remain valid (or, at least, not significantly changed).
@@ -1231,7 +1231,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 22]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
    three values that allow the cache to communicate timing parameters to
@@ -1287,7 +1287,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 23]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
    Caches MUST set Expire Interval to a value larger than both the
@@ -1296,7 +1296,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 7.  Protocol Version Negotiation
 
    Once a router has established a transport connection to a cache, it
-   MUST attempt to open an RPKI-Router 'session' by issuing either a
+   MUST attempt to open an RPKI-to-Router 'session' by issuing either a
    Reset Query Section 5.4) or a Serial Query (Section 5.3) with the
    highest version of this protocol the router implements in the
    Protocol Version field.  If the cache supports that version, it
@@ -1313,7 +1313,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
    Version Q < C, and the cache can support version Q, the cache MUST
    establish the session at protocol version Q, [RFC6810] or [RFC8210],
    and respond with a Cache Response (Section 5.5) of that Protocol
-   Version, Q.  The RPKI-Router session is then considered open.
+   Version, Q.  The RPKI-to-Router session is then considered open.
 
    If the cache which supports C as its highest version receives a query
    of version Q > C, the cache MUST send an Error Report PDU with
@@ -1343,7 +1343,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 24]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
    The router MUST ignore any Serial Notify PDUs it might receive from
@@ -1368,7 +1368,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
    session.  See Section 5.1 for a discussion of the interaction between
    Protocol Version and Session ID.
 
-   The configured transport security, the negotiated RPKI-Router
+   The configured transport security, the negotiated RPKI-to-Router
    version, etc., MAY NOT be changed once a session has been
    established.  If one side or the other wishes to try a different
    transport, protocol version, etc., it MUST terminate the transport
@@ -1399,7 +1399,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 25]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
     Cache                         Router
@@ -1455,7 +1455,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 26]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
        Cache                         Router
@@ -1511,7 +1511,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 27]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
    The cache may respond to a Serial Query with a Cache Reset, informing
@@ -1567,7 +1567,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 28]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
 8.5.  Cache Restart
@@ -1623,7 +1623,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 29]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
    To prevent cache spoofing and DoS attacks by illegitimate routers, it
@@ -1679,7 +1679,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 30]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
    *  Caches and routers MAY use Secure Shell version 2 (SSHv2)
@@ -1735,7 +1735,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 31]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
 9.2.  TLS Transport
@@ -1791,7 +1791,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 32]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
    Key rollover with TCP MD5 is problematic.  Cache servers SHOULD
@@ -1847,7 +1847,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 33]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
    If data from multiple caches are held, implementations MUST NOT
@@ -1903,7 +1903,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 34]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
 11.1.  Races
@@ -1959,7 +1959,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 35]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
    an implementor would use another ordering for earlier protocol
@@ -2015,7 +2015,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 36]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
    The order of two IP Prefix PDUs with updt values of 1 is determined
@@ -2071,7 +2071,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 37]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
       encoded data.
@@ -2127,7 +2127,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 38]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
    2.  Data elements with a lower casn value precede data elements with
@@ -2183,7 +2183,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 39]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
    Section 11.1 describes various scenarios where immediate application
@@ -2239,7 +2239,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 40]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
       good working order but is unable to answer either a Serial Query
@@ -2295,7 +2295,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 41]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
    Although there is a registry for error codes, implementations MUST
@@ -2351,7 +2351,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 42]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
       between the router(s) and the cache(s) are critical.  You're
@@ -2407,7 +2407,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 43]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
              Error
@@ -2463,7 +2463,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 44]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
    assist the IETF in its decision processes in progressing drafts to
@@ -2519,7 +2519,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 45]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
               Moriarty, K. and S. Farrell, "Deprecating TLS 1.0 and TLS
@@ -2575,7 +2575,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 46]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
    [RFC5280]  Cooper, D., Santesson, S., Farrell, S., Boeyen, S.,
@@ -2631,7 +2631,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 47]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
    [RFC8446]  Rescorla, E., "The Transport Layer Security (TLS) Protocol
@@ -2687,7 +2687,7 @@ Internet-Draft            RPKI-Router Protocol              October 2026
 
 Bush, et al.              Expires 30 April 2027                [Page 48]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
    [RFC7942]  Sheffer, Y. and A. Farrel, "Improving Awareness of Running
@@ -2743,7 +2743,7 @@ Authors' Addresses
 
 Bush, et al.              Expires 30 April 2027                [Page 49]
 
-Internet-Draft            RPKI-Router Protocol              October 2026
+Internet-Draft           RPKI-to-Router Protocol            October 2026
 
 
    Tom Harrison
