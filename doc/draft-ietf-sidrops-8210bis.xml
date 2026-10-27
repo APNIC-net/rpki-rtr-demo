@@ -615,16 +615,17 @@
         <t>
           When replying to a Serial Query, the cache MUST return the
           minimum set of changes needed to bring the router into sync
-          with the cache.  That is, if a particular prefix, Router Key,
-          or ASPA underwent multiple changes between the Serial Number
-          specified by the router and the cache's current Serial Number,
-          the cache MUST merge those changes to present the simplest
-          possible view of those changes to the router.  In general,
-          this means that, for any particular prefix/AS, Router Key, or
-          ASPA/Customer, the data stream will include at most one
-          announcement followed by at most one withdrawal, and if all of
-          the changes cancel out, the data stream will not mention the
-          prefix/AS, Router Key, or ASPA/Customer at all.
+          with the cache.  That is, if a particular prefix, Router
+          Key, or ASPA underwent multiple changes between the Serial
+          Number specified by the router and the cache's current
+          Serial Number, the cache MUST merge those changes to present
+          the simplest possible view of those changes to the router.
+          In general, this means that, for any particular prefix-AS
+          pair, Router Key, or ASPA Customer ASN, the data stream will
+          include at most one announcement followed by at most one
+          withdrawal, and if all of the changes cancel out, the data
+          stream will not mention the prefix-AS pair, Router Key, or
+          ASPA Customer ASN at all.
         </t>
 	<t>
 	  In the data responding to a Serial Query, should the router
@@ -1127,50 +1128,46 @@
           The Flags field is as described in <xref target="pdus"/>.
 	</t>
 	<t>
-	  The router MUST see at most one ASPA from a particular cache
-	  for a particular Customer Autonomous System Number active at
-	  any time.  As a number of conditions in the global RPKI may
-	  present multiple valid ASPA RPKI records for a single customer
-	  to a particular RP cache, this places a burden on the cache to
-	  form the union of multiple ASPA records it has received from
-	  the global RPKI into one ASPA PDU.
+          The router MUST see at most one ASPA PDU from a particular
+          cache for a particular Customer ASN active at any time.  As
+          a number of conditions in the global RPKI may present
+          multiple valid ASPA RPKI records for a single customer to a
+          particular RP cache, this places a burden on the cache to
+          form the union of multiple ASPA records it has received from
+          the global RPKI into one ASPA PDU.
 	</t>
 	<t>
           Receipt of an ASPA PDU announcement with the
           announce/withdraw flag set to 1 when the router already has
-          an ASPA PDU with the same Customer Autonomous System Number
-          from that cache replaces the previous one.  The cache MUST
-          deliver the complete data of the ASPA record(s) of a CAS in
-          a single ASPA PDU.
+          an ASPA PDU with the same Customer ASN from that cache
+          replaces the previous one.  The cache MUST deliver the
+          complete data of the ASPA record(s) of a Customer ASN in a
+          single ASPA PDU.
 	</t>
-
         <t>
 
           For the ASPA PDU, the announce/withdraw flag is set to 1 to
           indicate either the announcement of a new ASPA record or a
           replacement for a previously announced record from that
-          cache with the same Customer Autonomous System Number.  For
-          an announcement, the PDU MUST:
+          cache with the same Customer ASN.  For an announcement, the
+          PDU MUST:
 
           <t><list>
 
             <t>
-              contain at least one Provider Autonomous System Number;
+              contain at least one Provider ASN;
             </t>
 
             <t>
-              list the Provider Autonomous System Numbers in
-              increasing numerical order;
+              list the Provider ASNs in increasing numerical order;
             </t>
 
             <t>
-              not include AS0 alongside other Provider Autonomous
-              System Numbers; and
+              not include AS0 alongside other Provider ASNs; and
             </t>
 
             <t>
-              not include duplicate Provider Autonomous System
-              Numbers.
+              not include duplicate Provider ASNs.
             </t>
           </list></t>
 
