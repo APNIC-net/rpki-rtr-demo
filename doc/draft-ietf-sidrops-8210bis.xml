@@ -2836,14 +2836,15 @@ Cache                         Router
     <section anchor="Acknowledgements" title="Acknowledgements" numbered="no">
       <t>
         The authors wish to thank Nils Bars, Steve Bellovin, Oliver
-        Borchert, Mohamed Boucadair, Tim Bruijnzeels, Ralph Covelli,
-        Roman Danyliw, Rex Fernando, Richard Hansen, Martin Hoffmann,
-        Paul Hoffman, Fabian Holler, Russ Housley, Claudio Jeker,
-        Serge Krier, Pradosh Mohapatra, Keyur Patel, David Mandelberg,
-        Sandy Murphy, Robert Raszuk, Andreas Reuter, Thomas Schmidt,
-        John Scudder, Job Snijders, Ruediger Volk, Matthias Waehlisch,
-        and David Ward.  Particular thanks go to Hannes Gredler for
-        showing us the dangers of unnecessary fields.
+        Borchert, Mohamed Boucadair, Tim Bruijnzeels, Ben
+        Cartwright-Cox, Ralph Covelli, Roman Danyliw, Rex Fernando,
+        Richard Hansen, Martin Hoffmann, Paul Hoffman, Fabian Holler,
+        Russ Housley, Claudio Jeker, Serge Krier, Pradosh Mohapatra,
+        Keyur Patel, David Mandelberg, Sandy Murphy, Robert Raszuk,
+        Andreas Reuter, Thomas Schmidt, John Scudder, Job Snijders,
+        Kotikalapudi Sriram, Ruediger Volk, Matthias Waehlisch, David
+        Ward, and Peter Yee. Particular thanks go to Hannes Gredler
+        for showing us the dangers of unnecessary fields.
       </t>
       <t>
         No doubt this list is incomplete.  We apologize to any
