@@ -7,7 +7,7 @@
 <?rfc compact="yes"?>
 <?rfc subcompact="no"?>
 
-<rfc category="std" docName="draft-ietf-sidrops-8210bis-28"
+<rfc category="std" docName="draft-ietf-sidrops-8210bis-29"
      submissionType="IETF" ipr="trust200902" version="2" consensus="yes">
 
   <front>
@@ -869,8 +869,12 @@
         </t>
         <t>
           If the entire erroneous PDU will not fit in the Erroneous
-          PDU field, then the Erroneous PDU field MUST be empty and
-          the Length of Encapsulated PDU field MUST be zero.
+          PDU field, it MUST be truncated.  At a minimum, the first
+          four octets MUST be included.  By including the first four
+          octets, the recipient of the Error PDU is at least able to
+          determine in all cases the protocol version and PDU type of
+          the Erroneous PDU, which can help with determining the cause
+          of the error.
         </t>
         <t>
           The Arbitrary Text field is optional; if not present, the
