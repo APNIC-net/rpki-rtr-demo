@@ -200,12 +200,10 @@
             number wrapping.  The Serial Number denotes the logical
             version of a cache.  A cache increments the value when it
             successfully updates its data from a parent cache or from
-            primary RPKI data.  While a cache is receiving updates,
-            new incoming data and implicit deletes are associated with
-            the new Serial Number but MUST NOT be sent until the fetch
-            is complete.  A Serial Number has no correspondence between
-            different caches or different protocol versions, nor need
-            it be maintained across resets of the cache server.
+            primary RPKI data.  A Serial Number has no correspondence
+            between different caches or different protocol versions,
+            nor need it be maintained across resets of the cache
+            server.
           </t>
           <t hangText="Session ID:">
             When a cache server starts a new Sequence Number space,
@@ -292,6 +290,12 @@
         is still sent.  Note that the Serial Number comparison used to
         determine "since the given Serial Number" MUST take wrap-around
         into account; see <xref target="RFC1982"/>.
+      </t>
+      <t>
+         While a cache is processing updates from a parent cache or
+         from primary RPKI data, those updates are associated with a
+         new Serial Number, but MUST NOT be sent to routers until the
+         processing is complete.
       </t>
       <t>
         When the router receives an End of Data PDU, it has received all
