@@ -358,7 +358,8 @@
             </t>
             <t hangText="PDU Type:">
               An 8-bit unsigned integer, denoting the type of the PDU,
-              e.g., Type 4, IPv4 Prefix.
+              e.g., Type 4, IPv4 Prefix.  Values are taken from <xref
+              target="iana-pdu" />.
             </t>
             <t hangText="Serial Number:">
               A 32-bit unsigned integer serializing the RPKI cache epoch
