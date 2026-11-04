@@ -145,19 +145,26 @@
 
 	    </t>
 
+            <t>
+
+              New cache restart and cache shutdown operations and
+              associated error codes have been added.
+
+            </t>
+
 	    <t>
 	      Language was clarified when multiple caches are
 	      configured, and an interesting effect is noted.
 	    </t>
 
             <t>
-              The protocol version number incremented from 1 (one) to 2
+              The protocol version number was incremented from 1 (one) to 2
               (two) and <xref target="version"/> on Protocol Version
               Negotiation has been updated accordingly.
             </t>
 
 	    <t>
-	      Limits the maximum size of a PDU to 64KB.
+	      The maximum size of a PDU was limited to 64KB.
 	    </t>
           </list>
         </t>
