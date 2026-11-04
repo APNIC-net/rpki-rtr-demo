@@ -644,7 +644,7 @@
 	<t>
 	  In the data responding to a Serial Query, should the router
 	  receive duplicate announcements or withdrawals, the router
-	  should raise an Error with Error Code 7 ("Duplicate
+	  SHOULD raise an Error with Error Code 7 ("Duplicate
 	  Announcement Received").
 	</t>
         <t>
