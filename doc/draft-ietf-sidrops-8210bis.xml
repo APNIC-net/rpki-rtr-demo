@@ -484,8 +484,8 @@
               regarding this are provided in <xref target="aspa"/>.
 	    </t>
             <t>
-              The remaining bits in the Flags field are reserved for
-              future use.
+              The remaining bits in the Flags field are unassigned and
+              reserved for future use.
             </t>
             <t hangText="Prefix Length:">
               An 8-bit unsigned integer denoting the shortest prefix
