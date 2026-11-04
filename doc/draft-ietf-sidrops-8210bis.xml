@@ -511,9 +511,10 @@
             <t hangText="Subject Public Key Info:">
 	      A variable length field holding a Router Key's
 	      subjectPublicKeyInfo value, as described in <xref
-	      target="RFC8608"/>.  This is the full ASN.1 DER encoding
-	      of the subjectPublicKeyInfo, including the ASN.1 tag and
-	      length values of the subjectPublicKeyInfo SEQUENCE.
+              target="RFC8608"/>.  This is the full ASN.1 DER <xref
+              target="X.690" /> encoding of the subjectPublicKeyInfo,
+              including the ASN.1 tag and length values of the
+              subjectPublicKeyInfo SEQUENCE.
             </t>
 	    <t hangText="Refresh Interval:">
 	      A 32-bit interval in seconds between normal cache polls.
@@ -2804,17 +2805,25 @@ Cache                         Router
 
       <?rfc include="reference.I-D.ietf-sidrops-aspa-profile.xml"?>
       <reference anchor="iana-pdu" target="https://www.iana.org/assignments/rpki#rpki-rtr-pdu">
-	  <front>
-	    <title>rpki-rtr-pdu</title>
-	    <author fullname="IANA"></author>
-	  </front>
-	</reference>
+        <front>
+          <title>rpki-rtr-pdu</title>
+          <author fullname="IANA"></author>
+        </front>
+      </reference>
       <reference anchor="iana-err" target="https://www.iana.org/assignments/rpki#rpki-rtr-error">
-	  <front>
-	    <title>rpki-rtr-error</title>
-	    <author fullname="IANA"></author>
-	  </front>
-	</reference>
+        <front>
+          <title>rpki-rtr-error</title>
+          <author fullname="IANA"></author>
+        </front>
+      </reference>
+      <reference anchor="X.690" target="[https://itu.int/rec/T-REC-X.680-202102-I/en](https://www.itu.int/rec/T-REC-X.690-202102-I/en)">
+        <front>
+          <title>Information technology - ASN.1 encoding rules: Specification of Basic Encoding Rules (BER), Canonical Encoding Rules (CER) and Distinguished Encoding Rules (DER)</title>
+          <author initials="" surname="ITU-T">                                                                                                                                                             <organization/>
+          </author>
+          <date year="2021" month="February"/>
+        </front>                                                                                                                                                                                       <seriesInfo name="Recommendation ITU-T X.690" value=""/>
+      </reference>
       <?rfc include="reference.RFC.1982.xml"?>
       <?rfc include="reference.RFC.2119.xml"?>
       <?rfc include="reference.RFC.2385.xml"?>
