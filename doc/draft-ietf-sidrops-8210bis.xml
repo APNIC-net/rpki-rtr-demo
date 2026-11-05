@@ -2707,6 +2707,35 @@ Cache                         Router
       </t>
     </section>
 
+    <section anchor="Operational" title="Operational Considerations">
+
+        <t>
+
+            A cache may experience excess load, depending on the
+            number of routers connecting to it, the number of queries
+            it receives, and the frequency with which it synchronizes
+            from a parent cache or primary RPKI data.  Operators
+            should monitor caches for excess load and use that
+            monitoring to guide provisioning decisions.
+
+        </t>
+
+        <t>
+
+            A cache may experience excess load on account of a single
+            router.  For example, a router implementation may have
+            an error that leads to it attempting to resynchronize via
+            a Serial Query much more often than directed by the cache
+            via the End of Data PDU.  Implementors should consider
+            offsetting measures for such scenarios.  For example, a
+            cache that receives a Serial Query otherwise than in
+            accordance with the parameters in the End of Data PDU
+            could opt to delay its response to the router.
+
+        </t>
+
+    </section>
+
     <section anchor="IANA" title="IANA Considerations">
       <t>
         This section only discusses updates required in the existing
