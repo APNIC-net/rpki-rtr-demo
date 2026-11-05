@@ -1318,12 +1318,14 @@
       <t>
         If the cache which supports C as its highest version receives
         a query of version Q &gt; C, the cache MUST send an Error
-        Report PDU with Protocol Version C and Error Code 4.  The
-        router SHOULD send another query with a Protocol Version Q
-        with Q == the version C in the Error Report PDU unless it has
-        already failed at that version, which indicates a fatal error
-        in programming of the cache which SHOULD result in transport
-        termination.
+        Report PDU with Protocol Version C and Error Code 4.  If the
+        router supports version C, the router SHOULD send another
+        query with a Protocol Version Q with Q == the version C in the
+        Error Report PDU, unless it has already failed at that version,
+        which indicates a fatal error in programming of the cache
+        which SHOULD result in transport termination.  If the router
+        does not support version C, the router MUST abort the
+        transport connection, as negotiation is hopeless.
       </t>
       <t>
         If the router requests Q == 0 and it still fails with the cache
@@ -1386,6 +1388,11 @@
         Protocol Version was itself an Error Report PDU, the party
         dropping the session SHOULD send an Error Report PDU with Error
         Code 8 ("Unexpected Protocol Version").
+      </t>
+      <t>
+        Routers and caches SHOULD log all error reports received and
+        version changes enacted in accordance with this section, so
+        as to assist operators in resolving version support problems.
       </t>
     </section>
 
