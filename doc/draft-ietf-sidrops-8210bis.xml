@@ -942,8 +942,8 @@
 	  target="RFC9582"/>.
 	</t>
         <t>
-          The lowest-order bit of the Flags field is 1 for an
-          announcement and 0 for a withdrawal.
+          For the definition of the Flags field, see <xref
+          target="fields" />.
         </t>
         <t>
           In the RPKI, there is an actual need for what might appear to
@@ -1073,8 +1073,8 @@
 	  <xref target="RFC8635"/>.
 	</t>
         <t>
-          The lowest-order bit of the Flags field is 1 for an
-          announcement and 0 for a withdrawal.
+          For the definition of the Flags field, see <xref
+          target="fields" />.
         </t>
         <t>
           The cache server MUST ensure that it has told the router
@@ -1138,6 +1138,10 @@
 	  target="I-D.ietf-sidrops-aspa-profile"/>.
 	</t>
         <t>
+          For the definition of the Flags field, see <xref
+          target="fields" />.
+        </t>
+        <t>
           The Customer Autonomous System Number corresponds to the
           customerASID from the underlying ASPA object(s).
         </t>
@@ -1145,9 +1149,6 @@
           There are zero or more 32-bit Provider Autonomous System
           Number fields in increasing numeric order.
         </t>
-        <t>
-          The Flags field is as described in <xref target="pdus"/>.
-	</t>
 	<t>
           The router MUST see at most one ASPA PDU from a particular
           cache for a particular Customer ASN active at any time.  As
