@@ -1339,14 +1339,6 @@
         the negotiated lower version number in their version fields.
       </t>
       <t>
-        If either party receives a PDU containing an unrecognized
-        Protocol Version (neither 0, 1, nor 2) during this negotiation,
-        it MUST either downgrade to a known version or terminate the
-        connection, with an Error Report PDU with Error Code 4
-        ("Unsupported Protocol Version") unless the received PDU is
-        itself an Error Report PDU.
-      </t>
-      <t>
         The router MUST ignore any Serial Notify PDUs it might receive
         from the cache during this initial startup period, regardless of
         the Protocol Version field in the Serial Notify PDU.  Since
@@ -1391,8 +1383,9 @@
       </t>
       <t>
         Routers and caches SHOULD log all error reports received and
-        version changes enacted in accordance with this section, so
-        as to assist operators in resolving version support problems.
+        version changes enacted in accordance with this section, so as
+        to assist operators in resolving version support/consistency
+        problems.
       </t>
     </section>
 
