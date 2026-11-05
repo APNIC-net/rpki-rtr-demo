@@ -1794,8 +1794,8 @@ Cache                         Router
         <t>
           Routers MUST also verify the cache's TLS server certificate,
           using subjectAltName dNSName identities as described in
-          <xref target="RFC6125"/>, to avoid MITM attacks.  The rules
-          and guidelines defined in <xref target="RFC6125"/> apply here,
+          <xref target="RFC9525"/>, to avoid MITM attacks.  The rules
+          and guidelines defined in <xref target="RFC9525"/> apply here,
           with the following considerations:
         </t>
         <t>
@@ -1818,11 +1818,11 @@ Cache                         Router
               Common Name (CN-ID) identifiers; a CN field may be present
               in the server certificate's subject name but MUST NOT be
               used for authentication within the rules described in
-              <xref target="RFC6125"/>.
+              <xref target="RFC9525"/>.
             </t>
             <t>
               The client router MUST set its "reference identifier" (see
-              Section 6.2 of <xref target="RFC6125"/>) to the DNS name
+              Section 6.1 of <xref target="RFC9525"/>) to the DNS name
               of the rpki-rtr cache.
             </t>
           </list>
@@ -2881,7 +2881,7 @@ Cache                         Router
       <?rfc include="reference.RFC.5280.xml"?>
       <?rfc include="reference.RFC.5925.xml"?>
       <?rfc include="reference.RFC.5926.xml"?>
-      <?rfc include="reference.RFC.6125.xml"?>
+      <?rfc include="reference.RFC.9525.xml"?>
       <?rfc include="reference.RFC.6487.xml"?>
       <?rfc include="reference.RFC.6810.xml"?>
       <?rfc include="reference.RFC.6811.xml"?>
