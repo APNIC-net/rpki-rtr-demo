@@ -1367,7 +1367,7 @@
       </t>
       <t>
 	The configured transport security, the negotiated RPKI-to-Router
-	version, etc., MAY NOT be changed once a session has been
+	version, etc., MUST NOT be changed once a session has been
 	established.  If one side or the other wishes to try a different
 	transport, protocol version, etc., it MUST terminate the
 	transport and restart the entire transport and version
