@@ -878,7 +878,7 @@
         <t>
           If the error is generic (e.g., "Internal Error") and not
           associated with the PDU to which it is responding, the
-          Erroneous PDU field MUST be empty and the Length of
+          Erroneous PDU field MUST NOT be present and the Length of
           Encapsulated PDU field MUST be zero.
         </t>
         <t>
