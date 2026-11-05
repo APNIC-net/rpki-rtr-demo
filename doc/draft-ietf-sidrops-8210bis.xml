@@ -2616,6 +2616,19 @@ Cache                         Router
 
       </t>
 
+      <t>
+
+        In each scenario where Error Code 7 ("Duplicate Announcement
+        Received") is relevant, the affected party SHOULD send such an
+        error to the other party.  This is because there is a chance
+        that the two parties have inconsistent understandings of the
+        current state, and reinitializing the session may remediate
+        that.  However, because the original PDU in each scenario is
+        idempotent, an implementor may opt simply to ignore the
+        duplicate data.
+
+      </t>
+
     </section>
 
     <section anchor="Security" title="Security Considerations">
