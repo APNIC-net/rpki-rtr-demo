@@ -899,10 +899,13 @@
         <t>
           An Error Report PDU MUST NOT be sent as a response to an
           Error Report PDU.  If an erroneous Error Report PDU is
-          received, the session SHOULD be dropped and the receiving
-          party SHOULD log this information.  If such a PDU is
+          received, the session SHOULD be dropped, because there is a
+          chance that the two parties have inconsistent understandings
+          of the current state, and reinitializing the session may
+          remediate that.  For similar reasons, if such a PDU is
           received by a router, the router SHOULD also flush all data
-          learned from that cache.
+          learned from that cache.  On receiving an erroneous error
+          report PDU, the receiving party should log that information.
         </t>
       </section>
 
