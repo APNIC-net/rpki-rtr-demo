@@ -1686,7 +1686,7 @@ Cache                         Router
       </t>
       <t>
         Caches and routers MUST implement unprotected transport over
-        TCP using a port, rpki-rtr (323); see
+        TCP using the port number, rpki-rtr (323); see
         <xref target="IANA"/>.  Operators SHOULD use procedural means,
         e.g., access control lists (ACLs), to reduce the exposure to
         authentication issues.
@@ -2741,7 +2741,9 @@ Cache                         Router
         This section only discusses updates required in the existing
         IANA protocol registries to accommodate version 2 of this
         protocol.  See <xref target="RFC8210"/> for IANA considerations
-        of the previous (version 1) protocol.
+        of the previous (version 1) protocol, and <xref
+        target="RFC6810"/> for IANA considerations of the version 0
+        protocol.
       </t>
       <t>
         All of the PDU types in the IANA "rpki-rtr-pdu" registry <xref
