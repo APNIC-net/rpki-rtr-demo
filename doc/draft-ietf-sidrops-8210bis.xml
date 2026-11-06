@@ -2756,21 +2756,19 @@ Cache                         Router
         The "rpki-rtr-error" registry <xref target="iana-err"/> under
         the "Resource Public Key Infrastructure (RPKI)" registry group
         <xref target="iana-rpki" /> should be updated as follows:
+
       </t>
+      <t><list style="none" spacing="compact">
+        <t>Remove the "Unassigned" entry.</t>
+        <t>Remove the "Reserved" entry.</t>
+        <t>Add the following entries to the table, each with this
+        document as the reference:
+
       <figure>
         <artwork>
 	  Error
 	  Code    Description
 	  -----   ----------------
-	      0   Corrupt Data
-	      1   Internal Error
-	      2   No Data Available
-	      3   Invalid Request
-	      4   Unsupported Protocol Version
-	      5   Unsupported PDU Type
-	      6   Withdrawal of Unknown Record
-	      7   Duplicate Announcement Received
-	      8   Unexpected Protocol Version
 	      9   ASPA Provider List Error
 	     10   Transport Failure
 	     11   Ordering Error
@@ -2779,33 +2777,16 @@ Cache                         Router
 	 14-254   Unassigned
 	    255   Reserved
         </artwork>
-      </figure>
+      </figure></t>
+
+      </list></t>
 
       <t>
-        The "rpki-rtr-pdu" registry <xref target="iana-pdu"/> has been
-        updated as follows:
+        The "rpki-rtr-pdu" registry <xref target="iana-pdu"/> should
+        be updated such that each current reference to
+        "RFC-ietf-sidrops-8210bis-10" should be changed to refer to
+        this document.
       </t>
-      <figure>
-        <artwork>
-           Protocol   PDU
-           Version    Type  Description
-           --------   ----  ---------------
-              0-2       0   Serial Notify
-              0-2       1   Serial Query
-              0-2       2   Reset Query
-              0-2       3   Cache Response
-              0-2       4   IPv4 Prefix
-              0-2       6   IPv6 Prefix
-              0-2       7   End of Data
-              0-2       8   Cache Reset
-               0        9   Reserved
-              1-2       9   Router Key
-              0-2      10   Error Report
-              0-1      11   Reserved
-               2       11   ASPA
-              0-2     255   Reserved
-        </artwork>
-      </figure>
 
     </section>
 
