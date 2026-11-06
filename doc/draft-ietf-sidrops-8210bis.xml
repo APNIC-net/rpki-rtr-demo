@@ -643,10 +643,13 @@
         </t>
 	<t>
 	  In the data responding to a Serial Query, should the router
-	  receive duplicate announcements or withdrawals, the router
-	  SHOULD raise an Error with Error Code 7 ("Duplicate
-	  Announcement Received").
-	</t>
+	  receive a withdrawal for which it can find no corresponding
+          record, the router SHOULD respond with an Error Report PDU
+          with Error Code 6 ("Withdrawal of Unknown Record").
+          Conversely, if the router receives a duplicate announcement,
+          the router SHOULD respond with an Error Report PDU with
+          Error Code 7 ("Duplicate Announcement Received").
+        </t>
         <t>
           The rationale for this approach is that the entire purpose of
           the RPKI-to-Router protocol is to offload work from the router
@@ -961,12 +964,16 @@
           Prefix Length, Max Length, ASN} at any one point in time.  Should the
           router client receive an IPv4 VRP with a {Prefix, Prefix Length,
           Max Length, ASN} identical to one it already has active, it
-          SHOULD raise a Duplicate Announcement Received error.
+          SHOULD respond with an Error Report PDU with Error Code 7
+          ("Duplicate Announcement Received").
         </t>
-	<t>
-	  The cache MUST merge announce/withdraw ROAs for the same
-	  {Prefix, Prefix Length, Max Length, ASN} into the minimal (or no) VRP to
-	  update the router to the desired state.
+        <t>
+          Conversely, the cache server MUST ensure that any withdrawal
+          it sends corresponds to a previous announcement sent to
+          the router.  Should the router client receive a withdrawal
+          IPv4 VRP that does not correspond to a previous announcement
+          IPv4 VRP, it SHOULD respond with an Error Report PDU with
+          Error Code 6 ("Withdrawal of Unknown Record").
 	</t>
         <t>
 
@@ -1082,8 +1089,17 @@
           {SKI, AS, Subject Public Key} at any one point in time.
           Should the router client receive a Router Key PDU with a
           {SKI, AS, Subject Public Key} identical to one it already
-          has active, it SHOULD raise a Duplicate Announcement
-          Received error.
+          has active, it SHOULD respond with an Error Report PDU with
+          Error Code 7 ("Duplicate Announcement Received").
+        </t>
+        <t>
+          Conversely, the cache server MUST ensure that any withdrawal
+          it sends corresponds to a previous announcement sent to the
+          router.  Should the router client receive a withdrawal
+          Router Key PDU that does not correspond to a previous
+          announcement Router Key PDU, it SHOULD respond with an Error
+          Report PDU with Error Code 6 ("Withdrawal of Unknown
+          Record").
         </t>
         <t>
           Note that a particular AS may appear in multiple Router Key
@@ -1543,14 +1559,15 @@ Cache                         Router
         </figure>
         <t>
           The cache may respond to either a Serial Query or a Reset
-          Query informing the router that the cache cannot supply any
-          update at all.  The most likely cause is that the cache has
-          lost state, perhaps due to a restart, and has not yet
-          recovered.  While it is possible that a cache might go into
-          such a state without dropping any of its active sessions,
-          a router is more likely to see this behavior when it
-          initially connects and issues a Reset Query while the cache
-          is still [re]building its database.
+          Query with an Error Report PDU with Error Code 2 ("No Data
+          Available") informing the router that the cache cannot
+          supply any update at all.  The most likely cause is that the
+          cache has lost state, perhaps due to a restart, and has not
+          yet recovered.  While it is possible that a cache might go
+          into such a state without dropping any of its active
+          sessions, a router is more likely to see this behavior when
+          it initially connects and issues a Reset Query while the
+          cache is still [re]building its database.
         </t>
         <t>
           When a router receives this kind of error, the router
@@ -1559,6 +1576,28 @@ Cache                         Router
           available, the router MUST issue periodic Reset Queries
           until it gets a new usable load from the cache; maybe once a
 	  minute or less frequently so as not to DoS the cache.
+        </t>
+      </section>
+
+      <section anchor="invalid-request" title="Invalid Request">
+        <t>
+
+            The only valid PDU types that a router may send to a query
+            are Serial Query, Cache Reset, and Error Report.  If a
+            router sends a PDU of some other type to the cache, the
+            cache responds with an Error Report PDU with Error Code 3
+            ("Invalid Request").
+
+        </t>
+      </section>
+
+      <section anchor="invalid-response" title="Invalid Response">
+        <t>
+
+            If a router receives from the cache a PDU of an unknown
+            type, the router responds with an Error Report PDU with
+            Error Code 5 ("Unsupported PDU Type").
+
         </t>
       </section>
 
@@ -2618,14 +2657,14 @@ Cache                         Router
 
       <t>
 
-        In each scenario where Error Code 7 ("Duplicate Announcement
-        Received") is relevant, the affected party SHOULD send such an
-        error to the other party.  This is because there is a chance
-        that the two parties have inconsistent understandings of the
-        current state, and reinitializing the session may remediate
-        that.  However, because the original PDU in each scenario is
-        idempotent, an implementor may opt simply to ignore the
-        duplicate data.
+        In each scenario where Error Code 6 ("Withdrawal of Unknown
+        Record") or Error Code 7 ("Duplicate Announcement Received")
+        is relevant, the affected party SHOULD send such an error to
+        the other party.  This is because there is a chance that the
+        two parties have inconsistent understandings of the current
+        state, and reinitializing the session may remediate that.
+        However, because the PDU in each scenario is idempotent, an
+        implementor may opt simply to ignore the relevant PDU.
 
       </t>
 
