@@ -945,8 +945,8 @@
           of the current state, and reinitializing the session may
           remediate that.  For similar reasons, if such a PDU is
           received by a router, the router SHOULD also flush all data
-          learned from that cache.  On receiving an erroneous error
-          report PDU, the receiving party should log that information.
+          learned from that cache.  On receiving an erroneous Error
+          Report PDU, the receiving party should log that information.
         </t>
       </section>
 
