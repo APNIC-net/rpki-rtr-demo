@@ -2747,13 +2747,15 @@ Cache                         Router
       </t>
       <t>
         All of the PDU types in the IANA "rpki-rtr-pdu" registry <xref
-        target="iana-pdu"/> in protocol versions 0 and 1 are also
-        allowed in protocol version 2, with the addition of the new ASPA
-        PDU.
+        target="iana-pdu"/> under the "Resource Public Key
+        Infrastructure (RPKI)" registry group <xref target="iana-rpki"
+        /> in protocol versions 0 and 1 are also allowed in protocol
+        version 2, with the addition of the new ASPA PDU.
       </t>
       <t>
-        The "rpki-rtr-error" registry <xref target="iana-err"/> should
-	be updated as follows:
+        The "rpki-rtr-error" registry <xref target="iana-err"/> under
+        the "Resource Public Key Infrastructure (RPKI)" registry group
+        <xref target="iana-rpki" /> should be updated as follows:
       </t>
       <figure>
         <artwork>
@@ -2861,6 +2863,12 @@ Cache                         Router
       <reference anchor="iana-err" target="https://www.iana.org/assignments/rpki#rpki-rtr-error">
         <front>
           <title>rpki-rtr-error</title>
+          <author fullname="IANA"></author>
+        </front>
+      </reference>
+      <reference anchor="iana-rpki" target="https://www.iana.org/assignments/rpki">
+        <front>
+          <title>Resource Public Key Infrastructure (RPKI)</title>
           <author fullname="IANA"></author>
         </front>
       </reference>
