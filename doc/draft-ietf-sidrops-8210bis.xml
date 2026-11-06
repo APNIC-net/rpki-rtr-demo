@@ -1696,7 +1696,7 @@ Cache                         Router
       </t>
       <t>
 	Should the cache or the router experience a transport stall
-	(e.g., the peer advertised a TCP RCV.WND <xref target="RFC793"/>
+	(e.g., the peer advertised a TCP RCV.WND
 	<xref target="RFC9293"/> of zero) for longer than three times
 	the Retry Interval (a la BGP's hold timer being three times the
 	keepalive interval), an Error Report PDU with Error Code 10
@@ -1761,7 +1761,7 @@ Cache                         Router
       </t>
       <t>
         Caches and routers MAY use Transport Layer Security (TLS)
-        transport <xref target="RFC8446"/> using port rpki-rtr-tls
+        transport <xref target="RFC9846"/> using port rpki-rtr-tls
         (324); see <xref target="IANA"/>.  When using TLS, the
         recommendations from <xref
 	target="BCP195"/> MUST be followed.
@@ -2909,14 +2909,13 @@ Cache                         Router
       <?rfc include="reference.RFC.6811.xml"?>
       <?rfc include="reference.RFC.8174.xml"?>
       <?rfc include="reference.RFC.8210.xml"?>
-      <?rfc include="reference.RFC.8446.xml"?>
+      <?rfc include="reference.RFC.9846.xml"?>
       <?rfc include="reference.RFC.8608.xml"?>
       <?rfc include="reference.RFC.8635.xml"?>
       <?rfc include="reference.BCP.195.xml"?>
     </references>
 
     <references title="Informative References">
-      <?rfc include="reference.RFC.793.xml"?>
       <?rfc include="reference.RFC.1996.xml"?>
       <?rfc include="reference.RFC.4808.xml"?>
       <?rfc include="reference.RFC.5781.xml"?>
