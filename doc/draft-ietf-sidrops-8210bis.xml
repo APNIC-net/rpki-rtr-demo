@@ -331,7 +331,9 @@
         servers' clocks must be capable of providing a reasonable
         approximation of the current instant in UTC.  A clock
         implementation ought to use NTP (<xref target="RFC5905" />),
-        or some similar protocol, to synchronize with UTC.
+        or some similar protocol, to synchronize with UTC.  Regardless
+        of the approach taken, servers' clocks MUST be correct within
+        a tolerance of an hour.
       </t>
     </section>
 
