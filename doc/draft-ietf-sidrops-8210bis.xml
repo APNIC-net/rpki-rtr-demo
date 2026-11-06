@@ -2785,13 +2785,6 @@ Cache                         Router
         protocol.
       </t>
       <t>
-        All of the PDU types in the IANA "rpki-rtr-pdu" registry <xref
-        target="iana-pdu"/> under the "Resource Public Key
-        Infrastructure (RPKI)" registry group <xref target="iana-rpki"
-        /> in protocol versions 0 and 1 are also allowed in protocol
-        version 2, with the addition of the new ASPA PDU.
-      </t>
-      <t>
         The "rpki-rtr-error" registry <xref target="iana-err"/> under
         the "Resource Public Key Infrastructure (RPKI)" registry group
         <xref target="iana-rpki" /> should be updated as follows:
@@ -2821,10 +2814,11 @@ Cache                         Router
       </list></t>
 
       <t>
-        The "rpki-rtr-pdu" registry <xref target="iana-pdu"/> should
-        be updated such that each current reference to
-        "RFC-ietf-sidrops-8210bis-10" should be changed to refer to
-        this document.
+        The "rpki-rtr-pdu" registry <xref target="iana-pdu"/> under
+        the "Resource Public Key Infrastructure (RPKI)" registry group
+        <xref target="iana-rpki" /> should be updated such that each
+        current reference to "RFC-ietf-sidrops-8210bis-10" should be
+        changed to refer to this document.
       </t>
 
     </section>
