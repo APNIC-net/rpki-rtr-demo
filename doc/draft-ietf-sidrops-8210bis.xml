@@ -51,16 +51,16 @@
       <t>
         In order to validate the origin Autonomous Systems (ASes) and
         Autonomous System relationships behind BGP announcements,
-        routers need a simple but reliable mechanism to receive Resource
-        Public Key Infrastructure (RFC6480) prefix origin data, Router
-        Keys, and ASPA data from a trusted cache.  This document
+        routers need a simple but reliable mechanism to receive
+        Resource Public Key Infrastructure (RPKI, RFC6480) prefix
+        origin data, Router Keys, and Autonomous System Provider
+        Authorization (ASPA) data from a trusted cache.  This document
         describes a protocol to deliver them.
       </t>
       <t>
-        This document describes version 2 of the RPKI-to-Router protocol.
-        <xref target="RFC6810"/> describes version 0, and <xref
-        target="RFC8210"/> describes version 1.  This document is
-        compatible with both.
+        This document describes version 2 of the RPKI-to-Router
+        protocol.  (RFC 6810) describes version 0, and (RFC 8210)
+        describes version 1.  This document is compatible with both.
       </t>
     </abstract>
 
@@ -71,22 +71,22 @@
     <section anchor="Intro" title="Introduction">
       <t>
         In order to verifiably validate the origin Autonomous Systems
-        (ASes) and AS paths of BGP announcements, routers need a simple
-        but reliable mechanism to receive cryptographically validated
-        Resource Public Key Infrastructure (RPKI) <xref
-        target="RFC6480"/> prefix origin data, Router Keys, and ASPA
-        data from a trusted cache.  This document describes a protocol
-        to deliver them.  The design is intentionally constrained to be
-        usable on much of the current generation of ISP router
-        platforms.
+        (ASes) and AS paths of BGP announcements <xref
+        target="RFC4271" />, routers need a simple but reliable
+        mechanism to receive cryptographically validated Resource
+        Public Key Infrastructure (RPKI) <xref target="RFC6480"/>
+        prefix origin data, Router Keys, and Autonomous System
+        Provider Authorization (ASPA) data from a trusted cache.  This
+        document describes a protocol to deliver them.  The design is
+        intentionally constrained to be usable on routers with limited
+        computational and memory resources.
       </t>
 
       <t>
-        This specification documents version 2 of the RPKI-to-Router (RTR) protocol.
-        Earlier versions are documented in <xref target="RFC6810"/> and
-        <xref target="RFC8210"/>.  Though this version is, of course,
-        preferred, the earlier versions are expected to continue to be
-        productively deployed indefinitely, and <xref target="version"/>
+        This specification documents version 2 of the RPKI-to-Router
+        (RTR) protocol.  Earlier versions are documented in <xref
+        target="RFC6810"/> and <xref target="RFC8210"/>.  Though this
+        version is, of course, preferred, <xref target="version"/>
         details how to downgrade from this version to earlier versions
         as needed in order to interoperate.
       </t>
@@ -100,8 +100,7 @@
         The transport protocol options are described in
         <xref target="Transport"/>.  <xref target="Setup"/> details
         how routers and caches are configured to connect and authenticate.
-        The traditional security and IANA considerations end
-        the document.
+        The security and IANA considerations end the document.
       </t>
 
       <t>
@@ -202,11 +201,10 @@
             successfully updates its data from a parent cache or from
             primary RPKI data.  A Serial Number has no correspondence
             between different caches or different protocol versions,
-            nor need it be maintained across resets of the cache
-            server.
+            nor need it be maintained across resets of the cache.
           </t>
           <t hangText="Session ID:">
-            When a cache server starts a new Sequence Number space,
+            When a cache starts a new Sequence Number space,
             (which might be caused by, for example, restart with loss
             of data) it generates a new Session ID to uniquely
             identify that space. This allows a router to resume a
@@ -328,7 +326,7 @@
         provide better service.
       </t>
       <t>
-        As cache servers must evaluate signed objects (see <xref
+        As caches must evaluate signed objects (see <xref
         target="RFC6480"/>) with time-dependent validity periods,
         servers' clocks must be capable of providing a reasonable
         approximation of the current instant in UTC.  A clock
@@ -339,7 +337,7 @@
 
     <section anchor="pdus" title="Protocol Data Units (PDUs)">
       <t>
-        The exchanges between the cache and the router are sequences of
+        The exchanges between a cache and a router are sequences of
         exchanges of the following PDUs according to the rules described
         in <xref target="protocol"/>.
       </t>
@@ -348,7 +346,7 @@
         on transmission and MUST be ignored on receipt.
       </t>
 
-      <section anchor="fields" title="Fields of a PDU">
+      <section anchor="fields" title="Fields">
         <t>
           PDUs contain the following data elements:
           <list style="hanging">
@@ -364,12 +362,12 @@
             <t hangText="Serial Number:">
               A 32-bit unsigned integer serializing the RPKI cache epoch
               when this set of PDUs was received from an upstream cache
-              server or gathered from the Global RPKI.  A cache
+              or gathered from the Global RPKI.  A cache
               increments its Serial Number when completing a validated
               update from a parent cache or the Global RPKI.
             </t>
             <t hangText="Session ID:">
-              A 16-bit unsigned integer.  When a cache server is
+              A 16-bit unsigned integer.  When a cache is
               [re]started (i.e., its data are not a continuation of
               the previous data), it generates a new Session ID to
               identify the new instance of the cache. This allows the
@@ -395,7 +393,7 @@
             </t>
             <t>
               Note that sessions are specific to a particular protocol
-              version.  That is, if a cache server which supports multiple
+              version.  That is, if a cache which supports multiple
               versions of this protocol happens to use the same
               Session ID value for multiple protocol versions, and
               further happens to use the same Serial Number values for
@@ -404,7 +402,7 @@
               do not correspond to each other.  The full test for whether Serial
               Numbers correspond requires comparing Protocol
               Version, Session ID, and Serial Number.  To reduce the
-              risk of confusion, cache servers SHOULD NOT use the same
+              risk of confusion, caches SHOULD NOT use the same
               Session ID across multiple protocol versions, but even
               if they do, routers MUST treat sessions with different
               Protocol Version fields as separate sessions even if
@@ -454,7 +452,7 @@
             <t hangText="Length:">
               A 32-bit unsigned integer which has as its value the count
               of the octets in the entire PDU, including the 8 octets of
-              header which includes the length field.  This length MUST
+              header which includes the Length field.  This length MUST
               NOT exceed 65,535 octets.  Note that BGP speakers already
               need the capability to handle messages of this size, see
               <xref target="RFC8654"/>.
@@ -530,7 +528,7 @@
 	      subsequent cache poll.  See <xref target="timing"/>.
 	    </t>
             <t hangText="Customer Autonomous System Number:">
-	      The 32-bit AS number of the Autonomous System that
+	      The 32-bit AS number of the AS that
 	      authorizes the upstream providers listed in the Provider
 	      Autonomous System list to propagate prefixes to other
 	      ASes.
@@ -544,6 +542,11 @@
       </section>
 
       <section anchor="notify" title="Serial Notify">
+        <t>
+            The format of the Serial Notify PDU is depicted in <xref
+            target="diagram-serial-notify" />.
+        </t>
+
         <figure anchor="diagram-serial-notify">
           <name>Serial Notify</name>
           <artwork align="center">
@@ -564,7 +567,8 @@
           </artwork>
         </figure>
         <t>
-          The cache notifies the router that the cache has new data.
+          The cache uses the Serial Notify PDU to notify a router that
+          the cache has new data.
         </t>
         <t>
           The Session ID reassures the router that the Serial Numbers
@@ -594,6 +598,11 @@
       </section>
 
       <section anchor="serialquery" title="Serial Query">
+        <t>
+            The format of the Serial Query PDU is depicted in <xref
+            target="diagram-serial-query" />.
+        </t>
+
         <figure anchor="diagram-serial-query">
           <name>Serial Query</name>
           <artwork align="center">
@@ -689,6 +698,11 @@
       </section>
 
       <section anchor="resetquery" title="Reset Query">
+        <t>
+            The format of the Reset Query PDU is depicted in <xref
+            target="diagram-reset-query" />.
+        </t>
+
         <figure anchor="diagram-reset-query">
           <name>Reset Query</name>
           <artwork align="center">
@@ -714,6 +728,12 @@
       </section>
 
       <section anchor="cacheresponse" title="Cache Response">
+
+        <t>
+            The format of the Cache Response PDU is depicted in <xref
+            target="diagram-cache-response" />.
+        </t>
+
         <figure anchor="diagram-cache-response">
           <name>Cache Response</name>
           <artwork align="center">
@@ -751,6 +771,12 @@
       </section>
 
       <section anchor="cachereset" title="Cache Reset">
+
+        <t>
+            The format of the Cache Reset PDU is depicted in <xref
+            target="diagram-cache-reset" />.
+        </t>
+
         <figure anchor="diagram-cache-reset">
           <name>Cache Reset</name>
           <artwork align="center">
@@ -776,6 +802,12 @@
       </section>
 
       <section anchor="eod" title="End of Data">
+
+        <t>
+            The format of the End of Data PDU is depicted in <xref
+            target="diagram-end-of-data" />.
+        </t>
+
         <figure anchor="diagram-end-of-data">
           <name>End of Data</name>
           <artwork align="center">
@@ -833,6 +865,12 @@
       </section>
 
       <section anchor="error" title="Error Report">
+
+        <t>
+            The format of the Error Report PDU is depicted in <xref
+            target="diagram-error-report" />.
+        </t>
+
         <figure anchor="diagram-error-report">
           <name>Error Report</name>
           <artwork align="center">
@@ -913,6 +951,12 @@
       </section>
 
       <section anchor="ipv4" title="IPv4 Prefix">
+
+        <t>
+            The format of the IPv4 Prefix PDU is depicted in <xref
+            target="diagram-ipv4-prefix" />.
+        </t>
+
         <figure anchor="diagram-ipv4-prefix">
           <name>IPv4 Prefix</name>
           <artwork align="center">
@@ -959,29 +1003,29 @@
           the router.
         </t>
         <t>
-          The cache server MUST ensure that it has told the router
-          client to have one and only one IPv4 VRP for a unique {Prefix,
+          The cache MUST ensure that it has told the router
+          to have one and only one IPv4 VRP for a unique {Prefix,
           Prefix Length, Max Length, ASN} at any one point in time.  Should the
-          router client receive an IPv4 VRP with a {Prefix, Prefix Length,
+          router receive an IPv4 VRP with a {Prefix, Prefix Length,
           Max Length, ASN} identical to one it already has active, it
           SHOULD respond with an Error Report PDU with Error Code 7
           ("Duplicate Announcement Received").
         </t>
         <t>
-          Conversely, the cache server MUST ensure that any withdrawal
+          Conversely, the cache MUST ensure that any withdrawal
           it sends corresponds to a previous announcement sent to
-          the router.  Should the router client receive a withdrawal
+          the router.  Should the router receive a withdrawal
           IPv4 VRP that does not correspond to a previous announcement
           IPv4 VRP, it SHOULD respond with an Error Report PDU with
           Error Code 6 ("Withdrawal of Unknown Record").
 	</t>
         <t>
 
-          Strictly speaking, the only data that a router client needs
+          Strictly speaking, the only data that a router needs
           from the Prefix is that indicated by the Prefix Length.  For
           example, if the Prefix Length is eight, then only the first
-          eight bits of the Prefix are required for a router client to
-          make use of the PDU.  Notwithstanding this, the cache server
+          eight bits of the Prefix are required for a router to
+          make use of the PDU.  Notwithstanding this, the cache
           MUST set the remaining bits of the Prefix to zero, for
           consistency with the approach used for the other unused
           components of the PDU.
@@ -990,9 +1034,9 @@
 
         <t>
 
-          The router client MUST verify that the zero bits in the
+          The router MUST verify that the zero bits in the
           Prefix are set correctly, in accordance with the previous
-          paragraph.  If they are not set correctly, the router client
+          paragraph.  If they are not set correctly, the router
           MUST send an Error Report PDU with Error Code 1 ("Corrupt
           Data").
 
@@ -1000,6 +1044,12 @@
         </section>
 
       <section anchor="ipv6" title="IPv6 Prefix">
+
+        <t>
+            The format of the IPv6 Prefix PDU is depicted in <xref
+            target="diagram-ipv6-prefix" />.
+        </t>
+
         <figure anchor="diagram-ipv6-prefix">
           <name>IPv6 Prefix</name>
           <artwork align="center">
@@ -1042,6 +1092,12 @@
       </section>
 
       <section anchor="routerkey" title="Router Key">
+
+        <t>
+            The format of the Router Key PDU is depicted in <xref
+            target="diagram-router-key" />.
+        </t>
+
         <figure anchor="diagram-router-key">
           <name>Router Key</name>
           <artwork align="center">
@@ -1084,25 +1140,25 @@
           target="fields" />.
         </t>
         <t>
-          The cache server MUST ensure that it has told the router
-          client to have one and only one Router Key PDU for a unique
+          The cache MUST ensure that it has told the router
+          to have one and only one Router Key PDU for a unique
           {SKI, AS, Subject Public Key} at any one point in time.
-          Should the router client receive a Router Key PDU with a
+          Should the router receive a Router Key PDU with a
           {SKI, AS, Subject Public Key} identical to one it already
           has active, it SHOULD respond with an Error Report PDU with
           Error Code 7 ("Duplicate Announcement Received").
         </t>
         <t>
-          Conversely, the cache server MUST ensure that any withdrawal
+          Conversely, the cache MUST ensure that any withdrawal
           it sends corresponds to a previous announcement sent to the
-          router.  Should the router client receive a withdrawal
+          router.  Should the router receive a withdrawal
           Router Key PDU that does not correspond to a previous
           announcement Router Key PDU, it SHOULD respond with an Error
           Report PDU with Error Code 6 ("Withdrawal of Unknown
           Record").
         </t>
         <t>
-          Note that a particular AS may appear in multiple Router Key
+          Note that a particular ASN may appear in multiple Router Key
           PDUs with different Subject Public Key values, while a
           particular Subject Public Key value may appear in multiple
           Router Key PDUs with different ASes.  In the interest of
@@ -1124,6 +1180,12 @@
       </section>
 
       <section anchor="aspa" title="ASPA">
+
+        <t>
+            The format of the ASPA PDU is depicted in <xref
+            target="diagram-aspa" />.
+        </t>
+
 	<!-- protocol "Protocol Version 2:8,PDU Type 11:8,Flags:8,zero:8,Length:32,Customer Autonomous System Number:32,Provider Autonomous System Numbers:32" -->
         <figure anchor="diagram-aspa">
           <name>ASPA</name>
@@ -1482,7 +1544,7 @@ Cache                         Router
           </artwork>
         </figure>
         <t>
-          The cache server SHOULD send a Notify PDU with its current
+          The cache SHOULD send a Notify PDU with its current
           Serial Number when the cache's serial changes, with the
           expectation that the router MAY then issue a Serial Query
           earlier than it otherwise might.  This is analogous to DNS
@@ -1613,7 +1675,7 @@ Cache                         Router
         <t><list style="symbols">
         <t>the cache is about to become unavailable to connected client
           routers; and</t>
-        <t>the operator intends to make the cache server available again
+        <t>the operator intends to make the cache available again
           within the time required for the connected clients to avoid
           reaching the end of the Expire Interval.</t>
           </list>
@@ -1631,10 +1693,10 @@ Cache                         Router
 
       Following a Cache Restart, client routers SHOULD retry periodically
       using the Retry Interval (see <xref target="timing" />) previously provided by the
-      cache server, or the default Retry Interval otherwise.  Client
+      cache, or the default Retry Interval otherwise.  Client
       routers MUST flush all data learned from that cache if the session
       could not be resumed or reinitialized within the Expire Interval
-      provided by the cache server, or the default Expire Interval
+      provided by the cache, or the default Expire Interval
       otherwise.
 
         </t>
@@ -2589,7 +2651,7 @@ Cache                         Router
             previously held (reboot, network partition, et cetera).
           </t>
           <t hangText="3: Invalid Request (fatal):">
-            The cache server believes the client's request to be
+            The cache believes the client's request to be
             invalid.
           </t>
           <t hangText="4: Unsupported Protocol Version (non-fatal):">
@@ -2728,8 +2790,8 @@ Cache                         Router
           </t>
           <t>
             Authenticating transport protocols (i.e., not raw TCP) will
-            authenticate the identity of the cache server to the router
-            client, and vice versa, before any data are exchanged.
+            authenticate the identity of the cache to the router, and
+            vice versa, before any data are exchanged.
           </t>
           <t>
             Transports which cannot provide the necessary authentication
@@ -2842,7 +2904,7 @@ Cache                         Router
         <t><list style="none" spacing="compact">
           <t>Responsible Organization: The OpenRTRd Project<vspace blankLines='1' /></t>
           <t>Location: https://github.com/openrtrd/openrtrd<vspace blankLines='1' /></t>
-          <t>Description: A scalable RTR v2 cache server.<vspace blankLines='1' /></t>
+          <t>Description: A scalable RTR v2 cache.<vspace blankLines='1' /></t>
           <t>Level of Maturity: This is a beta implementation.<vspace blankLines='1' /></t>
           <t>Coverage: This implementation includes all of the features described, except for non-standard transport.<vspace blankLines='1' /></t>
           <t>Contact Information: Job Snijders, job@bsd.nl; Ralph Covelli, rcovelli@he.net</t>
@@ -2917,6 +2979,7 @@ Cache                         Router
 
     <references title="Informative References">
       <?rfc include="reference.RFC.1996.xml"?>
+      <?rfc include="reference.RFC.4271.xml"?>
       <?rfc include="reference.RFC.4808.xml"?>
       <?rfc include="reference.RFC.5781.xml"?>
       <?rfc include="reference.RFC.5905.xml"?>
