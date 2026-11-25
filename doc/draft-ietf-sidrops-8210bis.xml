@@ -679,19 +679,19 @@
         <t>
 
         If the router and cache have already established a session
-        between them, and the router sends a Serial Notify query with
-        a Session ID different from that previously communicated to
-        the router by the cache, then the cache terminates the
-        session with an Error Report PDU with Error Code 0 ("Corrupt
-        Data"), per <xref target="fields" />.
+        between them, and the router sends a Serial Query with a
+        Session ID different from that previously communicated to the
+        router by the cache, then the cache terminates the session
+        with an Error Report PDU with Error Code 0 ("Corrupt Data"),
+        per <xref target="fields" />.
 
         </t>
 
         <t>
 
         If the router and cache have not already established a session
-        between them, and the router sends a Serial Notify query with
-        a Session ID that is unknown to the cache, then the cache
+        between them, and the router sends a Serial Query with a
+        Session ID that is unknown to the cache, then the cache
         responds with a Cache Reset PDU (<xref target="cachereset"
         />).
 
@@ -1039,7 +1039,7 @@
           The router MUST verify that the zero bits in the
           Prefix are set correctly, in accordance with the previous
           paragraph.  If they are not set correctly, the router
-          MUST send an Error Report PDU with Error Code 1 ("Corrupt
+          MUST send an Error Report PDU with Error Code 0 ("Corrupt
           Data").
 
         </t>
@@ -1646,8 +1646,8 @@ Cache                         Router
       <section anchor="invalid-request" title="Invalid Request">
         <t>
 
-            The only valid PDU types that a router may send to a query
-            are Serial Query, Cache Reset, and Error Report.  If a
+            The only valid PDU types that a router may send to a cache
+            are Serial Query, Reset Query, and Error Report.  If a
             router sends a PDU of some other type to the cache, the
             cache responds with an Error Report PDU with Error Code 3
             ("Invalid Request").
